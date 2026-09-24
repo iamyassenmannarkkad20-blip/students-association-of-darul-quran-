@@ -196,13 +196,41 @@ router.get('/portfolio/:slug', async (req, res) => {
 
     const p = profileRes.rows[0];
 
-    // Privacy Check: if not public, reject
+    // Privacy Check: if not public, check owner or admin session
+    let isOwnerView = false;
     if (!p.is_public) {
-      res.status(403).json({
-        success: false,
-        error: 'This student profile is currently set to private.',
-      });
-      return;
+      const sessionId = req.cookies?.sadq_session;
+      if (sessionId) {
+        try {
+          const sessionRes = await query(
+            `SELECT s.id, u.id as user_id, u.role
+             FROM sessions s
+             JOIN users u ON s.user_id = u.id
+             WHERE s.id = $1 AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = TRUE`,
+            [sessionId]
+          );
+          if (sessionRes.rows.length > 0) {
+            const sessionUser = sessionRes.rows[0];
+            if (
+              sessionUser.user_id === p.user_id ||
+              sessionUser.role === 'ADMIN' ||
+              sessionUser.role === 'SUPER_ADMIN'
+            ) {
+              isOwnerView = true;
+            }
+          }
+        } catch (err) {
+          console.error('Session validation error in portfolio preview:', err);
+        }
+      }
+
+      if (!isOwnerView) {
+        res.status(403).json({
+          success: false,
+          error: 'This student profile is currently set to private.',
+        });
+        return;
+      }
     }
 
     const userId = p.user_id;
@@ -276,6 +304,7 @@ router.get('/portfolio/:slug', async (req, res) => {
 
     res.json({
       success: true,
+      is_owner_view: isOwnerView,
       data: {
         profile: sanitizedProfile,
         talents,
@@ -283,6 +312,7 @@ router.get('/portfolio/:slug', async (req, res) => {
         achievements,
         projects,
         organisation,
+        is_owner_view: isOwnerView,
       },
     });
   } catch (error) {

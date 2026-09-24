@@ -36,18 +36,26 @@ export const Home: React.FC = () => {
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Helper to extract YouTube ID
+  // Helper to extract YouTube video ID from any YouTube URL (shorts, live, watch)
   const getYouTubeEmbedUrl = (url: string) => {
+    // Handle /live/ URLs: https://www.youtube.com/live/VIDEO_ID
+    if (url.includes('/live/')) {
+      const id = url.split('/live/')[1]?.split('?')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    // Handle /shorts/ URLs
     if (url.includes('/shorts/')) {
       const id = url.split('/shorts/')[1]?.split('?')[0];
       return `https://www.youtube.com/embed/${id}`;
     }
+    // Handle watch?v= URLs
     if (url.includes('watch?v=')) {
       const id = url.split('watch?v=')[1]?.split('&')[0];
       return `https://www.youtube.com/embed/${id}`;
     }
     return url;
   };
+
 
   useEffect(() => {
     async function loadData() {
@@ -169,24 +177,24 @@ export const Home: React.FC = () => {
           </a>
         </div>
 
-        {/* Video Grid featuring 3 official YouTube videos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Video Grid — 4 official SADQ Live videos */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {mediaList.length > 0 ? (
-            mediaList.slice(0, 3).map((item) => (
+            mediaList.slice(0, 4).map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-md hover:shadow-xl transition-all flex flex-col justify-between group"
               >
-                <div className="relative aspect-[9/12] sm:aspect-[9/14] bg-black overflow-hidden">
+                <div className="relative aspect-video bg-black overflow-hidden">
                   <iframe
                     src={getYouTubeEmbedUrl(item.media_url)}
                     title={item.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                     className="w-full h-full border-0"
                   />
                 </div>
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                   <div>
                     <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded uppercase border border-red-200">
                       {item.category || 'Official Broadcast'}
@@ -209,7 +217,8 @@ export const Home: React.FC = () => {
               </div>
             ))
           ) : (
-            <div className="col-span-3 text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+            <div className="col-span-4 text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+
               <Video className="w-10 h-10 text-slate-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-slate-700">Loading official media...</p>
             </div>

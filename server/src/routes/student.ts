@@ -200,7 +200,7 @@ router.delete('/talents/:id', async (req: RequestWithUser, res) => {
 
 // 4. Skills CRUD (Proficiency & Duplicate Prevention)
 const skillSchema = z.object({
-  skillName: z.string().min(2).max(100),
+  skillName: z.string().trim().min(2).max(100),
   proficiency: z.enum(SKILL_PROFICIENCIES as unknown as [SkillProficiency, ...SkillProficiency[]]),
 });
 

@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 
+// Public pages
 import { Home } from './pages/public/Home';
 import { About } from './pages/public/About';
 import { Organisation } from './pages/public/Organisation';
@@ -14,8 +15,22 @@ import { Opportunities } from './pages/public/Opportunities';
 import { ServicesMarketplace } from './pages/public/ServicesMarketplace';
 import { Certificates } from './pages/public/Certificates';
 import { PortfolioView } from './pages/public/PortfolioView';
+
+// Auth
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
+
+// Student workspace
+import { StudentDashboard } from './pages/student/Dashboard';
+import { ProfileEdit } from './pages/student/ProfileEdit';
+import { TalentsPage } from './pages/student/TalentsPage';
+import { SkillsPage } from './pages/student/SkillsPage';
+import { AchievementsPage } from './pages/student/AchievementsPage';
+import { ProjectsPage } from './pages/student/ProjectsPage';
+import { OrganisationView } from './pages/student/OrganisationView';
+
+// Community
+import { CommunityFeed } from './pages/student/CommunityFeed';
 
 const FallbackModule: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
   <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-4">
@@ -54,37 +69,35 @@ export const App: React.FC = () => {
               <Route path="/services" element={<ServicesMarketplace />} />
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/portfolio/:slug" element={<PortfolioView />} />
+
+              {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Protected / Module Fallback Routes */}
-              <Route
-                path="/community"
-                element={
-                  <FallbackModule
-                    title="Community Discourse"
-                    subtitle="Discourse topics, peer discussions, and study notes feed."
-                  />
-                }
-              />
-              <Route
-                path="/student"
-                element={
-                  <FallbackModule
-                    title="Student Workspace"
-                    subtitle="Manage personal portfolio, proficiencies, talents, and achievements."
-                  />
-                }
-              />
+              {/* Student Workspace Routes */}
+              <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/profile" element={<ProfileEdit />} />
+              <Route path="/student/talents" element={<TalentsPage />} />
+              <Route path="/student/skills" element={<SkillsPage />} />
+              <Route path="/student/achievements" element={<AchievementsPage />} />
+              <Route path="/student/projects" element={<ProjectsPage />} />
+              <Route path="/student/organisation" element={<OrganisationView />} />
+
+              {/* Community */}
+              <Route path="/community" element={<CommunityFeed />} />
+
+              {/* Create Center */}
               <Route
                 path="/student/create"
                 element={
                   <FallbackModule
-                    title="Student Create Center"
-                    subtitle="Submit new posts, articles, and learning notes for publication review."
+                    title="Create Center"
+                    subtitle="Submit articles, community posts, and learning notes for publication review."
                   />
                 }
               />
+
+              {/* Admin */}
               <Route
                 path="/admin"
                 element={
@@ -95,7 +108,7 @@ export const App: React.FC = () => {
                 }
               />
 
-              {/* 404 Route */}
+              {/* 404 */}
               <Route
                 path="*"
                 element={
