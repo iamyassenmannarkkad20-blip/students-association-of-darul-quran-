@@ -1,0 +1,12 @@
+{
+  "name": "sadq-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SADQ Platform - Student Growth, Organisation, Creativity, Community & Opportunity",
+  "scripts": {
+    "test": "node tests/run-e2e.js"
+  },
+  "keywords": ["sadq", "student-platform", "education", "community"],
+  "author": "SADQ",
+  "license": "UNLICENSED"
+}
