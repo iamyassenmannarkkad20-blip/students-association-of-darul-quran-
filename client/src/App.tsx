@@ -32,6 +32,9 @@ import { OrganisationView } from './pages/student/OrganisationView';
 // Community
 import { CommunityFeed } from './pages/student/CommunityFeed';
 
+// Admin
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+
 const FallbackModule: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
   <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-4">
     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-100 text-navy-900 text-xs font-semibold">
@@ -98,15 +101,8 @@ export const App: React.FC = () => {
               />
 
               {/* Admin */}
-              <Route
-                path="/admin"
-                element={
-                  <FallbackModule
-                    title="Administrative Moderation"
-                    subtitle="Platform review queue, content approvals, and institutional audit."
-                  />
-                }
-              />
+              <Route path="/admin" element={<AdminDashboard />} />
+
 
               {/* 404 */}
               <Route
