@@ -26,12 +26,17 @@ import {
   ExternalLink,
   Layers,
   Crown,
+  Search,
 } from 'lucide-react';
+import { CommandPalette } from './CommandPalette';
 
 export const Navbar: React.FC = () => {
   const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Command Palette State (Ctrl + K)
+  const [commandOpen, setCommandOpen] = useState(false);
 
   // Desktop Dropdown State ('explore' | 'results' | 'opportunities' | 'mysadq' | 'admin' | null)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -46,6 +51,18 @@ export const Navbar: React.FC = () => {
     mysadq: true,
     admin: false,
   });
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Sub-Wing Leader status
   const [hasSubWingAccess, setHasSubWingAccess] = useState(false);
@@ -580,9 +597,21 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* RIGHT SIDE HEADER: COMPACT CONTROLS */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5">
             {user ? (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                {/* Admin Quick Suite Pill (For Admin users) */}
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#ffd014]/20 text-[#ffd014] border border-[#ffd014]/40 rounded-xl hover:bg-[#ffd014]/30 transition-all shadow-sm"
+                    title="Admin Control Suite"
+                  >
+                    <Crown className="w-3.5 h-3.5 text-[#ffd014]" />
+                    <span>Admin Suite</span>
+                  </Link>
+                )}
+
                 {/* My Sub-Wing Badge (Only shown to authorized Sub-Wing Leaders or Admin) */}
                 {hasSubWingAccess && (
                   <Link
@@ -595,10 +624,11 @@ export const Navbar: React.FC = () => {
                   </Link>
                 )}
 
-                {/* Profile Pill */}
+                {/* Student Workspace Profile Pill */}
                 <Link
                   to="/student"
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-[#010a38] text-white border border-[#ffd014]/30 rounded-xl hover:border-[#ffd014] transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-[#010a38] text-white border border-slate-700/60 rounded-xl hover:border-[#ffd014] transition-colors shadow-sm"
+                  title="My Student Dashboard"
                 >
                   {profile?.profile_photo_url ? (
                     <img
@@ -609,7 +639,7 @@ export const Navbar: React.FC = () => {
                   ) : (
                     <User className="w-3.5 h-3.5 text-[#ffd014]" />
                   )}
-                  <span>{user.fullName.split(' ')[0]}</span>
+                  <span>{user.username ? `@${user.username}` : user.fullName.split(' ')[0]}</span>
                 </Link>
 
                 {/* Logout Button */}
@@ -622,25 +652,55 @@ export const Navbar: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs font-bold text-slate-200 hover:text-[#ffd014] hover:bg-white/10 rounded-xl transition-all"
+                  className="px-3.5 py-2 text-xs font-bold text-slate-200 hover:text-[#ffd014] hover:bg-white/10 rounded-xl transition-all"
                 >
                   Sign In
                 </Link>
                 <Link
+                  to="/admin/login"
+                  className="px-2.5 py-1.5 text-[11px] font-bold text-amber-300/90 hover:text-[#ffd014] hover:bg-white/10 rounded-xl border border-amber-400/30 transition-all flex items-center gap-1 shadow-sm"
+                  title="Official Admin Gateway"
+                >
+                  <Shield className="w-3 h-3 text-[#ffd014]" />
+                  <span>Admin</span>
+                </Link>
+                <Link
                   to="/register"
-                  className="px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#02167f] bg-gradient-to-r from-[#ffd014] to-amber-300 rounded-xl hover:from-amber-200 hover:to-[#ffd014] shadow-md shadow-[#ffd014]/25 hover:scale-105 active:scale-95 transition-all"
+                  className="px-4 py-2 text-xs font-black uppercase tracking-wider text-[#02167f] bg-gradient-to-r from-[#ffd014] to-amber-300 rounded-xl hover:from-amber-200 hover:to-[#ffd014] shadow-md shadow-[#ffd014]/25 hover:scale-105 active:scale-95 transition-all ml-1"
                 >
                   Register
                 </Link>
               </div>
             )}
+
+            {/* Desktop Search Spotlight Trigger Button (Ctrl + K) */}
+            <button
+              onClick={() => setCommandOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white border border-white/15 text-xs transition-all shadow-inner group ml-1"
+              title="Search SADQ (Ctrl + K)"
+            >
+              <Search className="w-3.5 h-3.5 text-gold-400 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 text-[11px] font-medium hidden xl:inline">Search</span>
+              <kbd className="text-[10px] font-bold text-gold-300 bg-navy-950/80 px-1.5 py-0.5 rounded border border-gold-400/30">
+                Ctrl K
+              </kbd>
+            </button>
           </div>
 
-          {/* MOBILE HAMBURGER BUTTON */}
+          {/* MOBILE HAMBURGER & SEARCH BUTTONS */}
           <div className="flex lg:hidden items-center gap-2">
+            {/* Mobile Search Button */}
+            <button
+              onClick={() => setCommandOpen(true)}
+              className="p-2 rounded-xl bg-white/10 text-gold-400 hover:bg-white/20 transition-colors"
+              title="Search SADQ"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
             {user && (
               <Link
                 to="/student"
@@ -955,33 +1015,62 @@ export const Navbar: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-slate-400 px-1">
                     <span>Signed in as</span>
-                    <strong className="text-white">{user.fullName}</strong>
+                    <strong className="text-white font-bold">
+                      {user.username ? `@${user.username}` : user.fullName}
+                    </strong>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link
+                      to="/student"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 text-center text-xs font-bold bg-white/10 text-white rounded-xl hover:bg-white/20"
+                    >
+                      🎓 Student Mode
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-2 text-center text-xs font-bold bg-amber-400/20 text-[#ffd014] rounded-xl border border-amber-400/30"
+                      >
+                        ⚡ Admin Suite
+                      </Link>
+                    )}
                   </div>
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
-                    className="w-full py-2.5 rounded-xl bg-red-600/20 border border-red-500/30 text-red-300 font-bold text-xs hover:bg-red-600/30 transition-colors"
+                    className="w-full py-2.5 rounded-xl bg-red-600/20 border border-red-500/30 text-red-300 font-bold text-xs hover:bg-red-600/30 transition-colors mt-2"
                   >
                     Sign Out
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2.5 text-center text-xs font-bold border border-slate-700 rounded-xl text-slate-200 hover:bg-white/5"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2.5 text-center text-xs font-black uppercase tracking-wider text-[#02167f] bg-[#ffd014] rounded-xl shadow-md"
+                    >
+                      Register
+                    </Link>
+                  </div>
                   <Link
-                    to="/login"
+                    to="/admin/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="py-2.5 text-center text-xs font-bold border border-slate-700 rounded-xl text-slate-200 hover:bg-white/5"
+                    className="block py-2 text-center text-[11px] font-bold text-amber-300 border border-amber-400/30 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 transition-all"
                   >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="py-2.5 text-center text-xs font-black uppercase tracking-wider text-[#02167f] bg-[#ffd014] rounded-xl shadow-md"
-                  >
-                    Register
+                    🛡️ Official Admin Gateway
                   </Link>
                 </div>
               )}
@@ -989,6 +1078,9 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Global Command Palette Modal (Ctrl + K) */}
+      <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
     </header>
   );
 };

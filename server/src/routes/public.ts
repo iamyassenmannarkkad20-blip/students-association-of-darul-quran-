@@ -198,10 +198,11 @@ router.get('/portfolio/:slug', async (req, res) => {
     const profileRes = await query(
       `SELECT user_id, full_name, profile_slug, bio, class_code, interests,
               profile_photo_url, cover_photo_url, whatsapp_number, email_contact,
-              is_public, show_email, show_whatsapp, show_talents, show_skills,
+              instagram_handle, phone_number, website_url,
+              is_public, show_email, show_whatsapp, show_instagram, show_talents, show_skills,
               show_achievements, show_projects, show_organisation
        FROM student_profiles
-       WHERE profile_slug = $1`,
+       WHERE LOWER(profile_slug) = $1`,
       [slug]
     );
 

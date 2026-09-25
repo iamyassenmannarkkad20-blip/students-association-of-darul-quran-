@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { AnnouncementStrip } from './components/AnnouncementStrip';
+import { NotFound } from './pages/public/NotFound';
 
 // Public pages
 import { Home } from './pages/public/Home';
@@ -23,6 +25,7 @@ import { PublicResults } from './pages/public/PublicResults';
 
 // Auth
 import { Login } from './pages/auth/Login';
+import { AdminLogin } from './pages/auth/AdminLogin';
 import { Register } from './pages/auth/Register';
 
 // Student workspace
@@ -70,6 +73,7 @@ export const App: React.FC = () => {
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
           <Navbar />
+          <AnnouncementStrip />
           <main className="flex-1">
             <Routes>
               {/* Public Routes */}
@@ -91,6 +95,7 @@ export const App: React.FC = () => {
 
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/register" element={<Register />} />
 
               {/* Student Workspace Routes */}
@@ -113,18 +118,8 @@ export const App: React.FC = () => {
               {/* Admin */}
               <Route path="/admin" element={<AdminDashboard />} />
 
-
-
               {/* 404 */}
-              <Route
-                path="*"
-                element={
-                  <FallbackModule
-                    title="Page Not Found"
-                    subtitle="The requested page could not be located on SADQ Platform."
-                  />
-                }
-              />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />

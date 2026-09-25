@@ -5,6 +5,7 @@ import { UserRole } from '../../../shared/types';
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  username?: string;
   role: UserRole;
   fullName: string;
   profileSlug: string;
@@ -33,7 +34,7 @@ export const requireAuth = async (
 
   try {
     const sessionRes = await query(
-      `SELECT s.id, s.expires_at, u.id as user_id, u.email, u.role, u.is_active,
+      `SELECT s.id, s.expires_at, u.id as user_id, u.email, u.username, u.role, u.is_active,
               p.full_name, p.profile_slug, p.class_code
        FROM sessions s
        JOIN users u ON s.user_id = u.id
@@ -55,6 +56,7 @@ export const requireAuth = async (
     req.user = {
       id: row.user_id,
       email: row.email,
+      username: row.username || '',
       role: row.role as UserRole,
       fullName: row.full_name || 'Member',
       profileSlug: row.profile_slug || '',

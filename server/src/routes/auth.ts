@@ -13,14 +13,21 @@ const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
 const registerSchema = z.object({
   fullName: z.string().min(2).max(100),
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores')
+    .optional(),
   email: z.string().email(),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
   classCode: z.enum(CLASS_CODES as unknown as [ClassCode, ...ClassCode[]]),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  identifier: z.string().min(1, 'Username or Email is required').optional(),
+  email: z.string().optional(),
+  password: z.string().min(1, 'Password is required'),
 });
 
 function createSessionCookie(res: Response, sessionId: string) {
@@ -32,6 +39,21 @@ function createSessionCookie(res: Response, sessionId: string) {
     path: '/',
   });
 }
+
+// Check Username Availability
+router.get('/check-username/:username', async (req, res) => {
+  try {
+    const rawUsername = req.params.username.toLowerCase().trim();
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(rawUsername)) {
+      res.json({ success: true, data: { available: false, message: 'Invalid format (3-30 letters, numbers, underscores)' } });
+      return;
+    }
+    const existing = await query('SELECT id FROM users WHERE LOWER(username) = $1', [rawUsername]);
+    res.json({ success: true, data: { available: existing.rows.length === 0 } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to check username availability' });
+  }
+});
 
 // Student Registration
 router.post('/register', async (req, res) => {
@@ -46,21 +68,29 @@ router.post('/register', async (req, res) => {
     }
 
     const { fullName, email, password, classCode } = parseResult.data;
+    let username = parseResult.data.username?.toLowerCase().trim();
 
-    // Check if user already exists
-    const existing = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (existing.rows.length > 0) {
+    // Check if email already exists
+    const existingEmail = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    if (existingEmail.rows.length > 0) {
       res.status(409).json({ success: false, error: 'An account with this email already exists.' });
       return;
     }
 
-    // Generate unique slug from name
-    const baseSlug = fullName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const profileSlug = `${baseSlug}-${randomSuffix}`;
+    // Determine or generate unique username
+    if (!username) {
+      const baseUser = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || 'student';
+      username = `${baseUser}_${Math.floor(100 + Math.random() * 900)}`;
+    }
+
+    const existingUsername = await query('SELECT id FROM users WHERE LOWER(username) = $1', [username]);
+    if (existingUsername.rows.length > 0) {
+      res.status(409).json({ success: false, error: 'This username is already taken. Please pick another.' });
+      return;
+    }
+
+    // Profile slug matches username
+    const profileSlug = username;
 
     // Hash password with Argon2id
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
@@ -71,10 +101,10 @@ router.post('/register', async (req, res) => {
       await client.query('BEGIN');
 
       const userRes = await client.query(
-        `INSERT INTO users (email, password_hash, role)
-         VALUES ($1, $2, $3)
-         RETURNING id, email, role, is_active, created_at`,
-        [email.toLowerCase(), passwordHash, ROLES.STUDENT]
+        `INSERT INTO users (email, username, password_hash, role)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, email, username, role, is_active, created_at`,
+        [email.toLowerCase(), username, passwordHash, ROLES.STUDENT]
       );
       const user = userRes.rows[0];
 
@@ -103,6 +133,7 @@ router.post('/register', async (req, res) => {
           user: {
             id: user.id,
             email: user.email,
+            username: user.username,
             role: user.role,
             fullName,
             profileSlug,
@@ -122,28 +153,34 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login
+// Login (Supports Email OR Username)
 router.post('/login', async (req, res) => {
   try {
     const parseResult = loginSchema.safeParse(req.body);
     if (!parseResult.success) {
-      res.status(400).json({ success: false, error: 'Invalid email or password format.' });
+      res.status(400).json({ success: false, error: 'Invalid login details.' });
       return;
     }
 
-    const { email, password } = parseResult.data;
+    const loginId = (parseResult.data.identifier || parseResult.data.email || '').toLowerCase().trim();
+    const { password } = parseResult.data;
+
+    if (!loginId) {
+      res.status(400).json({ success: false, error: 'Please enter your username or email address.' });
+      return;
+    }
 
     const userRes = await query(
-      `SELECT u.id, u.email, u.password_hash, u.role, u.is_active,
+      `SELECT u.id, u.email, u.username, u.password_hash, u.role, u.is_active,
               sp.full_name, sp.profile_slug, sp.class_code
        FROM users u
        LEFT JOIN student_profiles sp ON sp.user_id = u.id
-       WHERE u.email = $1`,
-      [email.toLowerCase()]
+       WHERE LOWER(u.email) = $1 OR LOWER(u.username) = $1`,
+      [loginId]
     );
 
     if (userRes.rows.length === 0) {
-      res.status(401).json({ success: false, error: 'Invalid credentials.' });
+      res.status(401).json({ success: false, error: 'Invalid credentials. User not found.' });
       return;
     }
 
@@ -156,7 +193,7 @@ router.post('/login', async (req, res) => {
 
     const validPassword = await argon2.verify(user.password_hash, password);
     if (!validPassword) {
-      res.status(401).json({ success: false, error: 'Invalid credentials.' });
+      res.status(401).json({ success: false, error: 'Invalid credentials. Incorrect password.' });
       return;
     }
 
@@ -177,9 +214,10 @@ router.post('/login', async (req, res) => {
         user: {
           id: user.id,
           email: user.email,
+          username: user.username,
           role: user.role,
           fullName: user.full_name || 'Administrator',
-          profileSlug: user.profile_slug || '',
+          profileSlug: user.profile_slug || user.username || '',
           classCode: user.class_code,
         },
       },

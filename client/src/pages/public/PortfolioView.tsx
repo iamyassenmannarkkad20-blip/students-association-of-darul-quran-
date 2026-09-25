@@ -15,7 +15,11 @@ import {
   X,
   ShieldCheck,
   QrCode,
+  Globe,
+  Share2,
 } from 'lucide-react';
+import { InstagramIcon } from '../../components/icons/InstagramIcon';
+import { ShareModal } from '../../components/ShareModal';
 
 export const PortfolioView: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -23,6 +27,7 @@ export const PortfolioView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showIdCard, setShowIdCard] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
 
   useEffect(() => {
@@ -119,31 +124,60 @@ export const PortfolioView: React.FC = () => {
             )}
 
             {/* Direct Contact Buttons if enabled */}
-            <div className="pt-3 flex flex-wrap items-center justify-center sm:justify-start gap-3">
-              {profile.whatsappNumber && (
+            <div className="pt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+              {/* Instagram */}
+              {profile.show_instagram && profile.instagram_handle && (
                 <a
-                  href={`https://wa.me/${profile.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                  href={`https://instagram.com/${profile.instagram_handle.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600 via-rose-500 to-amber-500 hover:opacity-95 text-white text-xs font-semibold shadow-sm transition-all hover:scale-105"
+                >
+                  <InstagramIcon className="w-3.5 h-3.5" />
+                  <span>@{profile.instagram_handle.replace('@', '')}</span>
+                </a>
+              )}
+
+              {/* WhatsApp */}
+              {profile.show_whatsapp && (profile.whatsapp_number || profile.phone_number) && (
+                <a
+                  href={`https://wa.me/${(profile.whatsapp_number || profile.phone_number).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                     `Assalamu Alaikum ${profile.fullName}, I saw your student portfolio on the SADQ Platform and would like to connect with you.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-all hover:scale-105"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>Connect on WhatsApp</span>
                 </a>
               )}
-              {profile.emailContact && (
+
+              {/* Email */}
+              {profile.show_email && profile.email_contact && (
                 <a
-                  href={`mailto:${profile.emailContact}?subject=${encodeURIComponent(
+                  href={`mailto:${profile.emailContact || profile.email_contact}?subject=${encodeURIComponent(
                     `Connecting via SADQ Platform — ${profile.fullName}`
                   )}&body=${encodeURIComponent(
                     `Assalamu Alaikum ${profile.fullName},\n\nI saw your public student portfolio on the SADQ Platform and would like to get in touch regarding your work/skills.\n\nBest regards.`
                   )}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-gold-300 text-xs font-semibold shadow-sm transition-all hover:scale-105"
                 >
-                  <Mail className="w-3.5 h-3.5" />
+                  <Mail className="w-3.5 h-3.5 text-gold-400" />
                   <span>Send Email</span>
+                </a>
+              )}
+
+              {/* Website */}
+              {profile.website_url && (
+                <a
+                  href={profile.website_url.startsWith('http') ? profile.website_url : `https://${profile.website_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold shadow-sm transition-all"
+                >
+                  <Globe className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Portfolio Site</span>
                 </a>
               )}
 
@@ -151,10 +185,20 @@ export const PortfolioView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowIdCard(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-400 hover:bg-gold-300 text-navy-950 text-xs font-bold shadow-sm transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-400 hover:bg-gold-300 text-navy-950 text-xs font-bold shadow-sm transition-all hover:scale-105"
               >
                 <QrCode className="w-3.5 h-3.5" />
-                <span>Digital Student ID Card</span>
+                <span>Digital Student ID</span>
+              </button>
+
+              {/* Share Profile & QR Trigger */}
+              <button
+                type="button"
+                onClick={() => setShowShareModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-gold-300 border border-gold-400/40 text-xs font-bold shadow-sm transition-all hover:scale-105"
+              >
+                <Share2 className="w-3.5 h-3.5 text-gold-400" />
+                <span>Share & QR</span>
               </button>
             </div>
           </div>
@@ -366,6 +410,15 @@ export const PortfolioView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Share & QR Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        title={profile.fullName}
+        subtitle={`Class ${profile.classCode} • SADQ Student Portfolio`}
+        url={window.location.href}
+      />
     </div>
   );
 };

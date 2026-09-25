@@ -4,6 +4,7 @@ import { apiRequest } from '../services/api';
 export interface User {
   id: string;
   email: string;
+  username?: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'TEACHER' | 'ORGANISATION_ADMIN' | 'STUDENT';
   fullName: string;
   profileSlug: string;
@@ -14,12 +15,13 @@ interface AuthContextType {
   user: User | null;
   profile: any | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
+  login: (identifier: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
   register: (
     fullName: string,
     email: string,
     password: string,
-    classCode: string
+    classCode: string,
+    username?: string
   ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -54,10 +56,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     const res = await apiRequest('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
 
     if (res.success && res.data) {
@@ -73,11 +75,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fullName: string,
     email: string,
     password: string,
-    classCode: string
+    classCode: string,
+    username?: string
   ) => {
     const res = await apiRequest('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ fullName, email, password, classCode }),
+      body: JSON.stringify({ fullName, email, password, classCode, username }),
     });
 
     if (res.success && res.data) {

@@ -14,6 +14,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { OrganisationTree } from '../../components/OrganisationTree';
 
 interface CommitteeMember {
   id: string;
@@ -183,12 +184,17 @@ export const About: React.FC = () => {
         )}
       </section>
 
+      {/* SECTION: VISUAL ORGANISATION TREE */}
+      <section className="max-w-5xl mx-auto">
+        <OrganisationTree />
+      </section>
+
       {/* SECTION: CHRONOLOGY & ORIGINS */}
       <section className="max-w-5xl mx-auto space-y-6">
         <div className="border-b border-slate-200 pb-3 flex items-center gap-2">
           <History className="w-6 h-6 text-[#02167f]" />
           <h2 className="font-cinzel text-2xl font-black text-slate-900">
-            Chronology & Origins
+            Chronology & Origins (ചരിത്ര നാഴികക്കല്ലുകൾ)
           </h2>
         </div>
 
@@ -232,6 +238,20 @@ export const About: React.FC = () => {
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
               SADQ was established under the Academy as the sovereign student organization to champion leadership, literary clubs, artistic exhibitions, social welfare, campus coordination, and inter-class championship leagues.
+            </p>
+          </div>
+
+          {/* Milestone 2026 Digital Era */}
+          <div className="relative bg-white p-6 rounded-3xl border-2 border-gold-400 shadow-md hover:shadow-lg transition-shadow">
+            <div className="absolute -left-[45px] top-6 w-6 h-6 rounded-full bg-emerald-600 border-4 border-gold-400 shadow-md animate-pulse" />
+            <span className="inline-block text-xs font-black text-navy-950 bg-gold-400 px-3 py-1 rounded-full uppercase tracking-wider mb-2 shadow-sm">
+              Year 2026 • DIGITAL ERA
+            </span>
+            <h3 className="font-cinzel font-black text-slate-900 text-lg">
+              SADQ Digital Student Growth Platform & Central Executive 2026–27
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+              Launch of the integrated digital ecosystem powering 10 official sub-wings, live Inter-Class Championship leaderboards, digital student portfolios, published results, online certificate authentication, and seamless administration.
             </p>
           </div>
         </div>

@@ -62,6 +62,7 @@ export type ReactionType = (typeof REACTION_TYPES)[number];
 export interface AuthUser {
   id: string;
   email: string;
+  username?: string;
   role: UserRole;
   fullName: string;
   profileSlug: string;
@@ -83,10 +84,14 @@ export interface StudentProfile {
   coverPhotoUrl?: string | null;
   whatsappNumber?: string | null;
   emailContact?: string | null;
+  instagramHandle?: string | null;
+  phoneNumber?: string | null;
+  websiteUrl?: string | null;
   // Privacy Controls
   isPublic: boolean;
   showEmail: boolean;
   showWhatsapp: boolean;
+  showInstagram?: boolean;
   showTalents: boolean;
   showSkills: boolean;
   showAchievements: boolean;
