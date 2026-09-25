@@ -659,5 +659,105 @@ router.patch('/subwings/:id/leadership', async (req, res) => {
   }
 });
 
+// --- MEDIA & YOUTUBE BROADCAST MANAGEMENT ---
+// 1. Get all media items for admin
+router.get('/media', async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, title, description, media_type, media_url, category, status, created_at
+       FROM media_items
+       ORDER BY created_at DESC`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch admin media error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch media items.' });
+  }
+});
+
+// 2. Create new media item (YouTube video / broadcast)
+router.post('/media', async (req: RequestWithUser, res) => {
+  try {
+    const schema = z.object({
+      title: z.string().min(2, 'Title is required'),
+      description: z.string().optional().default(''),
+      media_url: z.string().url('A valid URL is required'),
+      category: z.string().optional().default('Broadcast'),
+      media_type: z.enum(['youtube', 'video', 'audio', 'vimeo', 'image']).default('youtube'),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `INSERT INTO media_items (title, description, media_type, media_url, category, status)
+       VALUES ($1, $2, $3, $4, $5, 'PUBLISHED')
+       RETURNING *`,
+      [d.title, d.description, d.media_type, d.media_url, d.category]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: 'Media item published successfully!' });
+  } catch (error) {
+    console.error('Create media error:', error);
+    res.status(500).json({ success: false, error: 'Failed to add media item.' });
+  }
+});
+
+// 3. Update media item
+router.put('/media/:id', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    const schema = z.object({
+      title: z.string().min(2).optional(),
+      description: z.string().optional(),
+      media_url: z.string().url().optional(),
+      category: z.string().optional(),
+      media_type: z.enum(['youtube', 'video', 'audio', 'vimeo', 'image']).optional(),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `UPDATE media_items
+       SET title = COALESCE($1, title),
+           description = COALESCE($2, description),
+           media_url = COALESCE($3, media_url),
+           category = COALESCE($4, category),
+           media_type = COALESCE($5, media_type)
+       WHERE id = $6
+       RETURNING *`,
+      [d.title, d.description, d.media_url, d.category, d.media_type, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Media item not found.' });
+    }
+
+    res.json({ success: true, data: result.rows[0], message: 'Media item updated successfully.' });
+  } catch (error) {
+    console.error('Update media error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update media item.' });
+  }
+});
+
+// 4. Delete media item
+router.delete('/media/:id', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    await query('DELETE FROM media_items WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Media item deleted successfully.' });
+  } catch (error) {
+    console.error('Delete media error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete media item.' });
+  }
+});
+
 export default router;
 

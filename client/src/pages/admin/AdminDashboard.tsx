@@ -6,10 +6,11 @@ import {
   Shield, BookOpen, CheckCircle, XCircle, Plus, ExternalLink,
   Users, Check, AlertCircle, RefreshCw, Megaphone, UserCheck, ShieldAlert,
   Crown, Camera, Trash2, Edit2, Image as ImageIcon, Upload, User as UserIcon,
-  Trophy, Award
+  Trophy, Award, Video
 } from 'lucide-react';
 import { AdminClassTasks } from './AdminClassTasks';
 import { AdminSubWings } from './AdminSubWings';
+import { AdminMedia } from './AdminMedia';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -29,7 +30,7 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'queue' | 'stats'
+    'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
   >('committee');
 
   // Executive Committee State
@@ -424,6 +425,16 @@ export const AdminDashboard: React.FC = () => {
         >
           <BookOpen className="w-4 h-4" />
           Magazines & Publications ({magazines.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('media')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'media' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Video className="w-4 h-4 text-red-600" />
+          Media & Videos
         </button>
 
         <button
@@ -1025,6 +1036,9 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* TAB: MEDIA & YOUTUBE BROADCASTS */}
+      {activeTab === 'media' && <AdminMedia />}
 
       {/* TAB 4: PENDING QUEUE */}
       {activeTab === 'queue' && (

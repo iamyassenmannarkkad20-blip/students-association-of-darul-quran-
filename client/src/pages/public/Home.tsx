@@ -17,7 +17,11 @@ import {
   Award,
   Crown,
   User as UserIcon,
+  Trophy,
+  Medal,
+  X,
 } from 'lucide-react';
+import { extractYouTubeId } from '../admin/AdminMedia';
 
 interface CommitteeMember {
   id: string;
@@ -48,46 +52,34 @@ export const Home: React.FC = () => {
   const [magazines, setMagazines] = useState<any[]>([]);
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [committee, setCommittee] = useState<CommitteeMember[]>([]);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [activeVideoModal, setActiveVideoModal] = useState<MediaItem | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const [loading, setLoading] = useState(true);
 
-
   // Helper to extract YouTube video ID from any YouTube URL (shorts, live, watch)
   const getYouTubeEmbedUrl = (url: string) => {
-    // Handle /live/ URLs: https://www.youtube.com/live/VIDEO_ID
-    if (url.includes('/live/')) {
-      const id = url.split('/live/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${id}`;
-    }
-    // Handle /shorts/ URLs
-    if (url.includes('/shorts/')) {
-      const id = url.split('/shorts/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${id}`;
-    }
-    // Handle watch?v= URLs
-    if (url.includes('watch?v=')) {
-      const id = url.split('watch?v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${id}`;
-    }
-    return url;
+    const id = extractYouTubeId(url);
+    return id ? `https://www.youtube.com/embed/${id}?autoplay=1&rel=0` : url;
   };
-
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [uRes, mRes, medRes, confRes, comRes] = await Promise.all([
+        const [uRes, mRes, medRes, confRes, comRes, lbRes] = await Promise.all([
           apiRequest<Unit[]>('/public/units'),
           apiRequest<any[]>('/public/magazines'),
           apiRequest<MediaItem[]>('/public/media'),
           apiRequest<any>('/public/config'),
           apiRequest<CommitteeMember[]>('/public/committee'),
+          apiRequest<any[]>('/leaderboard/leaderboard'),
         ]);
         if (uRes.success && uRes.data) setUnits(uRes.data);
         if (mRes.success && mRes.data) setMagazines(mRes.data);
         if (medRes.success && medRes.data) setMediaList(medRes.data);
         if (confRes.success && confRes.data?.announcement) setAnnouncement(confRes.data.announcement);
         if (comRes.success && comRes.data) setCommittee(comRes.data);
+        if (lbRes.success && lbRes.data) setLeaderboard(lbRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -220,6 +212,85 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Live Class Championship Podium Spotlight */}
+      {leaderboard.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-200/90 shadow-2xl shadow-[#02167f]/10 backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shadow-sm animate-float">
+                  <Trophy className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-cinzel text-lg sm:text-xl font-black text-[#02167f]">
+                    Live Class Championship Standing
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Real-time podium points calculated from offline Sub-Wing competitions and Main Committee tasks.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                to="/class-leaderboard"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#010e52] shadow-md transition-all self-start sm:self-auto shrink-0"
+              >
+                <span>Full Leaderboard (All 8 Classes)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Top 3 Podium Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {leaderboard.slice(0, 3).map((item, idx) => (
+                <Link
+                  key={item.class_code}
+                  to={`/class/${item.class_code}`}
+                  className={`p-5 rounded-2xl border-2 transition-all hover:scale-[1.02] flex items-center justify-between ${
+                    idx === 0
+                      ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-300 shadow-md'
+                      : idx === 1
+                      ? 'bg-slate-50 border-slate-200'
+                      : 'bg-amber-900/5 border-amber-800/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center font-cinzel font-black text-lg ${
+                        idx === 0
+                          ? 'bg-amber-400 text-amber-950 shadow-md animate-bounce'
+                          : idx === 1
+                          ? 'bg-slate-300 text-slate-800'
+                          : 'bg-amber-800/20 text-amber-900'
+                      }`}
+                    >
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                        Rank #{item.rank || idx + 1}
+                      </span>
+                      <h4 className="font-cinzel text-base font-black text-slate-900">
+                        Class {item.class_code}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xl font-black text-[#02167f]">
+                      {item.total_points}
+                    </span>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                      Points
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* SADQ Apex Executive Committee Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -359,45 +430,59 @@ export const Home: React.FC = () => {
         {/* Video Grid — 4 official SADQ Live videos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {mediaList.length > 0 ? (
-            mediaList.slice(0, 4).map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-md hover:shadow-xl transition-all flex flex-col justify-between group"
-              >
-                <div className="relative aspect-video bg-black overflow-hidden">
-                  <iframe
-                    src={getYouTubeEmbedUrl(item.media_url)}
-                    title={item.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="w-full h-full border-0"
-                  />
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                  <div>
-                    <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded uppercase border border-red-200">
+            mediaList.slice(0, 4).map((item) => {
+              const ytId = extractYouTubeId(item.media_url);
+              const thumbUrl = ytId
+                ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+                : 'https://placehold.co/600x400/02167f/ffffff?text=Video+Broadcast';
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => setActiveVideoModal(item)}
+                  className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-md hover:shadow-2xl hover:border-red-500 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                >
+                  <div className="relative aspect-video bg-black overflow-hidden">
+                    <img
+                      src={thumbUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'https://placehold.co/600x400/02167f/ffffff?text=Video+Broadcast';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                        <Play className="w-5 h-5 fill-white ml-0.5" />
+                      </div>
+                    </div>
+                    <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/75 text-white backdrop-blur-sm">
                       {item.category || 'Official Broadcast'}
                     </span>
-                    <h3 className="font-bold text-slate-900 text-sm mt-2 line-clamp-2">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.description}</p>
                   </div>
-                  <a
-                    href={item.media_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-colors"
-                  >
-                    <span>Open on YouTube</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-                  </a>
+
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-red-600 transition-colors">
+                        {item.title}
+                      </h3>
+                      {item.description && (
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.description}</p>
+                      )}
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#02167f]">
+                      <span className="flex items-center gap-1 group-hover:text-red-600">
+                        <Play className="w-3.5 h-3.5 fill-current" /> Watch Video
+                      </span>
+                      <ExternalLink className="w-3 h-3 text-slate-400" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="col-span-4 text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
-
               <Video className="w-10 h-10 text-slate-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-slate-700">Loading official media...</p>
             </div>
@@ -511,6 +596,68 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* THEATER MODE VIDEO MODAL */}
+      {activeVideoModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+          onClick={() => setActiveVideoModal(null)}
+        >
+          <div
+            className="bg-slate-950 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl border border-white/10 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 bg-slate-900/80 border-b border-white/10 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  {activeVideoModal.category || 'Official Broadcast'}
+                </span>
+              </div>
+              <button
+                onClick={() => setActiveVideoModal(null)}
+                className="p-1 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="relative aspect-video w-full bg-black">
+              <iframe
+                src={getYouTubeEmbedUrl(activeVideoModal.media_url)}
+                title={activeVideoModal.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full border-0"
+              />
+            </div>
+
+            <div className="p-5 sm:p-6 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1 flex-1">
+                <h3 className="font-cinzel text-lg sm:text-xl font-bold text-white leading-snug">
+                  {activeVideoModal.title}
+                </h3>
+                {activeVideoModal.description && (
+                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    {activeVideoModal.description}
+                  </p>
+                )}
+              </div>
+
+              <a
+                href={activeVideoModal.media_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shrink-0 self-start sm:self-auto"
+              >
+                <span>Open in YouTube</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
