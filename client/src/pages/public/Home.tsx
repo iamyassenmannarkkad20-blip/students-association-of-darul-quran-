@@ -129,10 +129,14 @@ export const Home: React.FC = () => {
               BEYOND THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-400">CURRICULUM</span>
             </h1>
 
-            <p className="max-w-3xl mx-auto text-base sm:text-xl text-slate-300 font-normal leading-relaxed">
-              A modern, secure, student-centered digital ecosystem. Build your digital portfolio,
-              collaborate in 10 official units, showcase creative talents, and unlock verified opportunities.
-            </p>
+            <div className="max-w-3xl mx-auto space-y-2">
+              <p className="text-base sm:text-xl text-gold-200/95 font-medium italic leading-relaxed">
+                “Your true potential begins where the textbook ends. Discover your passion, nurture your creative gifts, and rise with knowledge and purpose to illuminate the world.”
+              </p>
+              <p className="text-xs sm:text-sm text-slate-300/90 font-normal tracking-wide">
+                പാഠപുസ്തകങ്ങളുടെ അതിരുകൾക്കപ്പുറം ചിറകുവിരിക്കൂ; അറിവും സർഗ്ഗാത്മകതയും കൊണ്ട് ലോകത്തെ നയിക്കാം.
+              </p>
+            </div>
           </div>
 
           {/* CTA Buttons */}
