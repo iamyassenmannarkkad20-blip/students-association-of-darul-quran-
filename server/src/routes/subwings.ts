@@ -264,6 +264,7 @@ router.post('/programs/:programId/results', async (req: RequestWithUser, res) =>
       class_code: z.enum(['01', '02', '03', '04', '05', '06', '07', '08']),
       mark: z.number().min(0),
       winner_poster_url: z.string().optional().default(''),
+      certificate_url: z.string().optional().default(''),
     });
 
     const bodySchema = z.object({
@@ -308,8 +309,8 @@ router.post('/programs/:programId/results', async (req: RequestWithUser, res) =>
 
     for (const p of calculated) {
       await query(
-        `INSERT INTO program_results (program_id, student_id, student_name, class_code, mark, position, class_points, winner_poster_url, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO program_results (program_id, student_id, student_name, class_code, mark, position, class_points, winner_poster_url, certificate_url, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
           programId,
           p.student_id || null,
@@ -319,6 +320,7 @@ router.post('/programs/:programId/results', async (req: RequestWithUser, res) =>
           p.position,
           p.class_points,
           p.winner_poster_url || winner_poster_url || '',
+          p.certificate_url || '',
           program.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT',
         ]
       );
@@ -405,6 +407,28 @@ router.post('/programs/:programId/publish', async (req: RequestWithUser, res) =>
          VALUES ($1, 'SUB_WING_RESULT', $2, $3, $4)`,
         [r.class_code, programId, r.class_points, desc]
       );
+
+      // Auto-issue verified certificate record if certificate_url is attached
+      if (r.certificate_url && r.certificate_url.trim().length > 0) {
+        const certId = r.certificate_id || `SADQ-2026-CERT-${r.id.substring(0, 8).toUpperCase()}`;
+        const certTitle = `${program.title} — ${positionLabel}`;
+        const issuerName = program.sub_wing_name || 'Darul Quran SADQ';
+
+        await client.query(
+          `INSERT INTO certificate_records (certificate_id, recipient_name, recipient_user_id, title, issue_date, issuer, verification_status, external_reference_url, program_id, position, class_code)
+           VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, 'VERIFIED', $6, $7, $8, $9)
+           ON CONFLICT (certificate_id) DO UPDATE
+           SET external_reference_url = EXCLUDED.external_reference_url,
+               recipient_user_id = EXCLUDED.recipient_user_id,
+               title = EXCLUDED.title`,
+          [certId, r.student_name, r.student_id || null, certTitle, issuerName, r.certificate_url, programId, r.position, r.class_code]
+        );
+
+        await client.query(
+          `UPDATE program_results SET certificate_id = $1 WHERE id = $2`,
+          [certId, r.id]
+        );
+      }
     }
 
     await client.query('COMMIT');

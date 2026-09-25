@@ -90,6 +90,7 @@ export const App: React.FC = () => {
               <Route path="/explore" element={<TalentDiscovery />} />
               <Route path="/events" element={<Events />} />
               <Route path="/class-leaderboard" element={<ClassLeaderboard />} />
+              <Route path="/leaderboard" element={<ClassLeaderboard />} />
               <Route path="/class/:code" element={<ClassDetail />} />
               <Route path="/results" element={<PublicResults />} />
 

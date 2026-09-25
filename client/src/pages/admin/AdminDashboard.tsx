@@ -11,6 +11,8 @@ import {
 import { AdminClassTasks } from './AdminClassTasks';
 import { AdminSubWings } from './AdminSubWings';
 import { AdminMedia } from './AdminMedia';
+import { AdminCompetitions } from './AdminCompetitions';
+import { AdminCertificates } from './AdminCertificates';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -30,7 +32,7 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
+    'committee' | 'competitions' | 'certificates' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
   >('committee');
 
   // Executive Committee State
@@ -394,12 +396,32 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setActiveTab('competitions')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'competitions' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Trophy className="w-4 h-4 text-[#ffd014]" />
+          <span>Central Competitions & Awards</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('certificates')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'certificates' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Award className="w-4 h-4 text-emerald-600" />
+          <span>Certificates Registry</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('class-tasks')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
             activeTab === 'class-tasks' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Trophy className="w-4 h-4 text-[#ffd014]" />
+          <Trophy className="w-4 h-4 text-slate-400" />
           Class Tasks & Scores
         </button>
 
@@ -739,6 +761,12 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* TAB: CENTRAL COMPETITIONS & DUAL SCORING */}
+      {activeTab === 'competitions' && <AdminCompetitions />}
+
+      {/* TAB: OFFICIAL CERTIFICATES REGISTRY */}
+      {activeTab === 'certificates' && <AdminCertificates />}
 
       {/* TAB: CLASS TASKS & SCORES */}
       {activeTab === 'class-tasks' && <AdminClassTasks />}

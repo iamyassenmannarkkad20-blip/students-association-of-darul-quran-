@@ -306,6 +306,46 @@ router.get('/portfolio/:slug', async (req, res) => {
       organisation = orgRes.rows;
     }
 
+    // Score, Honors & Verified Certificates
+    const [scoreRes, honorsRes, certsRes] = await Promise.all([
+      query(
+        `WITH all_scores AS (
+          SELECT 
+            u.id as user_id,
+            COALESCE(SUM(pr.class_points), 0)::int as total_points,
+            COUNT(pr.id)::int as events_count,
+            COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as first_places,
+            COUNT(CASE WHEN pr.position = 2 THEN 1 END)::int as second_places,
+            COUNT(CASE WHEN pr.position = 3 THEN 1 END)::int as third_places,
+            DENSE_RANK() OVER (ORDER BY COALESCE(SUM(pr.class_points), 0) DESC, COUNT(CASE WHEN pr.position = 1 THEN 1 END) DESC) as rank
+          FROM users u
+          LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+          WHERE u.is_active = TRUE
+          GROUP BY u.id
+        )
+        SELECT * FROM all_scores WHERE user_id = $1`,
+        [userId]
+      ),
+      query(
+        `SELECT pr.id, pr.mark, pr.position, pr.class_points, pr.winner_poster_url, pr.published_at,
+                p.title as event_title, p.program_date,
+                CASE WHEN p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL THEN 'Main Committee' ELSE sw.name END as organizer_name
+         FROM program_results pr
+         JOIN programs p ON p.id = pr.program_id
+         LEFT JOIN sub_wings sw ON sw.id = p.sub_wing_id
+         WHERE pr.student_id = $1 AND pr.status = 'PUBLISHED'
+         ORDER BY pr.published_at DESC, p.program_date DESC`,
+        [userId]
+      ),
+      query(
+        `SELECT certificate_id, title, issue_date, issuer, verification_status, external_reference_url, position
+         FROM certificate_records
+         WHERE recipient_user_id = $1
+         ORDER BY issue_date DESC, created_at DESC`,
+        [userId]
+      ),
+    ]);
+
     // Filter contact info based on privacy toggles
     const sanitizedProfile = {
       fullName: p.full_name,
@@ -317,6 +357,7 @@ router.get('/portfolio/:slug', async (req, res) => {
       coverPhotoUrl: p.cover_photo_url,
       emailContact: p.show_email ? p.email_contact : null,
       whatsappNumber: p.show_whatsapp ? p.whatsapp_number : null,
+      instagramHandle: p.show_instagram ? p.instagram_handle : null,
     };
 
     res.json({
@@ -324,6 +365,9 @@ router.get('/portfolio/:slug', async (req, res) => {
       is_owner_view: isOwnerView,
       data: {
         profile: sanitizedProfile,
+        score: scoreRes.rows[0] || { total_points: 0, events_count: 0, first_places: 0, second_places: 0, third_places: 0, rank: 0 },
+        honors: honorsRes.rows,
+        certificates: certsRes.rows,
         talents,
         skills,
         achievements,

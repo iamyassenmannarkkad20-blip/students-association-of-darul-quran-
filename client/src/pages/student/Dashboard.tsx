@@ -5,6 +5,7 @@ import { apiRequest } from '../../services/api';
 import {
   User, Sparkles, Layers, Award, FolderGit2, Users, PlusCircle,
   Edit3, Eye, EyeOff, CheckCircle2, TrendingUp, Shield, Compass, MessageSquare,
+  Trophy, FileCheck, ExternalLink,
 } from 'lucide-react';
 
 export const StudentDashboard: React.FC = () => {
@@ -31,6 +32,8 @@ export const StudentDashboard: React.FC = () => {
 
   const completion = dashboard?.completionPercentage ?? 0;
   const counts = dashboard?.counts ?? {};
+  const score = dashboard?.score;
+  const certificates = dashboard?.certificates || [];
   const hasSubWingRole = assignedSubWings && assignedSubWings.length > 0;
 
   return (
@@ -166,7 +169,139 @@ export const StudentDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Stats Grid */}
+      {/* Academy Performance Scorecard & Honours */}
+      <div className="rounded-3xl bg-gradient-to-r from-[#02167f] via-[#031d96] to-[#010e52] text-white p-6 sm:p-8 shadow-xl border border-[#ffd014]/40 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ffd014] text-[#02167f] text-[10px] font-black uppercase tracking-wider shadow">
+              <Trophy className="w-3.5 h-3.5 text-[#02167f]" />
+              <span>SADQ Academy Performance Record</span>
+            </div>
+            <h2 className="font-cinzel text-xl sm:text-2xl font-black text-white">
+              Your Competition Score & Trophies
+            </h2>
+            <p className="text-xs text-blue-100/70">
+              Points earned from Sub-Wing offline competitions and Main Committee tasks. Each result directly increases your personal score and your batch score!
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 rounded-2xl bg-white/10 border border-white/15 text-center">
+              <span className="text-[10px] text-amber-200 uppercase font-bold block">Standing</span>
+              <span className="text-xl font-black text-[#ffd014]">
+                {score?.rank ? `Rank #${score.rank}` : 'Unranked'}
+              </span>
+            </div>
+
+            <div className="px-5 py-2.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-center shadow-lg">
+              <span className="text-[10px] uppercase font-black block tracking-wider">Total Score</span>
+              <span className="text-2xl font-black leading-none">{score?.total_points || 0} PTS</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Medals & Class Championship Contribution */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center pt-2">
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">🥇</span>
+            <div className="font-black text-lg text-white">{score?.first_places || 0}</div>
+            <span className="text-[10px] font-bold text-amber-300 uppercase">First Prizes</span>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">🥈</span>
+            <div className="font-black text-lg text-white">{score?.second_places || 0}</div>
+            <span className="text-[10px] font-bold text-slate-300 uppercase">Second Prizes</span>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">🥉</span>
+            <div className="font-black text-lg text-white">{score?.third_places || 0}</div>
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Third Prizes</span>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">📜</span>
+            <div className="font-black text-lg text-white">{certificates.length}</div>
+            <span className="text-[10px] font-bold text-emerald-300 uppercase">Official Certs</span>
+          </div>
+        </div>
+
+        <div className="pt-2 flex items-center justify-between text-xs text-blue-100/70 border-t border-white/10">
+          <span>Points contribute directly to Class {profile?.class_code} Championship</span>
+          <Link to="/class-leaderboard" className="text-[#ffd014] font-bold hover:underline">
+            View Live Leaderboard →
+          </Link>
+        </div>
+      </div>
+
+      {/* Official Verified Certificates Locker */}
+      {certificates.length > 0 && (
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                <FileCheck className="w-4 h-4 text-emerald-600" />
+                <span>Award Credentials</span>
+              </div>
+              <h3 className="font-cinzel text-lg font-bold text-slate-900 mt-0.5">
+                My Verified Award Certificates ({certificates.length})
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-400">
+              Issued by Central Committee & Wings
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {certificates.map((cert: any) => (
+              <div
+                key={cert.certificate_id}
+                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 hover:border-[#02167f] transition-all flex flex-col justify-between space-y-3"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-mono text-[9px] font-bold text-[#02167f] bg-navy-50 px-2 py-0.5 rounded border border-navy-200">
+                      {cert.certificate_id}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      ✓ Verified
+                    </span>
+                  </div>
+
+                  <h4 className="font-bold text-slate-900 text-xs leading-snug line-clamp-2">
+                    {cert.title}
+                  </h4>
+
+                  <div className="text-[10px] text-slate-500">
+                    <div>Issuer: <strong>{cert.issuer}</strong></div>
+                    <div>Issued: {new Date(cert.issue_date).toLocaleDateString()}</div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                  {cert.external_reference_url ? (
+                    <a
+                      href={cert.external_reference_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#0320a6] shadow-sm transition-all"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Download / View</span>
+                    </a>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">Digital Archive</span>
+                  )}
+                  <Link to="/certificates" className="text-[10px] font-bold text-slate-400 hover:text-slate-600">
+                    Verify ID →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
           { label: 'Talents', count: counts.talents ?? 0, icon: Sparkles, color: 'text-gold-600', bg: 'bg-gold-50', link: '/student/talents' },

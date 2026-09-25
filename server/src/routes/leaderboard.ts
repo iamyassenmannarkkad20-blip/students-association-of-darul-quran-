@@ -97,7 +97,63 @@ router.get('/leaderboard/class/:code', async (req, res) => {
   }
 });
 
-// 3. Public Results Portal (/results)
+// 3. Student Individual Star Achievers Leaderboard (/students and /leaderboard/students)
+router.get(['/students', '/leaderboard/students'], async (req, res) => {
+  try {
+    const classCode = req.query.classCode as string;
+    const limit = parseInt(req.query.limit as string) || 50;
+
+    let filterClause = '';
+    const params: any[] = [];
+
+    if (classCode && ['01', '02', '03', '04', '05', '06', '07', '08'].includes(classCode)) {
+      params.push(classCode);
+      filterClause += ` AND sp.class_code = $${params.length}`;
+    }
+
+    params.push(limit);
+
+    const result = await query(
+      `WITH student_scores AS (
+        SELECT 
+          u.id as user_id,
+          u.username,
+          sp.full_name,
+          sp.profile_slug,
+          sp.class_code,
+          sp.profile_photo_url,
+          COALESCE(SUM(pr.class_points), 0)::int as total_points,
+          COUNT(pr.id)::int as events_count,
+          COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as first_places,
+          COUNT(CASE WHEN pr.position = 2 THEN 1 END)::int as second_places,
+          COUNT(CASE WHEN pr.position = 3 THEN 1 END)::int as third_places,
+          (SELECT COUNT(*)::int FROM certificate_records cr WHERE cr.recipient_user_id = u.id) as certificates_count
+        FROM users u
+        JOIN student_profiles sp ON sp.user_id = u.id
+        LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+        WHERE u.is_active = TRUE ${filterClause}
+        GROUP BY u.id, u.username, sp.full_name, sp.profile_slug, sp.class_code, sp.profile_photo_url
+      ),
+      ranked AS (
+        SELECT 
+          *,
+          DENSE_RANK() OVER (ORDER BY total_points DESC, first_places DESC, second_places DESC, full_name ASC) as rank
+        FROM student_scores
+      )
+      SELECT * FROM ranked
+      ORDER BY rank ASC, total_points DESC, full_name ASC
+      LIMIT $${params.length};`,
+      params
+    );
+
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch student leaderboard error:', error);
+    res.status(500).json({ success: false, error: 'Failed to compute student leaderboard.' });
+  }
+});
+
+// 4. Public Results Portal (/results)
 router.get('/results', async (req, res) => {
   try {
     const { type, subwing } = req.query;
@@ -107,23 +163,35 @@ router.get('/results', async (req, res) => {
 
     if (type === 'SUB_WING_PROGRAM') {
       filterClause += ` AND event_type = 'SUB_WING_PROGRAM'`;
-    } else if (type === 'MAIN_COMMITTEE_TASK') {
-      filterClause += ` AND event_type = 'MAIN_COMMITTEE_TASK'`;
+    } else if (type === 'MAIN_COMMITTEE_TASK' || type === 'MAIN_COMMITTEE_PROGRAM') {
+      filterClause += ` AND event_type IN ('MAIN_COMMITTEE_TASK', 'MAIN_COMMITTEE_PROGRAM')`;
     }
 
     const results = await query(`
       WITH all_results AS (
-        -- Sub-Wing Programs
+        -- Sub-Wing & Main Committee Programs
         SELECT 
           pr.id, pr.program_id as source_id, pr.student_name, pr.class_code, pr.mark, pr.position, pr.class_points,
           COALESCE(NULLIF(pr.winner_poster_url, ''), p.winner_poster_url) as winner_poster_url,
+          pr.certificate_url,
+          pr.certificate_id,
           pr.published_at,
           p.title as event_title, p.description as event_desc, p.program_date as event_date,
-          'SUB_WING_PROGRAM' as event_type,
-          sw.name as entity_name, sw.code as entity_code
+          CASE 
+            WHEN p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL THEN 'MAIN_COMMITTEE_PROGRAM'
+            ELSE 'SUB_WING_PROGRAM'
+          END as event_type,
+          CASE 
+            WHEN p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL THEN 'Main Committee'
+            ELSE sw.name
+          END as entity_name,
+          CASE 
+            WHEN p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL THEN 'MC'
+            ELSE sw.code
+          END as entity_code
         FROM program_results pr
         JOIN programs p ON p.id = pr.program_id
-        JOIN sub_wings sw ON sw.id = p.sub_wing_id
+        LEFT JOIN sub_wings sw ON sw.id = p.sub_wing_id
         WHERE pr.status = 'PUBLISHED'
 
         UNION ALL
@@ -133,6 +201,8 @@ router.get('/results', async (req, res) => {
           ctr.id, ctr.task_id as source_id, 'Class ' || ctr.class_code as student_name, ctr.class_code, ctr.mark,
           0 as position, ctr.class_points,
           COALESCE(NULLIF(ctr.winner_poster_url, ''), ct.winner_poster_url) as winner_poster_url,
+          '' as certificate_url,
+          NULL as certificate_id,
           ctr.published_at,
           ct.title as event_title, ct.description as event_desc, ct.task_date as event_date,
           'MAIN_COMMITTEE_TASK' as event_type,

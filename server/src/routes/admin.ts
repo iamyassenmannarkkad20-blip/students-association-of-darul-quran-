@@ -789,5 +789,380 @@ router.delete('/media/:id', async (req: RequestWithUser, res) => {
   }
 });
 
+// ==================================================
+// MAIN COMMITTEE COMPETITIONS & DUAL SCORING PORTAL
+// ==================================================
+
+// 1. List Main Committee Competitions
+router.get('/competitions', async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT 
+        p.*,
+        r.name as score_rule_name,
+        r.first_points, r.second_points, r.third_points, r.participation_points,
+        (SELECT COUNT(*)::int FROM program_results pr WHERE pr.program_id = p.id) as participants_count
+       FROM programs p
+       LEFT JOIN class_score_rules r ON r.id = p.score_rule_id
+       WHERE p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL
+       ORDER BY p.program_date DESC, p.created_at DESC`
+    );
+
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch competitions error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load Main Committee competitions.' });
+  }
+});
+
+// 2. Create Main Committee Competition
+router.post('/competitions', async (req: RequestWithUser, res) => {
+  try {
+    const userId = req.user!.id;
+    const schema = z.object({
+      title: z.string().min(2),
+      description: z.string().optional().default(''),
+      program_date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+      maximum_mark: z.number().positive().default(20),
+      score_rule_id: z.string().uuid().optional().nullable(),
+      winner_poster_url: z.string().optional().default(''),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `INSERT INTO programs (sub_wing_id, organizer_type, title, description, program_date, maximum_mark, score_rule_id, winner_poster_url, created_by, status)
+       VALUES (NULL, 'MAIN_COMMITTEE', $1, $2, $3, $4, $5, $6, $7, 'DRAFT')
+       RETURNING *`,
+      [d.title, d.description, d.program_date, d.maximum_mark, d.score_rule_id || null, d.winner_poster_url, userId]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: 'Main Committee competition created successfully.' });
+  } catch (error) {
+    console.error('Create competition error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create competition.' });
+  }
+});
+
+// 3. Get Competition Details & Results
+router.get('/competitions/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const progRes = await query(
+      `SELECT p.*, r.name as score_rule_name, r.first_points, r.second_points, r.third_points, r.participation_points
+       FROM programs p
+       LEFT JOIN class_score_rules r ON r.id = p.score_rule_id
+       WHERE p.id = $1`,
+      [id]
+    );
+
+    if (progRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Competition not found.' });
+    }
+
+    const resultsRes = await query(
+      `SELECT pr.*, sp.profile_slug, u.username
+       FROM program_results pr
+       LEFT JOIN users u ON u.id = pr.student_id
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       WHERE pr.program_id = $1
+       ORDER BY pr.mark DESC, pr.position ASC`,
+      [id]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        competition: progRes.rows[0],
+        results: resultsRes.rows,
+      },
+    });
+  } catch (error) {
+    console.error('Get competition error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load competition details.' });
+  }
+});
+
+// 4. Save Competition Student Marks & Certificate URLs
+router.post('/competitions/:id/results', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const progRes = await query(
+      `SELECT p.*, r.first_points, r.second_points, r.third_points, r.participation_points
+       FROM programs p
+       LEFT JOIN class_score_rules r ON r.id = p.score_rule_id
+       WHERE p.id = $1`,
+      [id]
+    );
+
+    if (progRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Competition not found.' });
+    }
+    const program = progRes.rows[0];
+
+    const participantSchema = z.object({
+      student_name: z.string().min(1),
+      student_id: z.string().uuid().optional().nullable(),
+      class_code: z.enum(['01', '02', '03', '04', '05', '06', '07', '08']),
+      mark: z.number().min(0),
+      winner_poster_url: z.string().optional().default(''),
+      certificate_url: z.string().optional().default(''),
+    });
+
+    const bodySchema = z.object({
+      participants: z.array(participantSchema),
+      winner_poster_url: z.string().optional(),
+    });
+
+    const parsed = bodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const { participants, winner_poster_url } = parsed.data;
+
+    const sorted = [...participants].sort((a, b) => b.mark - a.mark);
+    const firstPts = program.first_points ?? 10;
+    const secondPts = program.second_points ?? 7;
+    const thirdPts = program.third_points ?? 5;
+    const partPts = program.participation_points ?? 1;
+
+    const calculated = sorted.map((p, idx) => {
+      let position = 0;
+      let points = partPts;
+      if (idx === 0) {
+        position = 1;
+        points = firstPts;
+      } else if (idx === 1) {
+        position = 2;
+        points = secondPts;
+      } else if (idx === 2) {
+        position = 3;
+        points = thirdPts;
+      }
+      return { ...p, position, class_points: points };
+    });
+
+    await query('DELETE FROM program_results WHERE program_id = $1', [id]);
+
+    for (const p of calculated) {
+      await query(
+        `INSERT INTO program_results (program_id, student_id, student_name, class_code, mark, position, class_points, winner_poster_url, certificate_url, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          id,
+          p.student_id || null,
+          p.student_name,
+          p.class_code,
+          p.mark,
+          p.position,
+          p.class_points,
+          p.winner_poster_url || winner_poster_url || '',
+          p.certificate_url || '',
+          program.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT',
+        ]
+      );
+    }
+
+    if (winner_poster_url !== undefined) {
+      await query('UPDATE programs SET winner_poster_url = $1 WHERE id = $2', [winner_poster_url, id]);
+    }
+
+    res.json({
+      success: true,
+      data: calculated,
+      message: 'Student marks and certificate links recorded successfully.',
+    });
+  } catch (error) {
+    console.error('Save competition results error:', error);
+    res.status(500).json({ success: false, error: 'Failed to record student results.' });
+  }
+});
+
+// 5. Publish Main Committee Competition (Atomic Dual Scoring + Certificate Generation)
+router.post('/competitions/:id/publish', async (_req, res) => {
+  const client = await getClient();
+  try {
+    const { id } = _req.params;
+    const progRes = await client.query('SELECT * FROM programs WHERE id = $1', [id]);
+    if (progRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Competition not found.' });
+    }
+    const program = progRes.rows[0];
+
+    await client.query('BEGIN');
+
+    // Update program & results status
+    await client.query(
+      `UPDATE programs SET status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [id]
+    );
+    await client.query(
+      `UPDATE program_results SET status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE program_id = $1`,
+      [id]
+    );
+
+    // Double-count protection: clear prior ledger entries
+    await client.query(
+      `DELETE FROM class_score_ledger WHERE source_type = 'MAIN_COMMITTEE_PROGRAM' AND source_id = $1`,
+      [id]
+    );
+
+    // Insert new entries into class_score_ledger
+    const results = await client.query(
+      `SELECT * FROM program_results WHERE program_id = $1 AND class_points > 0`,
+      [id]
+    );
+
+    for (const r of results.rows) {
+      const positionLabel = r.position === 1 ? '1st Place' : r.position === 2 ? '2nd Place' : r.position === 3 ? '3rd Place' : 'Participant';
+      const desc = `${program.title} (Main Committee) — ${r.student_name} (${positionLabel})`;
+
+      await client.query(
+        `INSERT INTO class_score_ledger (class_code, source_type, source_id, points, description)
+         VALUES ($1, 'MAIN_COMMITTEE_PROGRAM', $2, $3, $4)`,
+        [r.class_code, id, r.class_points, desc]
+      );
+
+      // Auto-issue verified certificate record if certificate_url is attached
+      if (r.certificate_url && r.certificate_url.trim().length > 0) {
+        const certId = r.certificate_id || `SADQ-2026-CERT-${r.id.substring(0, 8).toUpperCase()}`;
+        const certTitle = `${program.title} — ${positionLabel}`;
+
+        await client.query(
+          `INSERT INTO certificate_records (certificate_id, recipient_name, recipient_user_id, title, issue_date, issuer, verification_status, external_reference_url, program_id, position, class_code)
+           VALUES ($1, $2, $3, $4, CURRENT_DATE, 'SADQ Central Committee', 'VERIFIED', $5, $6, $7, $8)
+           ON CONFLICT (certificate_id) DO UPDATE
+           SET external_reference_url = EXCLUDED.external_reference_url,
+               recipient_user_id = EXCLUDED.recipient_user_id,
+               title = EXCLUDED.title`,
+          [certId, r.student_name, r.student_id || null, certTitle, r.certificate_url, id, r.position, r.class_code]
+        );
+
+        await client.query(
+          `UPDATE program_results SET certificate_id = $1 WHERE id = $2`,
+          [certId, r.id]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: '✅ Main Committee competition published! Class scores, student points, and certificates updated live.',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Publish competition error:', error);
+    res.status(500).json({ success: false, error: 'Failed to publish competition.' });
+  } finally {
+    client.release();
+  }
+});
+
+// 6. Delete Main Committee Competition
+router.delete('/competitions/:id', async (req, res) => {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+    await client.query('BEGIN');
+    await client.query('DELETE FROM class_score_ledger WHERE source_type = \'MAIN_COMMITTEE_PROGRAM\' AND source_id = $1', [id]);
+    await client.query('DELETE FROM certificate_records WHERE program_id = $1', [id]);
+    await client.query('DELETE FROM programs WHERE id = $1', [id]);
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Competition deleted successfully.' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Delete competition error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete competition.' });
+  } finally {
+    client.release();
+  }
+});
+
+// ==================================================
+// OFFICIAL CERTIFICATES REGISTRY
+// ==================================================
+
+// 7. List All Issued Certificates
+router.get('/certificates', async (req, res) => {
+  try {
+    const search = req.query.search as string;
+    let queryStr = `
+      SELECT cr.*, u.username, sp.class_code as student_class, sp.profile_slug
+      FROM certificate_records cr
+      LEFT JOIN users u ON u.id = cr.recipient_user_id
+      LEFT JOIN student_profiles sp ON sp.user_id = cr.recipient_user_id
+    `;
+    const params: any[] = [];
+    if (search) {
+      params.push(`%${search}%`);
+      queryStr += ` WHERE cr.recipient_name ILIKE $1 OR cr.title ILIKE $1 OR cr.certificate_id ILIKE $1 OR u.username ILIKE $1`;
+    }
+    queryStr += ` ORDER BY cr.issue_date DESC, cr.created_at DESC LIMIT 100`;
+
+    const result = await query(queryStr, params);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch certificates error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch certificates.' });
+  }
+});
+
+// 8. Issue Standalone Certificate
+router.post('/certificates', async (req, res) => {
+  try {
+    const schema = z.object({
+      certificate_id: z.string().min(3),
+      recipient_name: z.string().min(2),
+      recipient_user_id: z.string().uuid().optional().nullable(),
+      title: z.string().min(2),
+      issuer: z.string().default('SADQ Central Committee'),
+      issue_date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+      external_reference_url: z.string().min(5),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `INSERT INTO certificate_records (certificate_id, recipient_name, recipient_user_id, title, issue_date, issuer, verification_status, external_reference_url)
+       VALUES ($1, $2, $3, $4, $5, $6, 'VERIFIED', $7)
+       ON CONFLICT (certificate_id) DO UPDATE
+       SET recipient_name = EXCLUDED.recipient_name,
+           recipient_user_id = EXCLUDED.recipient_user_id,
+           title = EXCLUDED.title,
+           external_reference_url = EXCLUDED.external_reference_url
+       RETURNING *`,
+      [d.certificate_id.trim().toUpperCase(), d.recipient_name, d.recipient_user_id || null, d.title, d.issue_date, d.issuer, d.external_reference_url]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: 'Certificate issued and verified successfully.' });
+  } catch (error) {
+    console.error('Issue certificate error:', error);
+    res.status(500).json({ success: false, error: 'Failed to issue certificate.' });
+  }
+});
+
+// 9. Delete / Revoke Certificate
+router.delete('/certificates/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await query('DELETE FROM certificate_records WHERE certificate_id = $1', [id]);
+    res.json({ success: true, message: 'Certificate revoked and deleted.' });
+  } catch (error) {
+    console.error('Delete certificate error:', error);
+    res.status(500).json({ success: false, error: 'Failed to revoke certificate.' });
+  }
+});
+
 export default router;
 

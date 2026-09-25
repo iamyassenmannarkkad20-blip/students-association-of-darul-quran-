@@ -18,7 +18,7 @@ router.get('/dashboard', async (req: RequestWithUser, res) => {
   try {
     const userId = req.user!.id;
 
-    const [profileRes, talentsRes, skillsRes, achievementsRes, projectsRes, orgRes] =
+    const [profileRes, talentsRes, skillsRes, achievementsRes, projectsRes, orgRes, scoreRes, certsRes] =
       await Promise.all([
         query('SELECT * FROM student_profiles WHERE user_id = $1', [userId]),
         query('SELECT * FROM student_talents WHERE user_id = $1 ORDER BY created_at DESC', [userId]),
@@ -40,6 +40,28 @@ router.get('/dashboard', async (req: RequestWithUser, res) => {
            WHERE m.user_id = $1 AND m.is_active = TRUE`,
           [userId]
         ),
+        query(
+          `WITH all_scores AS (
+            SELECT 
+              u.id as user_id,
+              COALESCE(SUM(pr.class_points), 0)::int as total_points,
+              COUNT(pr.id)::int as events_count,
+              COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as first_places,
+              COUNT(CASE WHEN pr.position = 2 THEN 1 END)::int as second_places,
+              COUNT(CASE WHEN pr.position = 3 THEN 1 END)::int as third_places,
+              DENSE_RANK() OVER (ORDER BY COALESCE(SUM(pr.class_points), 0) DESC, COUNT(CASE WHEN pr.position = 1 THEN 1 END) DESC) as rank
+            FROM users u
+            LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+            WHERE u.is_active = TRUE
+            GROUP BY u.id
+          )
+          SELECT * FROM all_scores WHERE user_id = $1`,
+          [userId]
+        ),
+        query(
+          `SELECT * FROM certificate_records WHERE recipient_user_id = $1 ORDER BY issue_date DESC, created_at DESC LIMIT 5`,
+          [userId]
+        ),
       ]);
 
     const profile = profileRes.rows[0];
@@ -59,12 +81,15 @@ router.get('/dashboard', async (req: RequestWithUser, res) => {
       data: {
         profile,
         completionPercentage: completion,
+        score: scoreRes.rows[0] || { total_points: 0, events_count: 0, first_places: 0, second_places: 0, third_places: 0, rank: 0 },
+        certificates: certsRes.rows,
         counts: {
           talents: talentsRes.rowCount,
           skills: skillsRes.rowCount,
           achievements: achievementsRes.rowCount,
           projects: projectsRes.rowCount,
           activeUnits: orgRes.rowCount,
+          certificates: certsRes.rowCount,
         },
         recentTalents: talentsRes.rows.slice(0, 5),
         recentSkills: skillsRes.rows.slice(0, 8),
@@ -520,6 +545,79 @@ router.get('/my-results', async (req: RequestWithUser, res) => {
   } catch (error) {
     console.error('Fetch my results error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch personal results.' });
+  }
+});
+
+// 11. My Official Certificates Locker
+router.get('/my-certificates', async (req: RequestWithUser, res) => {
+  try {
+    const userId = req.user!.id;
+    const certsRes = await query(
+      `SELECT cr.*, p.title as program_title, p.winner_poster_url
+       FROM certificate_records cr
+       LEFT JOIN programs p ON p.id = cr.program_id
+       WHERE cr.recipient_user_id = $1
+       ORDER BY cr.issue_date DESC, cr.created_at DESC`,
+      [userId]
+    );
+    res.json({ success: true, data: certsRes.rows });
+  } catch (error) {
+    console.error('Fetch my certificates error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load certificates.' });
+  }
+});
+
+// 12. My Performance Score & Competition History
+router.get('/my-score', async (req: RequestWithUser, res) => {
+  try {
+    const userId = req.user!.id;
+    const [scoreRes, eventsRes, certsRes] = await Promise.all([
+      query(
+        `WITH all_scores AS (
+          SELECT 
+            u.id as user_id,
+            COALESCE(SUM(pr.class_points), 0)::int as total_points,
+            COUNT(pr.id)::int as events_count,
+            COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as first_places,
+            COUNT(CASE WHEN pr.position = 2 THEN 1 END)::int as second_places,
+            COUNT(CASE WHEN pr.position = 3 THEN 1 END)::int as third_places,
+            (SELECT COUNT(*)::int FROM certificate_records cr WHERE cr.recipient_user_id = u.id) as certificates_count,
+            DENSE_RANK() OVER (ORDER BY COALESCE(SUM(pr.class_points), 0) DESC, COUNT(CASE WHEN pr.position = 1 THEN 1 END) DESC) as rank
+          FROM users u
+          LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+          WHERE u.is_active = TRUE
+          GROUP BY u.id
+        )
+        SELECT * FROM all_scores WHERE user_id = $1`,
+        [userId]
+      ),
+      query(
+        `SELECT pr.*, p.title as event_title, p.program_date, p.organizer_type,
+                CASE WHEN p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL THEN 'Main Committee' ELSE sw.name END as organizer_name
+         FROM program_results pr
+         JOIN programs p ON p.id = pr.program_id
+         LEFT JOIN sub_wings sw ON sw.id = p.sub_wing_id
+         WHERE pr.student_id = $1 AND pr.status = 'PUBLISHED'
+         ORDER BY pr.published_at DESC, p.program_date DESC`,
+        [userId]
+      ),
+      query(
+        `SELECT * FROM certificate_records WHERE recipient_user_id = $1 ORDER BY issue_date DESC, created_at DESC`,
+        [userId]
+      ),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        score: scoreRes.rows[0] || { total_points: 0, events_count: 0, first_places: 0, second_places: 0, third_places: 0, certificates_count: 0, rank: 0 },
+        events: eventsRes.rows,
+        certificates: certsRes.rows,
+      },
+    });
+  } catch (error) {
+    console.error('Fetch my score error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load score details.' });
   }
 });
 

@@ -17,6 +17,7 @@ import {
   QrCode,
   Globe,
   Share2,
+  Trophy,
 } from 'lucide-react';
 import { InstagramIcon } from '../../components/icons/InstagramIcon';
 import { ShareModal } from '../../components/ShareModal';
@@ -74,7 +75,7 @@ export const PortfolioView: React.FC = () => {
     );
   }
 
-  const { profile, talents, skills, achievements, projects, organisation } = data;
+  const { profile, talents, skills, achievements, projects, organisation, score, honors, certificates } = data;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
@@ -205,7 +206,173 @@ export const PortfolioView: React.FC = () => {
         </div>
       </div>
 
-      {/* Digital Student ID Card Modal */}
+      {/* Academy Performance & Trophy Showcase */}
+      <div className="bg-gradient-to-r from-[#02167f] via-[#031d96] to-[#010e52] rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-[#ffd014]/30 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ffd014] text-[#02167f] text-[10px] font-black uppercase tracking-wider">
+              <Trophy className="w-3 h-3 text-[#02167f]" />
+              <span>SADQ Academy Performance Record</span>
+            </div>
+            <h2 className="font-cinzel text-xl sm:text-2xl font-black text-white">
+              Official Star Score & Trophy Shelf
+            </h2>
+            <p className="text-xs text-blue-100/70">
+              Verified competition points, awards, and contributions to Class {profile.classCode} Championship.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2.5 rounded-2xl bg-white/10 border border-white/15 text-center">
+              <span className="text-[10px] text-amber-200 uppercase font-bold block">Standing</span>
+              <span className="text-xl font-black text-[#ffd014]">
+                {score?.rank ? `Rank #${score.rank}` : 'Unranked'}
+              </span>
+            </div>
+
+            <div className="px-5 py-2.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-center shadow-lg">
+              <span className="text-[10px] uppercase font-black block tracking-wider">Academy Score</span>
+              <span className="text-2xl font-black leading-none">{score?.total_points || 0} PTS</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Trophies & Medal Breakdown */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">🥇</span>
+            <div className="font-black text-lg text-white">{score?.first_places || 0}</div>
+            <span className="text-[10px] font-bold text-amber-300 uppercase">First Prizes</span>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">🥈</span>
+            <div className="font-black text-lg text-white">{score?.second_places || 0}</div>
+            <span className="text-[10px] font-bold text-slate-300 uppercase">Second Prizes</span>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">🥉</span>
+            <div className="font-black text-lg text-white">{score?.third_places || 0}</div>
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Third Prizes</span>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-3 rounded-2xl">
+            <span className="text-xl block mb-1">📜</span>
+            <div className="font-black text-lg text-white">{certificates?.length || 0}</div>
+            <span className="text-[10px] font-bold text-emerald-300 uppercase">Verified Certs</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Verified Certificates Locker Section */}
+      {certificates && certificates.length > 0 && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-md space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Official Credentials</span>
+              </div>
+              <h2 className="font-cinzel text-xl font-bold text-slate-900 mt-0.5">
+                Verified Award Certificates ({certificates.length})
+              </h2>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">
+              Publicly Verified
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {certificates.map((cert: any) => (
+              <div
+                key={cert.certificate_id}
+                className="p-5 rounded-2xl border border-slate-200 hover:border-[#02167f] transition-all bg-gradient-to-br from-white to-slate-50 shadow-sm hover:shadow flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10px] font-black text-[#02167f] bg-navy-50 px-2 py-0.5 rounded border border-navy-200">
+                      {cert.certificate_id}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      <span>{cert.verification_status || 'VERIFIED'}</span>
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-slate-900 text-sm leading-snug">
+                    {cert.title}
+                  </h3>
+
+                  <div className="text-[11px] text-slate-500 space-y-0.5">
+                    <div>Issuer: <strong className="text-slate-700">{cert.issuer}</strong></div>
+                    <div>Issued: <span className="text-slate-600">{new Date(cert.issue_date).toLocaleDateString()}</span></div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  {cert.external_reference_url ? (
+                    <a
+                      href={cert.external_reference_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#02167f] text-[#ffd014] hover:bg-[#0320a6] text-xs font-bold transition-all shadow-sm active:scale-95"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>View & Download Certificate</span>
+                    </a>
+                  ) : (
+                    <span className="text-[11px] text-slate-400">Digital Archive Verified</span>
+                  )}
+
+                  <Link
+                    to={`/certificates`}
+                    className="text-[11px] font-bold text-slate-500 hover:text-[#02167f]"
+                    title="Verify on central registry"
+                  >
+                    Verify Credential →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Competition Honors & Events Won */}
+      {honors && honors.length > 0 && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-5">
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="font-cinzel text-xl font-bold text-slate-900 flex items-center gap-2">
+              <Award className="w-5 h-5 text-amber-500" />
+              <span>Competition Honors & Campus Events ({honors.length})</span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Official places won across Sub-Wing and Main Committee competitions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {honors.map((h: any) => (
+              <div key={h.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                    {h.position === 1 ? '🥇 1st Place' : h.position === 2 ? '🥈 2nd Place' : h.position === 3 ? '🥉 3rd Place' : 'Participant'}
+                  </span>
+                  <span className="text-[11px] font-bold text-[#02167f] bg-navy-50 px-2 py-0.5 rounded">
+                    +{h.class_points} PTS
+                  </span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{h.event_title}</h4>
+                <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-200/60">
+                  <span>{h.organizer_name}</span>
+                  <span>{new Date(h.program_date).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {showIdCard && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-gold-500/40 space-y-6 relative animate-scale-up">
