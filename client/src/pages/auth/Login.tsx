@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Lock, Mail, Sparkles, ArrowRight } from 'lucide-react';
+import { Lock, Mail, Sparkles, ArrowRight, Shield, User, KeyRound } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { login } = useAuth();
@@ -16,14 +16,24 @@ export const Login: React.FC = () => {
     setError(null);
     setLoading(true);
 
-    const res = await login(email, password);
+    const res = await login(email.trim(), password);
     setLoading(false);
 
     if (res.success) {
-      navigate('/student');
+      if (res.user?.role === 'SUPER_ADMIN' || res.user?.role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/student');
+      }
     } else {
-      setError(res.error || 'Invalid credentials.');
+      setError(res.error || 'Invalid credentials. Please verify email and password.');
     }
+  };
+
+  const handleQuickFill = (fillEmail: string, fillPass: string) => {
+    setEmail(fillEmail);
+    setPassword(fillPass);
+    setError(null);
   };
 
   return (
@@ -35,8 +45,34 @@ export const Login: React.FC = () => {
           </div>
           <h1 className="font-cinzel text-2xl font-bold text-navy-900">Sign In to SADQ</h1>
           <p className="text-xs text-slate-500">
-            Access your student growth dashboard & portfolios
+            Access your student growth dashboard & institutional administration
           </p>
+        </div>
+
+        {/* Quick Demo Fill Pills */}
+        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/60 space-y-2">
+          <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+            <KeyRound className="w-3.5 h-3.5 text-gold-600" />
+            Quick Sign In (1-Click Fill):
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => handleQuickFill('foryaseen@gmail.com', '12345678')}
+              className="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-navy-900 text-gold-300 hover:bg-navy-800 transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <Shield className="w-3 h-3 text-gold-400" />
+              <span>Yaseen (Admin)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('admin@sadq.org', 'SadqAdmin@2026')}
+              className="text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-1.5"
+            >
+              <Shield className="w-3 h-3 text-slate-500" />
+              <span>Official Admin</span>
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -56,7 +92,7 @@ export const Login: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="student@example.com"
+                placeholder="foryaseen@gmail.com"
                 required
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-navy-900"
               />

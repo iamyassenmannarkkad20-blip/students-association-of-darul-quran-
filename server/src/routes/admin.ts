@@ -205,4 +205,98 @@ router.patch('/config', async (req, res) => {
   }
 });
 
+// User Management: List all users with student profile and unit memberships
+router.get('/users', async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT u.id, u.email, u.role, u.is_active, u.created_at,
+              sp.full_name, sp.class_code, sp.profile_slug, sp.profile_photo_url,
+              COALESCE(
+                (SELECT json_agg(json_build_object('unit_code', om.unit_code, 'role_in_unit', om.role_in_unit, 'position', om.position))
+                 FROM organisation_memberships om
+                 WHERE om.user_id = u.id AND om.is_active = TRUE),
+                '[]'::json
+              ) as units
+       FROM users u
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       ORDER BY u.created_at DESC`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch users error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load user directory.' });
+  }
+});
+
+// Update User Role
+const roleSchema = z.object({
+  role: z.enum([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.ORGANISATION_ADMIN, ROLES.STUDENT]),
+});
+
+router.patch('/users/:id/role', async (req, res) => {
+  try {
+    const parse = roleSchema.safeParse(req.body);
+    if (!parse.success) {
+      res.status(400).json({ success: false, error: parse.error.errors[0].message });
+      return;
+    }
+    const { role } = parse.data;
+    await query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
+    res.json({ success: true, message: `Role updated to ${role}.` });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update role.' });
+  }
+});
+
+// Assign Student to Official Unit
+const unitAssignSchema = z.object({
+  userId: z.string().uuid(),
+  unitCode: z.enum(['EB', 'IA', 'MPW', 'MB', 'LB', 'RW', 'CS', 'DW', 'LIB', 'SB']),
+  roleInUnit: z.string().default('Member'),
+  position: z.string().optional(),
+});
+
+router.post('/assign-unit', async (req, res) => {
+  try {
+    const parse = unitAssignSchema.safeParse(req.body);
+    if (!parse.success) {
+      res.status(400).json({ success: false, error: parse.error.errors[0].message });
+      return;
+    }
+    const d = parse.data;
+
+    // Insert or update unit membership
+    const result = await query(
+      `INSERT INTO organisation_memberships (user_id, unit_code, role_in_unit, position, is_active)
+       VALUES ($1, $2, $3, $4, TRUE)
+       ON CONFLICT (user_id, unit_code) DO UPDATE
+       SET role_in_unit = EXCLUDED.role_in_unit,
+           position = EXCLUDED.position,
+           is_active = TRUE
+       RETURNING *`,
+      [d.userId, d.unitCode, d.roleInUnit, d.position || null]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: `Assigned to ${d.unitCode} successfully.` });
+  } catch (error) {
+    console.error('Assign unit error:', error);
+    res.status(500).json({ success: false, error: 'Failed to assign unit.' });
+  }
+});
+
+// Update Official Announcement for Home Page Banner
+router.post('/announcement', async (req, res) => {
+  try {
+    const { announcement } = req.body;
+    await query(
+      `UPDATE public_site_config SET announcement = $1, updated_at = CURRENT_TIMESTAMP WHERE id = 1`,
+      [announcement || '']
+    );
+    res.json({ success: true, message: 'Announcement updated successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update announcement.' });
+  }
+});
+
 export default router;
+

@@ -91,6 +91,12 @@ export const Navbar: React.FC = () => {
               Media
             </Link>
             <Link
+              to="/events"
+              className="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors"
+            >
+              Events
+            </Link>
+            <Link
               to="/opportunities"
               className="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors"
             >
@@ -225,6 +231,13 @@ export const Navbar: React.FC = () => {
             className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/5"
           >
             Media & Videos
+          </Link>
+          <Link
+            to="/events"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/5"
+          >
+            Events & Fest
           </Link>
           <Link
             to="/opportunities"

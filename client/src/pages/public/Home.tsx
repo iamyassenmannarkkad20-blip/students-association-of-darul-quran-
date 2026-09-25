@@ -13,6 +13,7 @@ import {
   FileText,
   ShieldCheck,
   Video,
+  Megaphone,
 } from 'lucide-react';
 
 interface Unit {
@@ -34,7 +35,9 @@ export const Home: React.FC = () => {
   const [units, setUnits] = useState<Unit[]>([]);
   const [magazines, setMagazines] = useState<any[]>([]);
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
+  const [announcement, setAnnouncement] = useState('');
   const [loading, setLoading] = useState(true);
+
 
   // Helper to extract YouTube video ID from any YouTube URL (shorts, live, watch)
   const getYouTubeEmbedUrl = (url: string) => {
@@ -60,14 +63,16 @@ export const Home: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const [uRes, mRes, medRes] = await Promise.all([
+        const [uRes, mRes, medRes, confRes] = await Promise.all([
           apiRequest<Unit[]>('/public/units'),
           apiRequest<any[]>('/public/magazines'),
           apiRequest<MediaItem[]>('/public/media'),
+          apiRequest<any>('/public/config'),
         ]);
         if (uRes.success && uRes.data) setUnits(uRes.data);
         if (mRes.success && mRes.data) setMagazines(mRes.data);
         if (medRes.success && medRes.data) setMediaList(medRes.data);
+        if (confRes.success && confRes.data?.announcement) setAnnouncement(confRes.data.announcement);
       } catch (err) {
         console.error(err);
       } finally {
@@ -96,6 +101,14 @@ export const Home: React.FC = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold-500/15 via-transparent to-transparent pointer-events-none" />
 
         <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
+          {/* Live Official Announcement Banner */}
+          {announcement && (
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-gold-500/20 via-amber-400/15 to-gold-500/20 border border-gold-400/50 text-gold-200 text-xs sm:text-sm font-semibold shadow-lg shadow-gold-500/10 animate-fade-in max-w-3xl mx-auto">
+              <Megaphone className="w-4 h-4 text-gold-400 shrink-0 animate-bounce" />
+              <span>{announcement}</span>
+            </div>
+          )}
+
           {/* Official Royal Seal / Insignia */}
           <div className="flex flex-col items-center justify-center animate-fade-in">
             <div className="relative group">

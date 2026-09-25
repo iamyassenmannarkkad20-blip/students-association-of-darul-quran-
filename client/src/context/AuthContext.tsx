@@ -14,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   profile: any | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
   register: (
     fullName: string,
     email: string,
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (res.success && res.data) {
       setUser(res.data.user);
       await refreshUser();
-      return { success: true };
+      return { success: true, user: res.data.user };
     }
 
     return { success: false, error: res.error || 'Login failed.' };

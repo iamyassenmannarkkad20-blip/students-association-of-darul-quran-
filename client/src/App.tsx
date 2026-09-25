@@ -16,6 +16,8 @@ import { ServicesMarketplace } from './pages/public/ServicesMarketplace';
 import { Certificates } from './pages/public/Certificates';
 import { PortfolioView } from './pages/public/PortfolioView';
 import { TalentDiscovery } from './pages/public/TalentDiscovery';
+import { Events } from './pages/public/Events';
+
 
 // Auth
 import { Login } from './pages/auth/Login';
@@ -76,6 +78,7 @@ export const App: React.FC = () => {
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/portfolio/:slug" element={<PortfolioView />} />
               <Route path="/explore" element={<TalentDiscovery />} />
+              <Route path="/events" element={<Events />} />
 
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />

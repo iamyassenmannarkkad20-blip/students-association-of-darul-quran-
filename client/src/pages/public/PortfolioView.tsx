@@ -11,6 +11,10 @@ import {
   MessageSquare,
   Mail,
   ExternalLink,
+  Printer,
+  X,
+  ShieldCheck,
+  QrCode,
 } from 'lucide-react';
 
 export const PortfolioView: React.FC = () => {
@@ -18,6 +22,8 @@ export const PortfolioView: React.FC = () => {
   const [data, setData] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showIdCard, setShowIdCard] = useState(false);
+
 
   useEffect(() => {
     async function loadPortfolio() {
@@ -140,10 +146,113 @@ export const PortfolioView: React.FC = () => {
                   <span>Send Email</span>
                 </a>
               )}
+
+              {/* Digital Student ID Card Trigger */}
+              <button
+                type="button"
+                onClick={() => setShowIdCard(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-400 hover:bg-gold-300 text-navy-950 text-xs font-bold shadow-sm transition-colors"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Digital Student ID Card</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Digital Student ID Card Modal */}
+      {showIdCard && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-gold-500/40 space-y-6 relative animate-scale-up">
+            <button
+              onClick={() => setShowIdCard(false)}
+              className="absolute right-4 top-4 p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Aesthetic Navy & Gold Student ID Badge */}
+            <div className="rounded-2xl bg-gradient-to-b from-[#0B1B3D] via-[#0E234E] to-[#071026] text-white p-6 border-2 border-gold-400 shadow-xl relative overflow-hidden">
+              {/* Subtle watermark */}
+              <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none">
+                <ShieldCheck className="w-48 h-48 text-gold-400" />
+              </div>
+
+              {/* Academy Header */}
+              <div className="text-center pb-4 border-b border-gold-500/30 space-y-1">
+                <span className="text-[9px] uppercase font-bold tracking-widest text-gold-400 block">
+                  Students Association of Darul Quran
+                </span>
+                <h4 className="font-cinzel text-xs font-extrabold tracking-wider text-white">
+                  STUDENT IDENTITY CARD
+                </h4>
+              </div>
+
+              {/* Photo & Details */}
+              <div className="pt-4 flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-gold-400 bg-navy-950 shrink-0 flex items-center justify-center">
+                  {profile.profilePhotoUrl ? (
+                    <img src={profile.profilePhotoUrl} alt={profile.fullName} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8 text-gold-300" />
+                  )}
+                </div>
+
+                <div className="space-y-1 min-w-0">
+                  <h3 className="font-bold text-sm text-white truncate">{profile.fullName}</h3>
+                  <div className="inline-block px-2 py-0.5 rounded bg-gold-500/20 border border-gold-500/40 text-gold-300 text-[10px] font-bold">
+                    Class {profile.classCode}
+                  </div>
+                  <p className="text-[10px] text-slate-400 truncate">ID: {profile.profileSlug}</p>
+                </div>
+              </div>
+
+              {/* Assigned Units */}
+              {organisation && organisation.length > 0 && (
+                <div className="pt-3 mt-3 border-t border-gold-500/20">
+                  <span className="text-[9px] text-gold-400 font-semibold uppercase block mb-1">Official Wings:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {organisation.map((org: any) => (
+                      <span key={org.unit_code} className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-slate-200">
+                        {org.unit_code} ({org.position || org.role_in_unit})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Verification Stamp */}
+              <div className="mt-4 pt-3 border-t border-gold-500/30 flex items-center justify-between text-[9px] text-slate-400">
+                <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  VERIFIED STUDENT
+                </span>
+                <span>SADQ Official</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 rounded-xl bg-navy-900 text-gold-300 font-bold text-xs hover:bg-navy-800 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print / Save ID</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowIdCard(false)}
+                className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grid: Talents & Skills */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
