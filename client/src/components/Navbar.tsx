@@ -27,17 +27,24 @@ import {
   Layers,
   Crown,
   Search,
+  LayoutGrid,
 } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
 import { NotificationCenter } from './NotificationCenter';
+import { SideNavHub } from './SideNavHub';
+import { UserProfileDrawer } from './UserProfileDrawer';
 
 export const Navbar: React.FC = () => {
-  const { user, profile, assignedSubWings, logout } = useAuth();
+  const { user, profile, assignedSubWings, assignedClassUnion, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Command Palette State (Ctrl + K)
   const [commandOpen, setCommandOpen] = useState(false);
+
+  // Side Drawers State (Full-height organized side menus)
+  const [sideNavHubOpen, setSideNavHubOpen] = useState(false);
+  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
 
   // Desktop Dropdown State ('explore' | 'results' | 'opportunities' | 'mysadq' | 'admin' | null)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -176,8 +183,8 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* DESKTOP PRIMARY NAVIGATION (5-7 Items Only) */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-xs font-bold text-slate-200">
+          {/* DESKTOP PRIMARY NAVIGATION */}
+          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2 text-xs font-bold text-slate-200">
             {/* 1. HOME */}
             <Link
               to="/"
@@ -190,218 +197,36 @@ export const Navbar: React.FC = () => {
               HOME
             </Link>
 
-            {/* 2. EXPLORE DROPDOWN */}
-            <div className="relative">
-              <button
-                onClick={() => toggleDropdown('explore')}
-                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeDropdown === 'explore' ||
-                  ['/about', '/organisation', '/explore', '/events', '/library', '/magazines', '/media'].includes(
-                    location.pathname
-                  )
-                    ? 'text-[#ffd014] bg-white/10'
-                    : 'hover:text-[#ffd014] hover:bg-white/5'
-                }`}
-              >
-                <span>EXPLORE</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    activeDropdown === 'explore' ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
+            {/* 2. CHAMPIONSHIP LEADERBOARD */}
+            <Link
+              to="/class-leaderboard"
+              className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
+                location.pathname === '/class-leaderboard'
+                  ? 'text-[#ffd014] bg-white/10'
+                  : 'hover:text-[#ffd014] hover:bg-white/5'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 text-[#ffd014]" />
+              <span>CHAMPIONSHIP</span>
+            </Link>
 
-              {activeDropdown === 'explore' && (
-                <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-[#01092e] border border-[#ffd014]/30 shadow-2xl p-2 z-50 text-xs space-y-0.5 backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-                  <Link
-                    to="/about"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <BookOpen className="w-4 h-4 text-[#ffd014]" />
-                    <div>
-                      <div className="font-bold">About SADQ</div>
-                      <span className="text-[10px] text-slate-400">History & Leadership</span>
-                    </div>
-                  </Link>
+            {/* 3. RESULTS */}
+            <Link
+              to="/results"
+              className={`px-3 py-2 rounded-xl transition-all ${
+                location.pathname === '/results'
+                  ? 'text-[#ffd014] bg-white/10'
+                  : 'hover:text-[#ffd014] hover:bg-white/5'
+              }`}
+            >
+              RESULTS
+            </Link>
 
-                  <Link
-                    to="/organisation"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Shield className="w-4 h-4 text-blue-400" />
-                    <div>
-                      <div className="font-bold">10 Official Units</div>
-                      <span className="text-[10px] text-slate-400">CS, DW, EB, IA, LB, etc.</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/explore"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#ffd014]" />
-                    <div>
-                      <div className="font-bold flex items-center gap-1.5">
-                        <span>Talents & Peer Connect</span>
-                        <span className="text-[9px] font-black uppercase px-1.5 py-0.2 bg-[#ffd014] text-[#02167f] rounded">New</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400">All Student Profiles, Skills & WhatsApp</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/events"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Calendar className="w-4 h-4 text-emerald-400" />
-                    <div>
-                      <div className="font-bold">Events & Fest</div>
-                      <span className="text-[10px] text-slate-400">Programs & Calendar</span>
-                    </div>
-                  </Link>
-
-                  <div className="h-px bg-white/10 my-1" />
-
-                  <Link
-                    to="/library"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <BookOpen className="w-4 h-4 text-indigo-400" />
-                    <div>
-                      <div className="font-bold">Digital Library</div>
-                      <span className="text-[10px] text-slate-400">Academic & Islamic Texts</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/magazines"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <FileText className="w-4 h-4 text-rose-400" />
-                    <div>
-                      <div className="font-bold">Magazines & Releases</div>
-                      <span className="text-[10px] text-slate-400">Publications & Periodicals</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/media"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Video className="w-4 h-4 text-red-500" />
-                    <div>
-                      <div className="font-bold">Media & Broadcasts</div>
-                      <span className="text-[10px] text-slate-400">Official YouTube Streams</span>
-                    </div>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* 3. RESULTS DROPDOWN */}
-            <div className="relative">
-              <button
-                onClick={() => toggleDropdown('results')}
-                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeDropdown === 'results' ||
-                  ['/results', '/class-leaderboard', '/certificates'].includes(location.pathname) ||
-                  location.pathname.startsWith('/class/')
-                    ? 'text-[#ffd014] bg-white/10'
-                    : 'hover:text-[#ffd014] hover:bg-white/5'
-                }`}
-              >
-                <span>RESULTS</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    activeDropdown === 'results' ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {activeDropdown === 'results' && (
-                <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-[#01092e] border border-[#ffd014]/30 shadow-2xl p-2 z-50 text-xs space-y-0.5 backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-                  <Link
-                    to="/results"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Award className="w-4 h-4 text-[#ffd014]" />
-                    <div>
-                      <div className="font-bold">Competition Results</div>
-                      <span className="text-[10px] text-slate-400">Published program honors</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/class-leaderboard"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Trophy className="w-4 h-4 text-amber-400" />
-                    <div>
-                      <div className="font-bold">Class Championship Leaderboard</div>
-                      <span className="text-[10px] text-slate-400">Live rankings (Classes 01-08)</span>
-                    </div>
-                  </Link>
-
-                  <div className="h-px bg-white/10 my-1" />
-
-                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Class Portfolios (01 - 08)
-                  </div>
-                  <div className="grid grid-cols-4 gap-1 px-2 pb-1">
-                    {(['01', '02', '03', '04', '05', '06', '07', '08'] as const).map((c) => (
-                      <Link
-                        key={c}
-                        to={`/class/${c}`}
-                        className="py-1 text-center font-bold text-[11px] rounded-lg bg-white/5 hover:bg-white/15 text-white transition-colors"
-                      >
-                        Cl. {c}
-                      </Link>
-                    ))}
-                  </div>
-
-                  <div className="h-px bg-white/10 my-1" />
-
-                  <Link
-                    to="/class-unions"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Users className="w-4 h-4 text-blue-400" />
-                    <div>
-                      <div className="font-bold">8 Class Sangadhanakal</div>
-                      <span className="text-[10px] text-slate-400">Batch unions & student leaders</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/alumni"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Award className="w-4 h-4 text-emerald-400" />
-                    <div>
-                      <div className="font-bold">Alumni Directory</div>
-                      <span className="text-[10px] text-slate-400">Distinguished graduates</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/certificates"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <div>
-                      <div className="font-bold">Verify Certificate</div>
-                      <span className="text-[10px] text-slate-400">Official authentications</span>
-                    </div>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* 4. COMMUNITY (Direct link) */}
+            {/* 4. COMMUNITY */}
             <Link
               to="/community"
               className={`px-3 py-2 rounded-xl transition-all ${
-                location.pathname === '/community'
+                location.pathname.startsWith('/community')
                   ? 'text-[#ffd014] bg-white/10'
                   : 'hover:text-[#ffd014] hover:bg-white/5'
               }`}
@@ -409,293 +234,72 @@ export const Navbar: React.FC = () => {
               COMMUNITY
             </Link>
 
-            {/* 5. OPPORTUNITIES DROPDOWN */}
-            <div className="relative">
-              <button
-                onClick={() => toggleDropdown('opportunities')}
-                className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeDropdown === 'opportunities' ||
-                  ['/opportunities', '/services'].includes(location.pathname)
-                    ? 'text-[#ffd014] bg-white/10'
-                    : 'hover:text-[#ffd014] hover:bg-white/5'
-                }`}
-              >
-                <span>OPPORTUNITIES</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    activeDropdown === 'opportunities' ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {activeDropdown === 'opportunities' && (
-                <div className="absolute top-full left-0 mt-2 w-60 rounded-2xl bg-[#01092e] border border-[#ffd014]/30 shadow-2xl p-2 z-50 text-xs space-y-0.5 backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-                  <Link
-                    to="/opportunities"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Briefcase className="w-4 h-4 text-amber-400" />
-                    <div>
-                      <div className="font-bold">Jobs & Opportunities</div>
-                      <span className="text-[10px] text-slate-400">Internships & Listings</span>
-                    </div>
-                  </Link>
-
-                  <Link
-                    to="/services"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <Layers className="w-4 h-4 text-blue-400" />
-                    <div>
-                      <div className="font-bold">Services & Marketplace</div>
-                      <span className="text-[10px] text-slate-400">Student Talents & Projects</span>
-                    </div>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* 6. MY SADQ DROPDOWN (Authenticated Users Only) */}
-            {user && (
-              <div className="relative">
-                <button
-                  onClick={() => toggleDropdown('mysadq')}
-                  className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all font-bold ${
-                    activeDropdown === 'mysadq' || location.pathname.startsWith('/student')
-                      ? 'text-[#ffd014] bg-white/10'
-                      : 'hover:text-[#ffd014] hover:bg-white/5'
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-[#ffd014]" />
-                  <span>MY SADQ</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'mysadq' ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {activeDropdown === 'mysadq' && (
-                  <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-[#01092e] border border-[#ffd014]/30 shadow-2xl p-2 z-50 text-xs space-y-0.5 backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-                    <Link
-                      to="/student"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-[#ffd014]" />
-                      <div className="font-bold">Student Dashboard</div>
-                    </Link>
-
-                    <Link
-                      to="/student/profile"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <FolderPlus className="w-4 h-4 text-slate-400" />
-                      <div>Edit Profile & Privacy</div>
-                    </Link>
-
-                    <Link
-                      to="/student/results"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <Trophy className="w-4 h-4 text-emerald-400" />
-                      <div>
-                        <div className="font-bold">My Honors & Class Points</div>
-                        <span className="text-[10px] text-slate-400">Competition records</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/student/create"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <PlusCircle className="w-4 h-4 text-amber-400" />
-                      <div>Create Center (Posts & Notes)</div>
-                    </Link>
-
-                    <div className="h-px bg-white/10 my-1" />
-
-                    <div className="grid grid-cols-2 gap-1 px-1">
-                      <Link
-                        to="/student/talents"
-                        className="px-2 py-1.5 rounded-lg text-slate-300 hover:bg-white/10 text-[11px]"
-                      >
-                        • My Talents
-                      </Link>
-                      <Link
-                        to="/student/skills"
-                        className="px-2 py-1.5 rounded-lg text-slate-300 hover:bg-white/10 text-[11px]"
-                      >
-                        • My Skills
-                      </Link>
-                      <Link
-                        to="/student/achievements"
-                        className="px-2 py-1.5 rounded-lg text-slate-300 hover:bg-white/10 text-[11px]"
-                      >
-                        • Achievements
-                      </Link>
-                      <Link
-                        to="/student/projects"
-                        className="px-2 py-1.5 rounded-lg text-slate-300 hover:bg-white/10 text-[11px]"
-                      >
-                        • Projects
-                      </Link>
-                    </div>
-
-                    {profile?.profile_slug && (
-                      <>
-                        <div className="h-px bg-white/10 my-1" />
-                        <Link
-                          to={`/portfolio/${profile.profile_slug}`}
-                          className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#ffd014]/15 text-[#ffd014] font-bold"
-                        >
-                          <span>Public Portfolio</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 7. ADMIN DROPDOWN (Authorized Admins Only) */}
-            {isAdmin && (
-              <div className="relative">
-                <button
-                  onClick={() => toggleDropdown('admin')}
-                  className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all font-bold ${
-                    activeDropdown === 'admin' || location.pathname === '/admin'
-                      ? 'text-[#ffd014] bg-[#ffd014]/20 border border-[#ffd014]/50'
-                      : 'hover:text-[#ffd014] hover:bg-white/5'
-                  }`}
-                >
-                  <Shield className="w-3.5 h-3.5 text-[#ffd014]" />
-                  <span>ADMIN</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'admin' ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {activeDropdown === 'admin' && (
-                  <div className="absolute top-full right-0 mt-2 w-64 rounded-2xl bg-[#01092e] border border-[#ffd014]/40 shadow-2xl p-2 z-50 text-xs space-y-0.5 backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <Crown className="w-4 h-4 text-amber-400" />
-                      <div>
-                        <div className="font-bold">Admin Suite Dashboard</div>
-                        <span className="text-[10px] text-slate-400">Central controls</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <Trophy className="w-4 h-4 text-[#ffd014]" />
-                      <div>Class Tasks & Scores</div>
-                    </Link>
-
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <Award className="w-4 h-4 text-blue-400" />
-                      <div>10 Sub-Wings Leadership</div>
-                    </Link>
-
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <Video className="w-4 h-4 text-red-500" />
-                      <div>Media & Broadcasts</div>
-                    </Link>
-
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <Users className="w-4 h-4 text-slate-300" />
-                      <div>Students, Roles & Moderation</div>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* 5. SIDE NAVIGATION HUB TRIGGER (All Wings, Library, Talents, Resources) */}
+            <button
+              onClick={() => setSideNavHubOpen(true)}
+              className="px-3.5 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-white/10 to-[#ffd014]/15 hover:from-[#ffd014]/25 hover:to-white/20 text-[#ffd014] border border-[#ffd014]/30 hover:border-[#ffd014]/60 transition-all shadow-sm group"
+              title="Open Campus Navigation Hub (All 10 Wings, Classes, Library, Talents)"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-[#ffd014] group-hover:rotate-12 transition-transform" />
+              <span className="font-extrabold tracking-wide uppercase text-[11px]">Campus Hub</span>
+              <span className="px-1.5 py-0.2 text-[9px] bg-[#ffd014] text-[#02167f] font-black rounded-full">
+                10 Wings
+              </span>
+            </button>
           </nav>
 
           {/* RIGHT SIDE HEADER: COMPACT CONTROLS */}
-          <div className="hidden sm:flex items-center gap-2.5">
+          <div className="hidden sm:flex items-center gap-2">
+            {/* Global Search Spotlight (Ctrl + K) */}
+            <button
+              onClick={() => setCommandOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white border border-white/15 text-xs transition-all shadow-inner group"
+              title="Search SADQ (Ctrl + K)"
+            >
+              <Search className="w-3.5 h-3.5 text-gold-400 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 text-[11px] font-medium hidden xl:inline">Search</span>
+              <kbd className="text-[10px] font-bold text-gold-300 bg-navy-950/80 px-1.5 py-0.5 rounded border border-gold-400/30">
+                Ctrl K
+              </kbd>
+            </button>
+
+            {/* Live Campus Notifications Center */}
+            <NotificationCenter />
+
             {user ? (
               <div className="flex items-center gap-2">
-                {/* Live Campus Notifications Center */}
-                <NotificationCenter />
-
-                {/* Admin Quick Suite Pill (For Admin users) */}
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#ffd014]/20 text-[#ffd014] border border-[#ffd014]/40 rounded-xl hover:bg-[#ffd014]/30 transition-all shadow-sm"
-                    title="Admin Control Suite"
-                  >
-                    <Crown className="w-3.5 h-3.5 text-[#ffd014]" />
-                    <span>Admin Suite</span>
-                  </Link>
-                )}
-
-                {/* Dual Profile: Wing Leadership Portal Pill */}
-                {hasSubWingAccess && (
-                  <Link
-                    to="/subwing"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm ${
-                      location.pathname.startsWith('/subwing')
-                        ? 'bg-[#ffd014] text-[#02167f] ring-2 ring-[#ffd014]/60 font-black shadow-md'
-                        : 'bg-amber-400/20 text-[#ffd014] border border-[#ffd014]/40 hover:bg-amber-400/30'
-                    }`}
-                    title="Sub-Wing Operations Portal"
-                  >
-                    <Award className="w-3.5 h-3.5" />
-                    <span>
-                      {assignedSubWings && assignedSubWings[0]
-                        ? `${assignedSubWings[0].code} Portal`
-                        : 'Wing Portal'}
-                    </span>
-                  </Link>
-                )}
-
-                {/* Dual Profile: Student Workspace Profile Pill */}
-                <Link
-                  to="/student"
-                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm ${
-                    location.pathname.startsWith('/student')
-                      ? 'bg-[#02167f] text-[#ffd014] border-2 border-[#ffd014]/80 ring-1 ring-[#ffd014]/40'
-                      : 'bg-[#010a38] text-white border border-slate-700/60 hover:border-[#ffd014]'
+                {/* User Profile & Portals Drawer Trigger */}
+                <button
+                  onClick={() => setProfileDrawerOpen(true)}
+                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm border ${
+                    isAdmin
+                      ? 'bg-[#010a38] text-white border-[#ffd014]/60 hover:bg-[#02167f]'
+                      : 'bg-[#010a38] text-white border-slate-700/60 hover:border-[#ffd014]'
                   }`}
-                  title="My Student Growth Dashboard"
+                  title="Open User Profile and Leadership Portals"
                 >
                   {profile?.profile_photo_url ? (
                     <img
                       src={profile.profile_photo_url}
                       alt={user.fullName}
-                      className="w-5 h-5 rounded-full object-cover"
+                      className="w-5 h-5 rounded-full object-cover ring-1 ring-[#ffd014]/50"
                     />
                   ) : (
                     <User className="w-3.5 h-3.5 text-[#ffd014]" />
                   )}
-                  <span>{user.username ? `@${user.username}` : user.fullName.split(' ')[0]}</span>
-                </Link>
-
-                {/* Logout Button */}
-                <button
-                  onClick={handleLogout}
-                  title="Sign Out"
-                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-white/10 rounded-xl transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
+                  <span className="max-w-[90px] truncate">
+                    {user.username ? `@${user.username}` : user.fullName.split(' ')[0]}
+                  </span>
+                  {isAdmin && (
+                    <span className="px-1.5 py-0.5 text-[9px] bg-[#ffd014] text-[#02167f] font-black rounded-md">
+                      Admin
+                    </span>
+                  )}
+                  {!isAdmin && hasSubWingAccess && (
+                    <span className="px-1.5 py-0.5 text-[9px] bg-blue-500/20 text-blue-300 font-bold rounded-md border border-blue-400/30">
+                      Wing
+                    </span>
+                  )}
                 </button>
               </div>
             ) : (
@@ -714,23 +318,19 @@ export const Navbar: React.FC = () => {
                 </Link>
               </div>
             )}
-
-            {/* Desktop Search Spotlight Trigger Button (Ctrl + K) */}
-            <button
-              onClick={() => setCommandOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white border border-white/15 text-xs transition-all shadow-inner group ml-1"
-              title="Search SADQ (Ctrl + K)"
-            >
-              <Search className="w-3.5 h-3.5 text-gold-400 group-hover:scale-110 transition-transform" />
-              <span className="text-slate-300 text-[11px] font-medium hidden xl:inline">Search</span>
-              <kbd className="text-[10px] font-bold text-gold-300 bg-navy-950/80 px-1.5 py-0.5 rounded border border-gold-400/30">
-                Ctrl K
-              </kbd>
-            </button>
           </div>
 
           {/* MOBILE HAMBURGER & SEARCH BUTTONS */}
           <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Campus Hub Button */}
+            <button
+              onClick={() => setSideNavHubOpen(true)}
+              className="p-2 rounded-xl bg-white/10 text-[#ffd014] hover:bg-white/20 transition-colors"
+              title="Campus Hub (10 Wings & Sections)"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+
             {/* Mobile Search Button */}
             <button
               onClick={() => setCommandOpen(true)}
@@ -1148,6 +748,19 @@ export const Navbar: React.FC = () => {
 
       {/* Global Command Palette Modal (Ctrl + K) */}
       <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
+          {/* Side Navigation Hub Drawer (Campus Sections, 10 Wings, Championship, Resources) */}
+      <SideNavHub isOpen={sideNavHubOpen} onClose={() => setSideNavHubOpen(false)} />
+
+      {/* User Profile & Leadership Workspace Drawer */}
+      <UserProfileDrawer
+        isOpen={profileDrawerOpen}
+        onClose={() => setProfileDrawerOpen(false)}
+        user={user}
+        profile={profile}
+        assignedSubWings={assignedSubWings || []}
+        assignedClassUnion={assignedClassUnion}
+        onLogout={handleLogout}
+      />
     </header>
   );
 };
