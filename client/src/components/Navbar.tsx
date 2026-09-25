@@ -361,6 +361,28 @@ export const Navbar: React.FC = () => {
                   <div className="h-px bg-white/10 my-1" />
 
                   <Link
+                    to="/class-unions"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <Users className="w-4 h-4 text-blue-400" />
+                    <div>
+                      <div className="font-bold">8 Class Sangadhanakal</div>
+                      <span className="text-[10px] text-slate-400">Batch unions & student leaders</span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/alumni"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <Award className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <div className="font-bold">Alumni Directory</div>
+                      <span className="text-[10px] text-slate-400">Distinguished graduates</span>
+                    </div>
+                  </Link>
+
+                  <Link
                     to="/certificates"
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
                   >
@@ -872,6 +894,20 @@ export const Navbar: React.FC = () => {
                       className="block p-2 rounded-lg hover:bg-white/10 font-semibold text-[#ffd014]"
                     >
                       🥇 Class Championship Leaderboard
+                    </Link>
+                    <Link
+                      to="/class-unions"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block p-2 rounded-lg hover:bg-white/10"
+                    >
+                      👥 8 Class Sangadhanakal
+                    </Link>
+                    <Link
+                      to="/alumni"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block p-2 rounded-lg hover:bg-white/10"
+                    >
+                      🎓 Alumni Directory
                     </Link>
                     <Link
                       to="/certificates"

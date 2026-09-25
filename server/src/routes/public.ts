@@ -477,5 +477,49 @@ router.get('/students', async (req, res) => {
   }
 });
 
+// ==================================================
+// Public Alumni Directory (Graduated Scholars)
+// ==================================================
+router.get('/alumni', async (_req, res) => {
+  try {
+    const result = await query(`
+      SELECT 
+        u.id as user_id,
+        u.username,
+        sp.full_name,
+        sp.profile_slug,
+        sp.profile_photo_url,
+        sp.graduation_year,
+        sp.bio,
+        COALESCE(
+          (SELECT json_agg(json_build_object('name', sk.name, 'level', sk.level, 'category', sk.category))
+           FROM student_skills sk
+           WHERE sk.user_id = u.id),
+          '[]'::json
+        ) as skills,
+        COALESCE(
+          (SELECT json_agg(json_build_object('title', t.title, 'category', t.category))
+           FROM student_talents t
+           WHERE t.user_id = u.id),
+          '[]'::json
+        ) as talents,
+        (SELECT COUNT(*)::int FROM certificate_records cr WHERE cr.recipient_user_id = u.id) as certificates_count,
+        COALESCE(
+          (SELECT SUM(pr.class_points)::int FROM program_results pr WHERE pr.student_id = u.id AND pr.status = 'PUBLISHED'),
+          0
+        ) as lifetime_points
+      FROM users u
+      JOIN student_profiles sp ON sp.user_id = u.id
+      WHERE sp.class_code = 'ALUMNI' AND u.is_active = TRUE
+      ORDER BY sp.graduation_year DESC NULLS LAST, sp.full_name ASC;
+    `);
+
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch alumni directory error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch alumni directory.' });
+  }
+});
+
 export default router;
 

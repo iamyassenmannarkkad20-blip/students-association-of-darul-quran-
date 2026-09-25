@@ -7,6 +7,7 @@ import {
   Edit3, Eye, EyeOff, CheckCircle2, TrendingUp, Shield, Compass, MessageSquare,
   Trophy, FileCheck, ExternalLink,
 } from 'lucide-react';
+import { DefendingChampionBanner } from '../../components/DefendingChampionBanner';
 
 export const StudentDashboard: React.FC = () => {
   const { user, profile, assignedSubWings, refreshUser } = useAuth();
@@ -62,6 +63,9 @@ export const StudentDashboard: React.FC = () => {
           </span>
         </div>
       )}
+
+      {/* Defending Best Class Champion & Active Cycle Banner */}
+      <DefendingChampionBanner />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

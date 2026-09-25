@@ -398,14 +398,18 @@ router.post('/programs/:programId/publish', async (req: RequestWithUser, res) =>
       [programId]
     );
 
+    // Retrieve active cycle if one is running
+    const activeCycleRes = await client.query(`SELECT id FROM academic_cycles WHERE status = 'ACTIVE' LIMIT 1`);
+    const activeCycleId = activeCycleRes.rows.length > 0 ? activeCycleRes.rows[0].id : null;
+
     for (const r of results.rows) {
       const positionLabel = r.position === 1 ? '1st Place' : r.position === 2 ? '2nd Place' : r.position === 3 ? '3rd Place' : 'Participant';
       const desc = `${program.title} (${program.sub_wing_name}) — ${r.student_name} (${positionLabel})`;
 
       await client.query(
-        `INSERT INTO class_score_ledger (class_code, source_type, source_id, points, description)
-         VALUES ($1, 'SUB_WING_RESULT', $2, $3, $4)`,
-        [r.class_code, programId, r.class_points, desc]
+        `INSERT INTO class_score_ledger (class_code, source_type, source_id, points, description, cycle_id)
+         VALUES ($1, 'SUB_WING_RESULT', $2, $3, $4, $5)`,
+        [r.class_code, programId, r.class_points, desc, activeCycleId]
       );
 
       // Auto-issue verified certificate record if certificate_url is attached

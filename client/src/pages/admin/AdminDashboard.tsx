@@ -6,13 +6,15 @@ import {
   Shield, BookOpen, CheckCircle, XCircle, Plus, ExternalLink,
   Users, Check, AlertCircle, RefreshCw, Megaphone, UserCheck, ShieldAlert,
   Crown, Camera, Trash2, Edit2, Image as ImageIcon, Upload, User as UserIcon,
-  Trophy, Award, Video
+  Trophy, Award, Video, Calendar, GraduationCap
 } from 'lucide-react';
 import { AdminClassTasks } from './AdminClassTasks';
 import { AdminSubWings } from './AdminSubWings';
 import { AdminMedia } from './AdminMedia';
 import { AdminCompetitions } from './AdminCompetitions';
 import { AdminCertificates } from './AdminCertificates';
+import { AdminCycles } from './AdminCycles';
+import { AdminClassUnions } from './AdminClassUnions';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -32,8 +34,8 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'committee' | 'competitions' | 'certificates' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
-  >('committee');
+    'cycles' | 'class-unions' | 'competitions' | 'certificates' | 'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
+  >('cycles');
 
   // Executive Committee State
   const [committeeList, setCommitteeList] = useState<any[]>([]);
@@ -385,6 +387,26 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-2 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('cycles')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'cycles' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Calendar className="w-4 h-4 text-amber-500" />
+          <span>Cycles & Best Class</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('class-unions')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'class-unions' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4 text-emerald-600" />
+          <span>8 Class Unions & Alumni</span>
+        </button>
+
         <button
           onClick={() => setActiveTab('committee')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
@@ -761,6 +783,12 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* TAB: ACADEMIC CYCLES & BEST CLASS OF THE MONTH */}
+      {activeTab === 'cycles' && <AdminCycles />}
+
+      {/* TAB: 8 CLASS SANGADHANAKAL & ANNUAL BATCH PROMOTION */}
+      {activeTab === 'class-unions' && <AdminClassUnions />}
 
       {/* TAB: CENTRAL COMPETITIONS & DUAL SCORING */}
       {activeTab === 'competitions' && <AdminCompetitions />}

@@ -5,6 +5,7 @@ import {
   Trophy, Award, Medal, ArrowRight, ShieldCheck, RefreshCw, Sparkles,
   ChevronRight, Users, GraduationCap, FileCheck, Star, ExternalLink, User
 } from 'lucide-react';
+import { DefendingChampionBanner } from '../../components/DefendingChampionBanner';
 
 interface ClassScore {
   class_code: string;
@@ -118,13 +119,27 @@ export const ClassLeaderboard: React.FC = () => {
         </div>
 
         {/* Navigation Action Links */}
-        <div className="flex items-center justify-center gap-3 pt-1">
+        <div className="flex items-center justify-center gap-3 pt-1 flex-wrap">
           <Link
             to="/results"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-[#02167f] hover:bg-slate-50 shadow-sm transition-all"
           >
             <span>Browse All Program Results</span>
             <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+          <Link
+            to="/class-unions"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:bg-slate-50 shadow-sm transition-all"
+          >
+            <Users className="w-3.5 h-3.5 text-[#02167f]" />
+            <span>8 Class Sangadhanakal</span>
+          </Link>
+          <Link
+            to="/alumni"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-emerald-800 hover:bg-slate-50 shadow-sm transition-all"
+          >
+            <GraduationCap className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Alumni Scholars</span>
           </Link>
           <button
             onClick={fetchLeaderboards}
@@ -135,6 +150,11 @@ export const ClassLeaderboard: React.FC = () => {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
+      </div>
+
+      {/* Defending Champion Banner */}
+      <div className="max-w-5xl mx-auto">
+        <DefendingChampionBanner />
       </div>
 
       {/* ================================================== */}

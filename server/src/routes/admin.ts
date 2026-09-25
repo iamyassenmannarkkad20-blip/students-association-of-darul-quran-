@@ -1018,14 +1018,18 @@ router.post('/competitions/:id/publish', async (_req, res) => {
       [id]
     );
 
+    // Retrieve active cycle if one is running
+    const activeCycleRes = await client.query(`SELECT id FROM academic_cycles WHERE status = 'ACTIVE' LIMIT 1`);
+    const activeCycleId = activeCycleRes.rows.length > 0 ? activeCycleRes.rows[0].id : null;
+
     for (const r of results.rows) {
       const positionLabel = r.position === 1 ? '1st Place' : r.position === 2 ? '2nd Place' : r.position === 3 ? '3rd Place' : 'Participant';
       const desc = `${program.title} (Main Committee) — ${r.student_name} (${positionLabel})`;
 
       await client.query(
-        `INSERT INTO class_score_ledger (class_code, source_type, source_id, points, description)
-         VALUES ($1, 'MAIN_COMMITTEE_PROGRAM', $2, $3, $4)`,
-        [r.class_code, id, r.class_points, desc]
+        `INSERT INTO class_score_ledger (class_code, source_type, source_id, points, description, cycle_id)
+         VALUES ($1, 'MAIN_COMMITTEE_PROGRAM', $2, $3, $4, $5)`,
+        [r.class_code, id, r.class_points, desc, activeCycleId]
       );
 
       // Auto-issue verified certificate record if certificate_url is attached
@@ -1161,6 +1165,62 @@ router.delete('/certificates/:id', async (req, res) => {
   } catch (error) {
     console.error('Delete certificate error:', error);
     res.status(500).json({ success: false, error: 'Failed to revoke certificate.' });
+  }
+});
+
+// 10. Annual Batch Promotion Wizard (Graduating Class 08 to ALUMNI permanently preserving records)
+router.post('/students/promote-batch', async (req: RequestWithUser, res) => {
+  const client = await getClient();
+  try {
+    const graduatingYear = req.body.graduating_year || new Date().getFullYear().toString();
+
+    await client.query('BEGIN');
+
+    // 1. Class 08 graduates to ALUMNI
+    const gradRes = await client.query(
+      `UPDATE student_profiles
+       SET class_code = 'ALUMNI',
+           graduation_year = $1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE class_code = '08'
+       RETURNING user_id, full_name`,
+      [graduatingYear]
+    );
+
+    // 2. Cascade promote classes downwards: 07->08, 06->07, 05->06, 04->05, 03->04, 02->03, 01->02
+    const classes = ['07', '06', '05', '04', '03', '02', '01'];
+    const promotions: Record<string, number> = {};
+
+    for (const c of classes) {
+      const nextClass = String(parseInt(c, 10) + 1).padStart(2, '0');
+      const promRes = await client.query(
+        `UPDATE student_profiles
+         SET class_code = $1,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE class_code = $2
+         RETURNING user_id`,
+        [nextClass, c]
+      );
+      promotions[`Class ${c} ➔ Class ${nextClass}`] = promRes.rowCount || 0;
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: `🎓 Batch promotion completed! ${gradRes.rowCount || 0} senior scholars graduated to Alumni (${graduatingYear}). Junior classes advanced successfully with all portfolios, skills, and certificates preserved.`,
+      data: {
+        graduated_count: gradRes.rowCount || 0,
+        graduated_students: gradRes.rows,
+        promotions,
+      },
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Batch promotion error:', error);
+    res.status(500).json({ success: false, error: 'Failed to execute batch promotion.' });
+  } finally {
+    client.release();
   }
 });
 
