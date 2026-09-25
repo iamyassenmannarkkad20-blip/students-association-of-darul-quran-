@@ -346,8 +346,8 @@ router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
       ),
     ]);
 
-    // Fetch Leadership roles in Sub-Wings & Class Unions
-    const [wingLeadershipRes, unionLeadershipRes, postsRes] = await Promise.all([
+    // Fetch Leadership roles in Sub-Wings, Class Unions, & Historic Leadership
+    const [wingLeadershipRes, unionLeadershipRes, postsRes, leadHistoryRes] = await Promise.all([
       query(
         `SELECT sw.code, sw.name, sw.created_at,
                 CASE WHEN sw.chairman_id = $1 THEN 'Chairman'
@@ -371,6 +371,13 @@ router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
          FROM community_posts
          WHERE author_id = $1 AND status = 'PUBLISHED'
          ORDER BY created_at DESC`,
+        [userId]
+      ),
+      query(
+        `SELECT id, role_title, entity_type, entity_name, term_year, is_current, citation, created_at
+         FROM leadership_history
+         WHERE user_id = $1
+         ORDER BY term_year DESC, created_at DESC`,
         [userId]
       ),
     ]);
@@ -489,6 +496,18 @@ router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
       });
     });
 
+    // 9. Official Leadership Journey Milestones
+    leadHistoryRes.rows.forEach((lh: any) => {
+      timelineEvents.push({
+        id: `lh-${lh.id}`,
+        type: 'LEADERSHIP',
+        title: `${lh.role_title} (${lh.entity_name})`,
+        description: lh.citation || `Academic Term: ${lh.term_year || 'Active'}`,
+        date: new Date(lh.created_at).toISOString(),
+        badge: lh.entity_type.replace('_', ' '),
+      });
+    });
+
     // Sort timeline descending (most recent first)
     timelineEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -518,6 +537,12 @@ router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
           title: `${wl.role} - ${wl.name}`,
           wingCode: wl.code,
         })),
+        ...leadHistoryRes.rows.map((lh: any) => ({
+          type: lh.entity_type,
+          role: lh.role_title,
+          title: `${lh.role_title} - ${lh.entity_name} (${lh.term_year})`,
+          isCurrent: lh.is_current,
+        })),
       ],
     };
 
@@ -535,6 +560,7 @@ router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
         projects,
         organisation,
         growth_timeline: timelineEvents,
+        leadership_history: leadHistoryRes.rows,
         is_owner_view: isOwnerView,
       },
     });

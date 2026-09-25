@@ -29,6 +29,7 @@ import {
   Search,
 } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
+import { NotificationCenter } from './NotificationCenter';
 
 export const Navbar: React.FC = () => {
   const { user, profile, assignedSubWings, logout } = useAuth();
@@ -631,6 +632,9 @@ export const Navbar: React.FC = () => {
           <div className="hidden sm:flex items-center gap-2.5">
             {user ? (
               <div className="flex items-center gap-2">
+                {/* Live Campus Notifications Center */}
+                <NotificationCenter />
+
                 {/* Admin Quick Suite Pill (For Admin users) */}
                 {isAdmin && (
                   <Link
@@ -735,6 +739,9 @@ export const Navbar: React.FC = () => {
             >
               <Search className="w-4 h-4" />
             </button>
+
+            {/* Live Campus Notifications Center */}
+            {user && <NotificationCenter />}
 
             {user && (
               <Link

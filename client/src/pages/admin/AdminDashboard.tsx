@@ -6,7 +6,7 @@ import {
   Shield, BookOpen, CheckCircle, XCircle, Plus, ExternalLink,
   Users, Check, AlertCircle, RefreshCw, Megaphone, UserCheck, ShieldAlert,
   Crown, Camera, Trash2, Edit2, Image as ImageIcon, Upload, User as UserIcon,
-  Trophy, Award, Video, Calendar, GraduationCap
+  Trophy, Award, Video, Calendar, GraduationCap, BarChart3
 } from 'lucide-react';
 import { AdminClassTasks } from './AdminClassTasks';
 import { AdminSubWings } from './AdminSubWings';
@@ -17,6 +17,7 @@ import { AdminCycles } from './AdminCycles';
 import { AdminClassUnions } from './AdminClassUnions';
 import { AdminScoreLedger } from './AdminScoreLedger';
 import { AdminUsersManager } from './AdminUsersManager';
+import { AdminInstitutionalAnalytics } from './AdminInstitutionalAnalytics';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -36,7 +37,7 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'cycles' | 'score-ledger' | 'class-unions' | 'competitions' | 'certificates' | 'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
+    'analytics' | 'cycles' | 'score-ledger' | 'class-unions' | 'competitions' | 'certificates' | 'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
   >('cycles');
 
   // Executive Committee State
@@ -389,6 +390,16 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-2 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'analytics' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 text-indigo-600" />
+          <span>Campus Analytics</span>
+        </button>
+
         <button
           onClick={() => setActiveTab('cycles')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
@@ -795,6 +806,9 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* TAB: SADQ INSTITUTIONAL ANALYTICS & INTELLIGENCE */}
+      {activeTab === 'analytics' && <AdminInstitutionalAnalytics />}
 
       {/* TAB: ACADEMIC CYCLES & BEST CLASS OF THE MONTH */}
       {activeTab === 'cycles' && <AdminCycles />}

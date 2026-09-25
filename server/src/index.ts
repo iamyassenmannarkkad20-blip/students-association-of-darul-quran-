@@ -12,6 +12,7 @@ import leaderboardRoutes from './routes/leaderboard';
 import subwingRoutes from './routes/subwings';
 import cyclesRoutes from './routes/cycles';
 import classUnionRoutes from './routes/classUnions';
+import notificationsRoutes from './routes/notifications';
 import { query } from './db';
 import argon2 from 'argon2';
 import { ROLES } from '../../shared/types';
@@ -85,6 +86,7 @@ app.use('/api/v1/leaderboard', leaderboardRoutes);
 app.use('/api/v1/subwings', subwingRoutes);
 app.use('/api/v1/cycles', cyclesRoutes);
 app.use('/api/v1/class-unions', classUnionRoutes);
+app.use('/api/v1/notifications', notificationsRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

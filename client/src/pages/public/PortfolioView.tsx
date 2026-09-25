@@ -22,6 +22,7 @@ import {
 import { InstagramIcon } from '../../components/icons/InstagramIcon';
 import { ShareModal } from '../../components/ShareModal';
 import { StudentGrowthTimeline } from '../../components/StudentGrowthTimeline';
+import { DigitalIdCard } from '../../components/DigitalIdCard';
 
 export const PortfolioView: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -625,6 +626,22 @@ export const PortfolioView: React.FC = () => {
         subtitle={`Class ${profile.classCode} • SADQ Student Portfolio`}
         url={window.location.href}
       />
+
+      {/* Digital Student ID Card Modal */}
+      {showIdCard && (
+        <DigitalIdCard
+          student={{
+            fullName: profile.fullName,
+            username: profile.profileSlug,
+            classCode: profile.classCode,
+            graduationYear: profile.graduationYear,
+            profileSlug: profile.profileSlug,
+            profilePhotoUrl: profile.profilePhotoUrl,
+            userId: data.profile?.user_id,
+          }}
+          onClose={() => setShowIdCard(false)}
+        />
+      )}
     </div>
   );
 };

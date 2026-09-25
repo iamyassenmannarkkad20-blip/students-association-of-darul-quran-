@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { query, getClient } from '../db';
 import { requireAuth, requireRoles, RequestWithUser } from '../middleware/auth';
 import { ROLES } from '../../../shared/types';
+import { createNotification } from '../utils/notifications';
 
 const router = Router();
 
@@ -1528,6 +1529,312 @@ router.delete('/scores/ledger/:id', async (req: RequestWithUser, res) => {
   } catch (error) {
     console.error('Delete score entry error:', error);
     res.status(500).json({ success: false, error: 'Failed to delete score ledger entry.' });
+  }
+});
+
+// -------------------------------------------------------------
+// 12. RESULT AUDIT HISTORY & LOCK / REOPEN SYSTEM
+// -------------------------------------------------------------
+
+// Fetch Result Correction & Audit History
+router.get('/results/audit-history', async (_req, res) => {
+  try {
+    const logs = await query(
+      `SELECT a.*, u.username as admin_username, u.email as admin_email
+       FROM result_audit_history a
+       LEFT JOIN users u ON u.id = a.changed_by_user_id
+       ORDER BY a.created_at DESC
+       LIMIT 150`
+    );
+    res.json({ success: true, data: logs.rows });
+  } catch (error) {
+    console.error('Audit history error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load audit history.' });
+  }
+});
+
+// Lock a published competition result
+router.patch('/competitions/results/:id/lock', async (_req, res) => {
+  try {
+    const { id } = _req.params;
+    await query(`UPDATE program_results SET is_locked = TRUE WHERE id = $1`, [id]);
+    res.json({ success: true, message: 'Result locked successfully.' });
+  } catch (error) {
+    console.error('Lock result error:', error);
+    res.status(500).json({ success: false, error: 'Failed to lock result.' });
+  }
+});
+
+// Reopen a locked single competition result for correction (MUST be before /:id/reopen to avoid route shadowing)
+router.patch('/competitions/results/:id/reopen', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    if (!reason || reason.trim().length < 3) {
+      return res.status(400).json({ success: false, error: 'A valid reason is required to reopen published results.' });
+    }
+
+    const prevRes = await query(`SELECT * FROM program_results WHERE id = $1`, [id]);
+    if (prevRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Result not found.' });
+    }
+    const r = prevRes.rows[0];
+
+    await query(
+      `UPDATE program_results SET is_locked = FALSE, reopen_reason = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+      [reason.trim(), id]
+    );
+
+    await query(
+      `INSERT INTO result_audit_history (entity_type, entity_id, old_score, new_score, reason, changed_by_user_id, changed_by_name, action_type)
+       VALUES ('PROGRAM_RESULT', $1, $2, $2, $3, $4, $5, 'REOPEN')`,
+      [id, r.class_points, reason.trim(), req.user?.id || null, req.user?.username || 'Admin']
+    );
+
+    if (r.student_id) {
+      await createNotification({
+        userId: r.student_id,
+        title: 'Result Reopened for Correction',
+        message: `Your competition result has been reopened for review. Reason: ${reason}`,
+        type: 'RESULT_PUBLISHED',
+      });
+    }
+
+    res.json({ success: true, message: 'Result unlocked for correction. Please republish after making edits.' });
+  } catch (error) {
+    console.error('Reopen result error:', error);
+    res.status(500).json({ success: false, error: 'Failed to reopen result.' });
+  }
+});
+
+// Reopen an entire competition for correction
+router.patch('/competitions/:id/reopen', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    if (!reason || reason.trim().length < 3) {
+      return res.status(400).json({ success: false, error: 'A valid reason is required to reopen published competition results.' });
+    }
+
+    await query(
+      `UPDATE programs SET status = 'DRAFT', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [id]
+    );
+    await query(
+      `UPDATE program_results SET status = 'DRAFT', is_locked = FALSE, reopen_reason = $1, updated_at = CURRENT_TIMESTAMP WHERE program_id = $2`,
+      [reason.trim(), id]
+    );
+    await query(
+      `INSERT INTO result_audit_history (entity_type, entity_id, old_score, new_score, reason, changed_by_user_id, changed_by_name, action_type)
+       VALUES ('COMPETITION', $1, NULL, NULL, $2, $3, $4, 'REOPEN')`,
+      [id, reason.trim(), req.user?.id || null, req.user?.username || 'Admin']
+    );
+
+    res.json({ success: true, message: 'Competition unlocked for correction.' });
+  } catch (error) {
+    console.error('Reopen competition error:', error);
+    res.status(500).json({ success: false, error: 'Failed to reopen competition.' });
+  }
+});
+
+// Correct an existing result entry with audit history
+router.put('/competitions/results/:id', async (req: RequestWithUser, res) => {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+    const { mark, position, class_points, winner_poster_url, certificate_url, reason } = req.body;
+
+    const prevRes = await client.query('SELECT * FROM program_results WHERE id = $1', [id]);
+    if (prevRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Result not found.' });
+    }
+    const old = prevRes.rows[0];
+
+    await client.query('BEGIN');
+
+    await client.query(
+      `UPDATE program_results
+       SET mark = COALESCE($1, mark),
+           position = COALESCE($2, position),
+           class_points = COALESCE($3, class_points),
+           winner_poster_url = COALESCE($4, winner_poster_url),
+           certificate_url = COALESCE($5, certificate_url),
+           is_locked = TRUE,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $6`,
+      [mark, position, class_points, winner_poster_url, certificate_url, id]
+    );
+
+    const oldPts = old.class_points;
+    const newPts = class_points !== undefined ? class_points : oldPts;
+
+    await client.query(
+      `INSERT INTO result_audit_history (entity_type, entity_id, old_score, new_score, reason, changed_by_user_id, changed_by_name, action_type)
+       VALUES ('PROGRAM_RESULT', $1, $2, $3, $4, $5, $6, 'CORRECTION')`,
+      [id, oldPts, newPts, reason || 'Result corrected and republished', req.user?.id || null, req.user?.username || 'Admin']
+    );
+
+    // Sync score ledger if published
+    if (old.status === 'PUBLISHED') {
+      await client.query(
+        `UPDATE class_score_ledger
+         SET points = $1, updated_at = CURRENT_TIMESTAMP
+         WHERE source_type = 'MAIN_COMMITTEE_PROGRAM' AND source_id = $2 AND class_code = $3`,
+        [newPts, old.program_id, old.class_code]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    if (old.student_id) {
+      await createNotification({
+        userId: old.student_id,
+        title: 'Competition Result Updated',
+        message: `Your result has been corrected and locked. Points: ${newPts}`,
+        type: 'RESULT_PUBLISHED',
+      });
+    }
+
+    res.json({ success: true, message: 'Result updated and locked successfully.' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Update result error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update result.' });
+  } finally {
+    client.release();
+  }
+});
+
+// -------------------------------------------------------------
+// 13. LEADERSHIP HISTORY MANAGEMENT
+// -------------------------------------------------------------
+
+router.get('/leadership-history/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const rows = await query(
+      `SELECT * FROM leadership_history WHERE user_id = $1 ORDER BY term_year DESC, created_at DESC`,
+      [userId]
+    );
+    res.json({ success: true, data: rows.rows });
+  } catch (error) {
+    console.error('Get leadership history error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load leadership history.' });
+  }
+});
+
+router.post('/leadership-history', async (req: RequestWithUser, res) => {
+  try {
+    const { user_id, role_title, entity_type, entity_name, term_year, is_current, citation } = req.body;
+    if (!user_id || !role_title || !entity_name) {
+      return res.status(400).json({ success: false, error: 'User, role title, and entity name are required.' });
+    }
+
+    const inserted = await query(
+      `INSERT INTO leadership_history (user_id, role_title, entity_type, entity_name, term_year, is_current, citation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [user_id, role_title, entity_type || 'CLASS_UNION', entity_name, term_year || '2025-2026', is_current !== false, citation || '']
+    );
+
+    await createNotification({
+      userId: user_id,
+      title: 'Leadership Milestone Appointed',
+      message: `You have been officially recognized as ${role_title} for ${entity_name} (${term_year || 'Current'}).`,
+      type: 'LEADERSHIP_ASSIGNED',
+    });
+
+    res.json({ success: true, data: inserted.rows[0], message: 'Leadership milestone recorded successfully!' });
+  } catch (error) {
+    console.error('Add leadership error:', error);
+    res.status(500).json({ success: false, error: 'Failed to record leadership milestone.' });
+  }
+});
+
+router.delete('/leadership-history/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await query('DELETE FROM leadership_history WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Leadership milestone removed.' });
+  } catch (error) {
+    console.error('Delete leadership error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete leadership record.' });
+  }
+});
+
+// -------------------------------------------------------------
+// 14. SADQ INSTITUTIONAL ANALYTICS
+// -------------------------------------------------------------
+
+router.get('/analytics/institutional', async (_req, res) => {
+  try {
+    const [
+      studentsRes,
+      alumniRes,
+      certsRes,
+      compsRes,
+      projectsRes,
+      pubsRes,
+      pointsRes,
+      classesBreakdownRes,
+      unitsBreakdownRes
+    ] = await Promise.all([
+      query(`SELECT COUNT(*)::int as count FROM student_profiles WHERE class_code != 'ALUMNI'`),
+      query(`SELECT COUNT(*)::int as count FROM student_profiles WHERE class_code = 'ALUMNI'`),
+      query(`SELECT COUNT(*)::int as count FROM certificate_records`),
+      query(`SELECT COUNT(*)::int as count FROM programs`),
+      query(`SELECT COUNT(*)::int as count FROM projects`),
+      query(`SELECT COUNT(*)::int as count FROM magazine_publications`),
+      query(`SELECT COALESCE(SUM(points), 0)::int as total FROM class_score_ledger`),
+      query(`
+        SELECT 
+          c.class_code,
+          COALESCE(SUM(l.points), 0)::int as total_points,
+          COUNT(DISTINCT sp.user_id)::int as student_count,
+          COUNT(DISTINCT pr.id)::int as winners_count,
+          COUNT(DISTINCT cr.certificate_id)::int as certificates_count
+        FROM (
+          VALUES ('01'), ('02'), ('03'), ('04'), ('05'), ('06'), ('07'), ('08')
+        ) AS c(class_code)
+        LEFT JOIN class_score_ledger l ON l.class_code = c.class_code
+        LEFT JOIN student_profiles sp ON sp.class_code = c.class_code
+        LEFT JOIN program_results pr ON pr.class_code = c.class_code AND pr.status = 'PUBLISHED'
+        LEFT JOIN certificate_records cr ON cr.recipient_user_id = sp.user_id
+        GROUP BY c.class_code
+        ORDER BY c.class_code ASC
+      `),
+      query(`
+        SELECT 
+          ou.code, ou.name,
+          COUNT(DISTINCT om.user_id)::int as member_count,
+          COUNT(DISTINCT p.id)::int as projects_count
+        FROM organisation_units ou
+        LEFT JOIN organisation_memberships om ON om.unit_code = ou.code AND om.is_active = TRUE
+        LEFT JOIN projects p ON p.unit_code = ou.code
+        GROUP BY ou.code, ou.name
+        ORDER BY ou.code ASC
+      `),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalStudents: studentsRes.rows[0]?.count || 0,
+          totalAlumni: alumniRes.rows[0]?.count || 0,
+          totalCertificates: certsRes.rows[0]?.count || 0,
+          totalCompetitions: compsRes.rows[0]?.count || 0,
+          totalProjects: projectsRes.rows[0]?.count || 0,
+          totalPublications: pubsRes.rows[0]?.count || 0,
+          totalPointsAwarded: pointsRes.rows[0]?.total || 0,
+        },
+        classBreakdown: classesBreakdownRes.rows,
+        unitBreakdown: unitsBreakdownRes.rows,
+      },
+    });
+  } catch (error) {
+    console.error('Institutional analytics error:', error);
+    res.status(500).json({ success: false, error: 'Failed to compile institutional analytics.' });
   }
 });
 

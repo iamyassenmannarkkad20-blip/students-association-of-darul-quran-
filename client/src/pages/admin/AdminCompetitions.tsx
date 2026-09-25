@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../services/api';
 import {
   Trophy, Plus, Calendar, ExternalLink, Sparkles, Send, Save, Trash2,
-  CheckCircle, Award, Users, Search, RefreshCw, FileText, Check, AlertCircle
+  CheckCircle, Award, Users, Search, RefreshCw, FileText, Check, AlertCircle,
+  History, Lock, Unlock
 } from 'lucide-react';
+import { ResultAuditModal } from '../../components/ResultAuditModal';
 
 interface Competition {
   id: string;
@@ -58,6 +60,7 @@ export const AdminCompetitions: React.FC = () => {
   const [savingResults, setSavingResults] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showAuditModal, setShowAuditModal] = useState(false);
 
   const fetchCompetitions = async () => {
     setLoading(true);
@@ -249,6 +252,31 @@ export const AdminCompetitions: React.FC = () => {
     }
   };
 
+  const handleReopenResult = async () => {
+    if (!activeComp) return;
+    const reason = prompt('Please enter the justification reason for reopening this published competition result:');
+    if (!reason || reason.trim().length < 3) {
+      alert('A valid reason is required for reopening published results for audit tracking.');
+      return;
+    }
+
+    try {
+      const res = await apiRequest(`/admin/competitions/${activeComp.id}/reopen`, {
+        method: 'PATCH',
+        body: JSON.stringify({ reason: reason.trim() }),
+      });
+      if (res.success) {
+        alert('Results unlocked for correction! Remember to click "Publish to Live Leaderboard" once corrected.');
+        handleOpenMarksModal({ ...activeComp, status: 'DRAFT' });
+        fetchCompetitions();
+      } else {
+        alert(res.error || 'Failed to reopen results');
+      }
+    } catch (err) {
+      console.error('Reopen error', err);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -267,6 +295,14 @@ export const AdminCompetitions: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAuditModal(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-sm"
+          >
+            <History className="w-4 h-4 text-indigo-600" />
+            <span>Correction Audit History</span>
+          </button>
+
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#02167f] text-[#ffd014] hover:bg-[#0320a6] text-xs font-bold shadow-md transition-all active:scale-95"
@@ -488,6 +524,34 @@ export const AdminCompetitions: React.FC = () => {
               </button>
             </div>
 
+            {/* Lock & Reopen Banner */}
+            {activeComp.status === 'PUBLISHED' && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-amber-900">
+                      Results are Officially Published & Locked
+                    </h4>
+                    <p className="text-[11px] text-amber-700">
+                      Scores are synced to live leaderboards. To make corrections, unlock this competition with justification.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleReopenResult}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all shrink-0"
+                >
+                  <Unlock className="w-3.5 h-3.5" />
+                  <span>Reopen for Correction</span>
+                </button>
+              </div>
+            )}
+
             {/* Participants Table */}
             <div className="flex-1 overflow-y-auto space-y-3">
               <div className="flex items-center justify-between">
@@ -678,6 +742,8 @@ export const AdminCompetitions: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Result Correction & Audit History Modal */}
+      {showAuditModal && <ResultAuditModal onClose={() => setShowAuditModal(false)} />}
     </div>
   );
 };

@@ -33,9 +33,10 @@ interface StudentScore {
 }
 
 export const ClassLeaderboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'classes' | 'students'>('classes');
+  const [activeTab, setActiveTab] = useState<'classes' | 'students' | 'archive'>('classes');
   const [classes, setClasses] = useState<ClassScore[]>([]);
   const [students, setStudents] = useState<StudentScore[]>([]);
+  const [archiveCycles, setArchiveCycles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [studentClassFilter, setStudentClassFilter] = useState('');
 
@@ -43,15 +44,19 @@ export const ClassLeaderboard: React.FC = () => {
     setLoading(true);
     try {
       const studentQuery = studentClassFilter ? `/leaderboard/students?classCode=${studentClassFilter}` : '/leaderboard/students';
-      const [classRes, studentRes] = await Promise.all([
+      const [classRes, studentRes, cyclesRes] = await Promise.all([
         apiRequest<ClassScore[]>('/leaderboard/leaderboard'),
         apiRequest<StudentScore[]>(studentQuery),
+        apiRequest<any[]>('/cycles/history'),
       ]);
       if (classRes.success && classRes.data) {
         setClasses(classRes.data);
       }
       if (studentRes.success && studentRes.data) {
         setStudents(studentRes.data);
+      }
+      if (cyclesRes.success && cyclesRes.data) {
+        setArchiveCycles(cyclesRes.data);
       }
     } catch (err) {
       console.error('Failed to load leaderboards', err);
@@ -114,6 +119,18 @@ export const ClassLeaderboard: React.FC = () => {
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
               <span>Student Star Achievers</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('archive')}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'archive'
+                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20 scale-105'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Award className="w-4 h-4 text-emerald-500" />
+              <span>Hall of Fame & History Archive</span>
             </button>
           </div>
         </div>
@@ -654,6 +671,112 @@ export const ClassLeaderboard: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 3. TAB: HALL OF FAME & CLASS HISTORY ARCHIVE */}
+      {activeTab === 'archive' && (
+        <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-[#01092e] to-[#02167f] rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffd014]/20 border border-[#ffd014]/40 text-[#ffd014] text-xs font-bold uppercase tracking-wider">
+                <Trophy className="w-4 h-4 text-[#ffd014]" />
+                <span>Historical Hall of Fame</span>
+              </div>
+              <h2 className="font-cinzel text-2xl sm:text-3xl font-black text-white">
+                Best Class Golden Trophy Archives
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+                Every completed leave cycle preserves its defending champions, historic score records, and official union titles forever.
+              </p>
+            </div>
+          </div>
+
+          {/* Archived Cycles Grid */}
+          {archiveCycles.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-3">
+              <Award className="w-12 h-12 text-slate-300 mx-auto" />
+              <h4 className="font-bold text-slate-700 text-sm">No Closed Cycles Archived Yet</h4>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                When the administration closes the current academic leave cycle, the top-performing batch will be immortalized here in the Hall of Fame.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {archiveCycles.map((cy) => {
+                const isClosed = cy.status === 'CLOSED';
+                return (
+                  <div
+                    key={cy.id}
+                    className={`rounded-3xl p-6 border transition-all space-y-4 ${
+                      isClosed
+                        ? 'bg-white border-amber-200/80 shadow-md hover:shadow-lg'
+                        : 'bg-gradient-to-br from-blue-50 to-white border-blue-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${
+                        isClosed ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-900'
+                      }`}>
+                        {isClosed ? '🏆 ARCHIVED WINNER' : '⚡ CURRENTLY RUNNING'}
+                      </span>
+                      <span className="text-xs text-slate-400 font-mono">
+                        {cy.academic_year || '2026-2027'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-cinzel text-lg font-black text-slate-900 leading-snug">
+                        {cy.name}
+                      </h3>
+                      <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+                        <span>Started: {cy.start_date ? new Date(cy.start_date).toLocaleDateString() : '—'}</span>
+                        {cy.closed_at && (
+                          <span>• Closed: {new Date(cy.closed_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Best Class Winner Spotlight */}
+                    {cy.best_class_code ? (
+                      <div className="bg-gradient-to-r from-amber-50 to-amber-100/60 rounded-2xl p-4 border border-amber-300/80 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center font-black text-xl shadow-md">
+                            🏆
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-black uppercase text-amber-800 tracking-wider">
+                              Best Class Golden Trophy Winner
+                            </span>
+                            <h4 className="font-cinzel text-base font-black text-[#02167f] leading-tight">
+                              Class {cy.best_class_code} {cy.best_class_union_name ? `• ${cy.best_class_union_name}` : ''}
+                            </h4>
+                            {cy.best_class_motto && (
+                              <p className="text-[11px] text-slate-600 italic">"{cy.best_class_motto}"</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <Link
+                          to={`/class/${cy.best_class_code}`}
+                          className="px-3 py-1.5 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#010e52] transition-colors shrink-0 shadow-sm"
+                        >
+                          View Class 360°
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 rounded-2xl p-4 text-center border border-slate-200">
+                        <span className="text-xs text-slate-500 italic">
+                          Cycle is currently live. Best class trophy will be awarded upon leave cycle closure.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

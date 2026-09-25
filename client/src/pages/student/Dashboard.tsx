@@ -5,15 +5,17 @@ import { apiRequest } from '../../services/api';
 import {
   User, Sparkles, Layers, Award, FolderGit2, Users, PlusCircle,
   Edit3, Eye, EyeOff, CheckCircle2, TrendingUp, Shield, Compass, MessageSquare,
-  Trophy, FileCheck, ExternalLink,
+  Trophy, FileCheck, ExternalLink, QrCode
 } from 'lucide-react';
 import { DefendingChampionBanner } from '../../components/DefendingChampionBanner';
 import { ClassUnionReleasesFeed } from '../../components/ClassUnionReleasesFeed';
+import { DigitalIdCard } from '../../components/DigitalIdCard';
 
 export const StudentDashboard: React.FC = () => {
   const { user, profile, assignedSubWings, assignedClassUnion, refreshUser } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showIdCard, setShowIdCard] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -106,6 +108,15 @@ export const StudentDashboard: React.FC = () => {
               <span>Manage Class {assignedClassUnion.class_code} Union</span>
             </Link>
           )}
+          <button
+            type="button"
+            onClick={() => setShowIdCard(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-navy-950 font-bold text-xs shadow-md transition-all active:scale-95"
+          >
+            <QrCode className="w-4 h-4 text-navy-950" />
+            <span>Digital ID & QR Pass</span>
+          </button>
+
           <Link
             to="/student/create"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-xs shadow-md transition-colors"
@@ -431,6 +442,22 @@ export const StudentDashboard: React.FC = () => {
             <span>View Portfolio</span>
           </Link>
         </div>
+      )}
+
+      {/* Digital Student ID Card Modal */}
+      {showIdCard && (
+        <DigitalIdCard
+          student={{
+            fullName: user?.fullName || 'Student',
+            username: user?.username || profile?.profile_slug,
+            classCode: profile?.class_code,
+            graduationYear: profile?.graduation_year,
+            profileSlug: profile?.profile_slug,
+            profilePhotoUrl: profile?.profile_photo_url,
+            userId: user?.id,
+          }}
+          onClose={() => setShowIdCard(false)}
+        />
       )}
     </div>
   );
