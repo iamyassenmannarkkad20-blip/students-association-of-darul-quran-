@@ -191,8 +191,8 @@ router.get('/certificates/:id', async (req, res) => {
   }
 });
 
-// Student Public Portfolio (/portfolio/:slug)
-router.get('/portfolio/:slug', async (req, res) => {
+// Student Public Portfolio & 360° Profile (/portfolio/:slug & /student-360/:slug)
+router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
   try {
     const slug = req.params.slug.trim().toLowerCase();
     const profileRes = await query(
@@ -346,6 +346,152 @@ router.get('/portfolio/:slug', async (req, res) => {
       ),
     ]);
 
+    // Fetch Leadership roles in Sub-Wings & Class Unions
+    const [wingLeadershipRes, unionLeadershipRes, postsRes] = await Promise.all([
+      query(
+        `SELECT sw.code, sw.name, sw.created_at,
+                CASE WHEN sw.chairman_id = $1 THEN 'Chairman'
+                     WHEN sw.convener_id = $1 THEN 'Convener'
+                     ELSE 'Member' END as role
+         FROM sub_wings sw
+         WHERE sw.chairman_id = $1 OR sw.convener_id = $1`,
+        [userId]
+      ),
+      query(
+        `SELECT u.class_code, u.name, u.created_at,
+                CASE WHEN u.chairman_id = $1 THEN 'Chairman'
+                     WHEN u.convener_id = $1 THEN 'Convener'
+                     ELSE 'Leader' END as role
+         FROM class_sangadhanakal u
+         WHERE u.chairman_id = $1 OR u.convener_id = $1`,
+        [userId]
+      ),
+      query(
+        `SELECT id, title, created_at
+         FROM community_posts
+         WHERE author_id = $1 AND status = 'PUBLISHED'
+         ORDER BY created_at DESC`,
+        [userId]
+      ),
+    ]);
+
+    // Synthesize Chronological Student Growth Timeline
+    type TimelineEvent = {
+      id: string;
+      type: 'ENROLLMENT' | 'LEADERSHIP' | 'COMPETITION' | 'CERTIFICATE' | 'PROJECT' | 'ARTICLE' | 'ACHIEVEMENT';
+      title: string;
+      description?: string;
+      date: string;
+      badge?: string;
+      link?: string;
+      points?: number;
+    };
+
+    const timelineEvents: TimelineEvent[] = [];
+
+    // 1. Enrollment
+    if (p.created_at) {
+      timelineEvents.push({
+        id: `enrollment-${userId}`,
+        type: 'ENROLLMENT',
+        title: 'Joined SADQ Student Academy',
+        description: `Enrolled in Class ${p.class_code || 'General'}`,
+        date: new Date(p.created_at).toISOString(),
+        badge: p.class_code === 'ALUMNI' ? 'Graduated Alumni' : `Class ${p.class_code}`,
+      });
+    }
+
+    // 2. Class Union Appointments
+    unionLeadershipRes.rows.forEach((ul: any) => {
+      timelineEvents.push({
+        id: `union-${ul.class_code}`,
+        type: 'LEADERSHIP',
+        title: `Appointed ${ul.role} of ${ul.name}`,
+        description: `Official batch representation and leadership for Class ${ul.class_code}`,
+        date: new Date(ul.created_at || p.created_at || Date.now()).toISOString(),
+        badge: `Class ${ul.class_code} Union`,
+      });
+    });
+
+    // 3. Sub-Wing Appointments
+    wingLeadershipRes.rows.forEach((wl: any) => {
+      timelineEvents.push({
+        id: `wing-${wl.code}`,
+        type: 'LEADERSHIP',
+        title: `Appointed ${wl.role} of ${wl.name}`,
+        description: `Institutional leadership for official unit (${wl.code})`,
+        date: new Date(wl.created_at || p.created_at || Date.now()).toISOString(),
+        badge: `${wl.code} Wing`,
+      });
+    });
+
+    // 4. Competition Results
+    honorsRes.rows.forEach((h: any) => {
+      const posLabel = h.position === 1 ? '🥇 1st Place Champion' : h.position === 2 ? '🥈 2nd Place Runner-Up' : h.position === 3 ? '🥉 3rd Place Honor' : 'Participant';
+      timelineEvents.push({
+        id: `honor-${h.id}`,
+        type: 'COMPETITION',
+        title: `${posLabel}: ${h.event_title}`,
+        description: `Awarded ${h.class_points} points for Class ${p.class_code} by ${h.organizer_name}`,
+        date: new Date(h.published_at || h.program_date || Date.now()).toISOString(),
+        badge: `+${h.class_points} pts`,
+        points: h.class_points,
+      });
+    });
+
+    // 5. Verified Certificates
+    certsRes.rows.forEach((c: any) => {
+      timelineEvents.push({
+        id: `cert-${c.certificate_id}`,
+        type: 'CERTIFICATE',
+        title: `Issued Verified Certificate: ${c.title}`,
+        description: `Officially certified by ${c.issuer} (${c.certificate_id})`,
+        date: new Date(c.issue_date || Date.now()).toISOString(),
+        badge: 'Verified Credential',
+        link: c.external_reference_url,
+      });
+    });
+
+    // 6. Projects
+    projects.forEach((proj: any) => {
+      timelineEvents.push({
+        id: `proj-${proj.id}`,
+        type: 'PROJECT',
+        title: `Launched Project: ${proj.title}`,
+        description: proj.description?.slice(0, 120),
+        date: new Date(proj.created_at || Date.now()).toISOString(),
+        badge: proj.category || 'Initiative',
+        link: proj.project_url,
+      });
+    });
+
+    // 7. Community Articles
+    postsRes.rows.forEach((post: any) => {
+      timelineEvents.push({
+        id: `post-${post.id}`,
+        type: 'ARTICLE',
+        title: `Published Article: ${post.title}`,
+        description: 'Published in SADQ Community Discourse',
+        date: new Date(post.created_at).toISOString(),
+        badge: 'Editorial',
+      });
+    });
+
+    // 8. Achievements
+    achievements.forEach((ach: any) => {
+      timelineEvents.push({
+        id: `ach-${ach.id}`,
+        type: 'ACHIEVEMENT',
+        title: ach.title,
+        description: ach.description || ach.issuer,
+        date: new Date(ach.achievement_date || ach.created_at || Date.now()).toISOString(),
+        badge: ach.category || 'Achievement',
+      });
+    });
+
+    // Sort timeline descending (most recent first)
+    timelineEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     // Filter contact info based on privacy toggles
     const sanitizedProfile = {
       fullName: p.full_name,
@@ -358,6 +504,21 @@ router.get('/portfolio/:slug', async (req, res) => {
       emailContact: p.show_email ? p.email_contact : null,
       whatsappNumber: p.show_whatsapp ? p.whatsapp_number : null,
       instagramHandle: p.show_instagram ? p.instagram_handle : null,
+      graduationYear: p.graduation_year,
+      leadershipRoles: [
+        ...unionLeadershipRes.rows.map((ul: any) => ({
+          type: 'CLASS_UNION',
+          role: ul.role,
+          title: `${ul.role} - ${ul.name}`,
+          classCode: ul.class_code,
+        })),
+        ...wingLeadershipRes.rows.map((wl: any) => ({
+          type: 'SUB_WING',
+          role: wl.role,
+          title: `${wl.role} - ${wl.name}`,
+          wingCode: wl.code,
+        })),
+      ],
     };
 
     res.json({
@@ -373,6 +534,7 @@ router.get('/portfolio/:slug', async (req, res) => {
         achievements,
         projects,
         organisation,
+        growth_timeline: timelineEvents,
         is_owner_view: isOwnerView,
       },
     });
@@ -492,7 +654,7 @@ router.get('/alumni', async (_req, res) => {
         sp.graduation_year,
         sp.bio,
         COALESCE(
-          (SELECT json_agg(json_build_object('name', sk.name, 'level', sk.level, 'category', sk.category))
+          (SELECT json_agg(json_build_object('skill_name', sk.skill_name, 'proficiency', sk.proficiency))
            FROM student_skills sk
            WHERE sk.user_id = u.id),
           '[]'::json
@@ -518,6 +680,90 @@ router.get('/alumni', async (_req, res) => {
   } catch (error) {
     console.error('Fetch alumni directory error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch alumni directory.' });
+  }
+});
+
+// ==================================================
+// Data-Driven SADQ Homepage Pulse (/home-pulse)
+// ==================================================
+router.get('/home-pulse', async (_req, res) => {
+  try {
+    const [cycleRes, championRes, resultsRes, publicationsRes, starRes] = await Promise.all([
+      // Active cycle
+      query(
+        `SELECT id, name, academic_year, start_date, target_leave_date, status, notes
+         FROM academic_cycles
+         WHERE status = 'ACTIVE'
+         ORDER BY created_at DESC LIMIT 1`
+      ),
+      // Defending champion from most recently closed cycle
+      query(
+        `SELECT ac.id, ac.name as cycle_name, ac.best_class_code, ac.best_class_points, ac.closed_at,
+                u.name as union_name, u.motto as union_motto, u.logo_url as union_logo_url
+         FROM academic_cycles ac
+         LEFT JOIN class_sangadhanakal u ON u.class_code = ac.best_class_code
+         WHERE ac.status = 'CLOSED' AND ac.best_class_code IS NOT NULL
+         ORDER BY ac.closed_at DESC LIMIT 1`
+      ),
+      // Latest 3 published program results
+      query(
+        `SELECT pr.id, pr.student_name, pr.class_code, pr.mark, pr.position, pr.class_points,
+                pr.published_at, p.title as event_title,
+                CASE WHEN p.organizer_type = 'MAIN_COMMITTEE' OR p.sub_wing_id IS NULL THEN 'Main Committee' ELSE sw.name END as organizer_name
+         FROM program_results pr
+         JOIN programs p ON p.id = pr.program_id
+         LEFT JOIN sub_wings sw ON sw.id = p.sub_wing_id
+         WHERE pr.status = 'PUBLISHED'
+         ORDER BY pr.published_at DESC NULLS LAST
+         LIMIT 3`
+      ),
+      // Latest 2 publications from class unions
+      query(
+        `SELECT i.id, i.title, i.category, i.item_url, i.thumbnail_url, i.class_code, i.created_at,
+                u.name as union_name
+         FROM class_union_items i
+         LEFT JOIN class_sangadhanakal u ON u.class_code = i.class_code
+         ORDER BY i.created_at DESC
+         LIMIT 2`
+      ),
+      // Featured star achiever
+      query(
+        `WITH star AS (
+          SELECT 
+            u.id as user_id,
+            sp.full_name,
+            sp.profile_slug,
+            sp.class_code,
+            sp.profile_photo_url,
+            COALESCE(SUM(pr.class_points), 0)::int as total_points,
+            COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as gold_medals,
+            COUNT(pr.id)::int as events_count
+          FROM users u
+          JOIN student_profiles sp ON sp.user_id = u.id
+          LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+          WHERE u.is_active = TRUE
+          GROUP BY u.id, sp.full_name, sp.profile_slug, sp.class_code, sp.profile_photo_url
+          HAVING COALESCE(SUM(pr.class_points), 0) > 0
+          ORDER BY total_points DESC, gold_medals DESC
+          LIMIT 1
+        )
+        SELECT * FROM star`
+      ),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        active_cycle: cycleRes.rows[0] || null,
+        defending_champion: championRes.rows[0] || null,
+        latest_results: resultsRes.rows,
+        latest_publications: publicationsRes.rows,
+        featured_star: starRes.rows[0] || null,
+      },
+    });
+  } catch (error) {
+    console.error('Fetch home pulse error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch homepage live pulse.' });
   }
 });
 

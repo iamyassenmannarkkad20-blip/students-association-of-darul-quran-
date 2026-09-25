@@ -4,7 +4,7 @@ import { query } from '../db';
 const router = Router();
 
 // 1. Public Class Leaderboard (Calculated dynamically for all 8 classes)
-router.get('/leaderboard', async (_req, res) => {
+router.get(['/', '/leaderboard'], async (_req, res) => {
   try {
     const result = await query(`
       WITH class_scores AS (
@@ -37,7 +37,7 @@ router.get('/leaderboard', async (_req, res) => {
 });
 
 // 2. Class Detail & Ledger History (/class/:code)
-router.get('/leaderboard/class/:code', async (req, res) => {
+router.get(['/class/:code', '/leaderboard/class/:code'], async (req, res) => {
   try {
     const { code } = req.params;
     if (!['01', '02', '03', '04', '05', '06', '07', '08'].includes(code)) {
@@ -94,6 +94,167 @@ router.get('/leaderboard/class/:code', async (req, res) => {
   } catch (error) {
     console.error('Class detail error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch class details.' });
+  }
+});
+
+// ==================================================
+// 2B. Class 360° Comprehensive Dashboard (/class-360/:code)
+// ==================================================
+router.get(['/class-360/:code', '/leaderboard/class-360/:code'], async (req, res) => {
+  try {
+    const { code } = req.params;
+    if (!['01', '02', '03', '04', '05', '06', '07', '08'].includes(code)) {
+      return res.status(400).json({ success: false, error: 'Invalid class code. Must be 01 to 08.' });
+    }
+
+    const [summaryRes, activeCycleRes, unionRes, membersRes, contributorsRes, itemsRes, progressionRes, historyRes] = await Promise.all([
+      // 1. Overall all-time summary & rank
+      query(
+        `WITH class_scores AS (
+          SELECT 
+            c.code as class_code,
+            COALESCE(SUM(l.points), 0)::int as total_points,
+            COALESCE(SUM(CASE WHEN l.source_type = 'SUB_WING_RESULT' THEN l.points ELSE 0 END), 0)::int as sub_wing_points,
+            COALESCE(SUM(CASE WHEN l.source_type IN ('MAIN_COMMITTEE_TASK', 'MAIN_COMMITTEE_PROGRAM') THEN l.points ELSE 0 END), 0)::int as main_committee_points
+          FROM (VALUES ('01'), ('02'), ('03'), ('04'), ('05'), ('06'), ('07'), ('08')) as c(code)
+          LEFT JOIN class_score_ledger l ON l.class_code = c.code
+          GROUP BY c.code
+        ),
+        ranked AS (
+          SELECT 
+            class_code, total_points, sub_wing_points, main_committee_points,
+            DENSE_RANK() OVER (ORDER BY total_points DESC, class_code ASC) as rank
+          FROM class_scores
+        )
+        SELECT * FROM ranked WHERE class_code = $1`,
+        [code]
+      ),
+
+      // 2. Active cycle standings for this class
+      query(
+        `WITH active_scores AS (
+          SELECT 
+            c.code as class_code,
+            COALESCE(SUM(l.points), 0)::int as cycle_points,
+            DENSE_RANK() OVER (ORDER BY COALESCE(SUM(l.points), 0) DESC, c.code ASC) as cycle_rank
+          FROM (VALUES ('01'), ('02'), ('03'), ('04'), ('05'), ('06'), ('07'), ('08')) as c(code)
+          LEFT JOIN class_score_ledger l ON l.class_code = c.code AND l.cycle_id IN (SELECT id FROM academic_cycles WHERE status = 'ACTIVE')
+          GROUP BY c.code
+        )
+        SELECT * FROM active_scores WHERE class_code = $1`,
+        [code]
+      ),
+
+      // 3. Class Union metadata & leadership
+      query(
+        `SELECT 
+          u.*,
+          ch.username as chairman_username,
+          ch_p.full_name as chairman_name,
+          ch_p.profile_photo_url as chairman_photo_url,
+          ch_p.profile_slug as chairman_slug,
+          cv.username as convener_username,
+          cv_p.full_name as convener_name,
+          cv_p.profile_photo_url as convener_photo_url,
+          cv_p.profile_slug as convener_slug
+         FROM class_sangadhanakal u
+         LEFT JOIN users ch ON ch.id = u.chairman_id
+         LEFT JOIN student_profiles ch_p ON ch_p.user_id = ch.id
+         LEFT JOIN users cv ON cv.id = u.convener_id
+         LEFT JOIN student_profiles cv_p ON cv_p.user_id = cv.id
+         WHERE u.class_code = $1`,
+        [code]
+      ),
+
+      // 4. Batch Student Members
+      query(
+        `SELECT 
+          u.id as user_id, u.username, sp.full_name, sp.profile_slug, sp.profile_photo_url, sp.bio,
+          COALESCE((SELECT SUM(pr.class_points)::int FROM program_results pr WHERE pr.student_id = u.id AND pr.status = 'PUBLISHED'), 0) as student_points,
+          (SELECT COUNT(*)::int FROM certificate_records cr WHERE cr.recipient_user_id = u.id) as certificates_count,
+          COALESCE(
+            (SELECT json_agg(json_build_object('skill_name', ss.skill_name, 'proficiency', ss.proficiency))
+             FROM student_skills ss WHERE ss.user_id = u.id),
+            '[]'::json
+          ) as skills
+         FROM users u
+         JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE sp.class_code = $1 AND u.is_active = TRUE
+         ORDER BY sp.full_name ASC`,
+        [code]
+      ),
+
+      // 5. Top Contributors in this class
+      query(
+        `SELECT 
+          u.id as user_id, u.username, sp.full_name, sp.profile_slug, sp.profile_photo_url,
+          COALESCE(SUM(pr.class_points), 0)::int as contributed_points,
+          COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as gold_medals,
+          COUNT(pr.id)::int as events_count
+         FROM users u
+         JOIN student_profiles sp ON sp.user_id = u.id
+         JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+         WHERE sp.class_code = $1 AND u.is_active = TRUE
+         GROUP BY u.id, u.username, sp.full_name, sp.profile_slug, sp.profile_photo_url
+         ORDER BY contributed_points DESC, gold_medals DESC
+         LIMIT 5`,
+        [code]
+      ),
+
+      // 6. Class Union Publications (Magazines, Projects, Videos, Posters)
+      query(
+        `SELECT id, class_code, title, description, category, item_url, thumbnail_url, created_at
+         FROM class_union_items
+         WHERE class_code = $1
+         ORDER BY created_at DESC`,
+        [code]
+      ),
+
+      // 7. Cycle Progression History (Trajectory Graph Data)
+      query(
+        `SELECT 
+          ac.id as cycle_id,
+          ac.name as cycle_name,
+          ac.academic_year,
+          ac.start_date,
+          ac.closed_at,
+          ac.status,
+          COALESCE(SUM(l.points), 0)::int as points_earned,
+          COUNT(l.id)::int as task_count
+         FROM academic_cycles ac
+         LEFT JOIN class_score_ledger l ON l.cycle_id = ac.id AND l.class_code = $1
+         GROUP BY ac.id, ac.name, ac.academic_year, ac.start_date, ac.closed_at, ac.status, ac.created_at
+         ORDER BY ac.created_at ASC`,
+        [code]
+      ),
+
+      // 8. Recent score ledger history
+      query(
+        `SELECT l.id, l.class_code, l.source_type, l.source_id, l.points, l.description, l.created_at
+         FROM class_score_ledger l
+         WHERE l.class_code = $1
+         ORDER BY l.created_at DESC
+         LIMIT 20`,
+        [code]
+      ),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        summary: summaryRes.rows[0] || { class_code: code, total_points: 0, sub_wing_points: 0, main_committee_points: 0, rank: 8 },
+        active_cycle_standing: activeCycleRes.rows[0] || { class_code: code, cycle_points: 0, cycle_rank: 8 },
+        union: unionRes.rows[0] || null,
+        members: membersRes.rows,
+        top_contributors: contributorsRes.rows,
+        publications: itemsRes.rows,
+        cycle_progression: progressionRes.rows,
+        history: historyRes.rows,
+      },
+    });
+  } catch (error) {
+    console.error('Class 360 error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch Class 360 details.' });
   }
 });
 

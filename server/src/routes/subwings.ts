@@ -43,6 +43,92 @@ router.get('/rules', async (_req, res) => {
   }
 });
 
+// Public: Get Sub-Wing Performance Analytics & Sub-Wing vs Class Score Matrix
+router.get('/analytics', async (_req, res) => {
+  try {
+    const [wingsSummaryRes, matrixRes, totalsRes] = await Promise.all([
+      // 1. Wing-by-wing performance metrics
+      query(`
+        SELECT 
+          sw.id, sw.code, sw.name, sw.description,
+          u_c.full_name as chairman_name,
+          u_v.full_name as convener_name,
+          COUNT(DISTINCT p.id)::int as programs_count,
+          COUNT(DISTINCT pr.student_id)::int as participants_count,
+          COUNT(DISTINCT pr.certificate_id)::int as certificates_count,
+          COALESCE(SUM(pr.class_points), 0)::int as total_points_distributed
+        FROM sub_wings sw
+        LEFT JOIN student_profiles u_c ON u_c.user_id = sw.chairman_id
+        LEFT JOIN student_profiles u_v ON u_v.user_id = sw.convener_id
+        LEFT JOIN programs p ON p.sub_wing_id = sw.id
+        LEFT JOIN program_results pr ON pr.program_id = p.id AND pr.status = 'PUBLISHED'
+        WHERE sw.status = 'ACTIVE'
+        GROUP BY sw.id, sw.code, sw.name, sw.description, u_c.full_name, u_v.full_name
+        ORDER BY sw.code ASC;
+      `),
+
+      // 2. Sub-Wing vs Class Relationship Matrix
+      query(`
+        SELECT 
+          sw.code as wing_code,
+          pr.class_code,
+          COALESCE(SUM(pr.class_points), 0)::int as points
+        FROM sub_wings sw
+        JOIN programs p ON p.sub_wing_id = sw.id
+        JOIN program_results pr ON pr.program_id = p.id AND pr.status = 'PUBLISHED'
+        GROUP BY sw.code, pr.class_code;
+      `),
+
+      // 3. Platform Totals
+      query(`
+        SELECT 
+          COUNT(DISTINCT p.id)::int as total_programs,
+          COUNT(DISTINCT pr.student_id)::int as total_participants,
+          COUNT(DISTINCT pr.certificate_id)::int as total_certificates,
+          COALESCE(SUM(pr.class_points), 0)::int as total_points_distributed
+        FROM programs p
+        LEFT JOIN program_results pr ON pr.program_id = p.id AND pr.status = 'PUBLISHED'
+        WHERE p.sub_wing_id IS NOT NULL;
+      `),
+    ]);
+
+    // Build structured matrix object
+    const classes = ['01', '02', '03', '04', '05', '06', '07', '08'];
+    const matrix: Record<string, Record<string, number>> = {};
+
+    wingsSummaryRes.rows.forEach((w: any) => {
+      matrix[w.code] = {};
+      classes.forEach((c) => {
+        matrix[w.code][c] = 0;
+      });
+    });
+
+    matrixRes.rows.forEach((row: any) => {
+      if (matrix[row.wing_code] && row.class_code) {
+        matrix[row.wing_code][row.class_code] = row.points;
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        wings: wingsSummaryRes.rows,
+        classes,
+        matrix,
+        totals: totalsRes.rows[0] || {
+          total_programs: 0,
+          total_participants: 0,
+          total_certificates: 0,
+          total_points_distributed: 0,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Fetch subwing analytics error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sub-wing analytics.' });
+  }
+});
+
 // Authenticated Routes for Chairman / Convener / Admin
 router.use(requireAuth);
 

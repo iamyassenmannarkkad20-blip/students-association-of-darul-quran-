@@ -90,7 +90,9 @@ export const App: React.FC = () => {
               <Route path="/services" element={<ServicesMarketplace />} />
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/portfolio/:slug" element={<PortfolioView />} />
+              <Route path="/student-360/:slug" element={<PortfolioView />} />
               <Route path="/explore" element={<TalentDiscovery />} />
+              <Route path="/discover" element={<TalentDiscovery />} />
               <Route path="/events" element={<Events />} />
               <Route path="/class-leaderboard" element={<ClassLeaderboard />} />
               <Route path="/leaderboard" element={<ClassLeaderboard />} />

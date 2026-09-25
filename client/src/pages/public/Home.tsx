@@ -53,6 +53,7 @@ export const Home: React.FC = () => {
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [committee, setCommittee] = useState<CommitteeMember[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [homePulse, setHomePulse] = useState<any | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<MediaItem | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const [loading, setLoading] = useState(true);
@@ -66,13 +67,14 @@ export const Home: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const [uRes, mRes, medRes, confRes, comRes, lbRes] = await Promise.all([
+        const [uRes, mRes, medRes, confRes, comRes, lbRes, pulseRes] = await Promise.all([
           apiRequest<Unit[]>('/public/units'),
           apiRequest<any[]>('/public/magazines'),
           apiRequest<MediaItem[]>('/public/media'),
           apiRequest<any>('/public/config'),
           apiRequest<CommitteeMember[]>('/public/committee'),
           apiRequest<any[]>('/leaderboard/leaderboard'),
+          apiRequest<any>('/public/home-pulse'),
         ]);
         if (uRes.success && uRes.data) setUnits(uRes.data);
         if (mRes.success && mRes.data) setMagazines(mRes.data);
@@ -80,6 +82,7 @@ export const Home: React.FC = () => {
         if (confRes.success && confRes.data?.announcement) setAnnouncement(confRes.data.announcement);
         if (comRes.success && comRes.data) setCommittee(comRes.data);
         if (lbRes.success && lbRes.data) setLeaderboard(lbRes.data);
+        if (pulseRes.success && pulseRes.data) setHomePulse(pulseRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -212,6 +215,175 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Live Campus Pulse & Defending Champion Section */}
+      {homePulse && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 mb-6 relative z-20 space-y-4">
+          {/* Active Cycle Bar */}
+          {homePulse.active_cycle && (
+            <div className="bg-gradient-to-r from-[#02167f] via-[#0320a6] to-[#010e52] rounded-2xl p-4 sm:p-5 text-white shadow-xl border border-[#ffd014]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-black uppercase text-[#ffd014] bg-[#ffd014]/20 border border-[#ffd014]/40 px-2 py-0.5 rounded">
+                      Active Leave Cycle
+                    </span>
+                    <span className="text-xs text-blue-200">
+                      Since {new Date(homePulse.active_cycle.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-white text-sm sm:text-base truncate mt-0.5">
+                    {homePulse.active_cycle.name}
+                  </h4>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  to="/class-leaderboard"
+                  className="px-4 py-2 rounded-xl bg-[#ffd014] hover:bg-amber-300 text-[#02167f] text-xs font-black transition-all shadow-md active:scale-95"
+                >
+                  View Live Cycle Standings →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Pulse Cards: Defending Champion, Latest Result, and Featured Achiever */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Defending Champion Golden Trophy Card */}
+            {homePulse.defending_champion ? (
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100/70 border border-amber-300/80 rounded-2xl p-4 shadow-sm space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded border border-amber-300">
+                    Defending Champion
+                  </span>
+                  <Trophy className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <h4 className="font-cinzel font-bold text-amber-950 text-base">
+                    {homePulse.defending_champion.union_name || `Class ${homePulse.defending_champion.best_class_code}`}
+                  </h4>
+                  <p className="text-xs text-amber-800">
+                    Won Best Class Trophy with {homePulse.defending_champion.best_class_points} PTS
+                  </p>
+                </div>
+                <Link
+                  to={`/class/${homePulse.defending_champion.best_class_code}`}
+                  className="inline-block text-xs font-bold text-amber-900 hover:underline pt-1"
+                >
+                  View Champion Class 360° →
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-[#02167f] bg-navy-50 px-2 py-0.5 rounded border border-navy-200">
+                    Cycle Standings
+                  </span>
+                  <Trophy className="w-4 h-4 text-gold-500" />
+                </div>
+                <div>
+                  <h4 className="font-cinzel font-bold text-slate-900 text-sm">
+                    Inaugural Leave Cycle Active
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Best Class Trophy will be awarded at next campus leave.
+                  </p>
+                </div>
+                <Link to="/class-leaderboard" className="text-xs font-bold text-[#02167f] hover:underline pt-1">
+                  View Live Ranks →
+                </Link>
+              </div>
+            )}
+
+            {/* Latest Competition Result Ticker */}
+            {homePulse.latest_results && homePulse.latest_results.length > 0 ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Latest Victory
+                  </span>
+                  <Award className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm line-clamp-1">
+                    {homePulse.latest_results[0].student_name}
+                  </h4>
+                  <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                    {homePulse.latest_results[0].position === 1 ? '🥇 1st Place' : 'Winner'} • {homePulse.latest_results[0].event_title}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <span className="text-xs font-black text-emerald-700">
+                    +{homePulse.latest_results[0].class_points} PTS for Class {homePulse.latest_results[0].class_code}
+                  </span>
+                  <Link to="/results" className="text-xs font-bold text-[#02167f] hover:underline">
+                    All Results →
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                    Competition Central
+                  </span>
+                  <Award className="w-4 h-4 text-slate-400" />
+                </div>
+                <p className="text-xs text-slate-500">
+                  Official published competition results and verified certificates.
+                </p>
+                <Link to="/results" className="text-xs font-bold text-[#02167f] hover:underline">
+                  Browse Results Portal →
+                </Link>
+              </div>
+            )}
+
+            {/* Featured Star Achiever */}
+            {homePulse.featured_star ? (
+              <div className="bg-gradient-to-br from-navy-50/60 to-white border border-navy-100 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-[#02167f] bg-white px-2 py-0.5 rounded border border-navy-200">
+                    Top Star Contributor
+                  </span>
+                  <Crown className="w-4 h-4 text-gold-500" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">
+                    {homePulse.featured_star.full_name}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Class {homePulse.featured_star.class_code} • {homePulse.featured_star.total_points} Points Contributed
+                  </p>
+                </div>
+                <Link
+                  to={`/portfolio/${homePulse.featured_star.profile_slug}`}
+                  className="text-xs font-bold text-[#02167f] hover:underline pt-1"
+                >
+                  View 360° Profile →
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                    Talent Discovery
+                  </span>
+                  <Users className="w-4 h-4 text-slate-400" />
+                </div>
+                <p className="text-xs text-slate-500">
+                  Discover peer talents and skills across Classes 01 through 08.
+                </p>
+                <Link to="/explore" className="text-xs font-bold text-[#02167f] hover:underline">
+                  Explore Peer Directory →
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Live Class Championship Podium Spotlight */}
       {leaderboard.length > 0 && (

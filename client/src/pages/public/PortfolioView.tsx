@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { InstagramIcon } from '../../components/icons/InstagramIcon';
 import { ShareModal } from '../../components/ShareModal';
+import { StudentGrowthTimeline } from '../../components/StudentGrowthTimeline';
 
 export const PortfolioView: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -75,7 +76,7 @@ export const PortfolioView: React.FC = () => {
     );
   }
 
-  const { profile, talents, skills, achievements, projects, organisation, score, honors, certificates } = data;
+  const { profile, talents, skills, achievements, projects, organisation, score, honors, certificates, growth_timeline } = data;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
@@ -99,9 +100,25 @@ export const PortfolioView: React.FC = () => {
               <h1 className="font-cinzel text-2xl sm:text-3xl font-extrabold text-navy-900">
                 {profile.fullName}
               </h1>
-              <span className="text-xs font-bold text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-300">
-                Class {profile.classCode}
-              </span>
+              {profile.classCode === 'ALUMNI' ? (
+                <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-300">
+                  🎓 Graduated Alumni {profile.graduationYear ? `(${profile.graduationYear})` : ''}
+                </span>
+              ) : (
+                <span className="text-xs font-bold text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-300">
+                  Class {profile.classCode}
+                </span>
+              )}
+
+              {/* Leadership Role Badges */}
+              {profile.leadershipRoles && profile.leadershipRoles.map((role: any, idx: number) => (
+                <span
+                  key={idx}
+                  className="text-xs font-black text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-xs"
+                >
+                  ⭐ {role.title}
+                </span>
+              ))}
             </div>
 
             {profile.bio && (
@@ -373,6 +390,13 @@ export const PortfolioView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Student Growth & Leadership Timeline */}
+      <StudentGrowthTimeline
+        events={growth_timeline || []}
+        studentName={profile.fullName}
+      />
+
       {showIdCard && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-gold-500/40 space-y-6 relative animate-scale-up">
@@ -503,18 +527,33 @@ export const PortfolioView: React.FC = () => {
           {skills.length === 0 ? (
             <p className="text-xs text-slate-400">No skills listed.</p>
           ) : (
-            <div className="flex flex-wrap gap-2">
-              {skills.map((s: any) => (
-                <div
-                  key={s.id}
-                  className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center gap-2"
-                >
-                  <span className="font-medium text-slate-800">{s.skill_name}</span>
-                  <span className="text-[9px] font-bold text-gold-700 bg-gold-100 px-1.5 py-0.5 rounded uppercase">
-                    {s.proficiency}
-                  </span>
-                </div>
-              ))}
+            <div className="space-y-3">
+              {skills.map((s: any) => {
+                const prof = (s.proficiency || 'BEGINNER').toUpperCase();
+                const pct = prof === 'EXPERT' ? 100 : prof === 'ADVANCED' ? 80 : prof === 'INTERMEDIATE' ? 55 : 30;
+                const barColor =
+                  prof === 'EXPERT'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                    : prof === 'ADVANCED'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-500'
+                    : prof === 'INTERMEDIATE'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-400'
+                    : 'bg-gradient-to-r from-slate-400 to-slate-300';
+
+                return (
+                  <div key={s.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-800">{s.skill_name}</span>
+                      <span className="text-[10px] font-black text-navy-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                        {prof}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
