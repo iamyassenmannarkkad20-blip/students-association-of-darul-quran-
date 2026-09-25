@@ -17,7 +17,9 @@ import { Certificates } from './pages/public/Certificates';
 import { PortfolioView } from './pages/public/PortfolioView';
 import { TalentDiscovery } from './pages/public/TalentDiscovery';
 import { Events } from './pages/public/Events';
-
+import { ClassLeaderboard } from './pages/public/ClassLeaderboard';
+import { ClassDetail } from './pages/public/ClassDetail';
+import { PublicResults } from './pages/public/PublicResults';
 
 // Auth
 import { Login } from './pages/auth/Login';
@@ -32,6 +34,10 @@ import { AchievementsPage } from './pages/student/AchievementsPage';
 import { ProjectsPage } from './pages/student/ProjectsPage';
 import { OrganisationView } from './pages/student/OrganisationView';
 import { CreateCenter } from './pages/student/CreateCenter';
+import { StudentResults } from './pages/student/StudentResults';
+
+// Sub-Wing Workspace
+import { SubWingDashboard } from './pages/subwing/SubWingDashboard';
 
 
 // Community
@@ -79,6 +85,9 @@ export const App: React.FC = () => {
               <Route path="/portfolio/:slug" element={<PortfolioView />} />
               <Route path="/explore" element={<TalentDiscovery />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/class-leaderboard" element={<ClassLeaderboard />} />
+              <Route path="/class/:code" element={<ClassDetail />} />
+              <Route path="/results" element={<PublicResults />} />
 
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
@@ -93,6 +102,10 @@ export const App: React.FC = () => {
               <Route path="/student/projects" element={<ProjectsPage />} />
               <Route path="/student/organisation" element={<OrganisationView />} />
               <Route path="/student/create" element={<CreateCenter />} />
+              <Route path="/student/results" element={<StudentResults />} />
+
+              {/* Sub-Wing Workspace */}
+              <Route path="/subwing" element={<SubWingDashboard />} />
 
               {/* Community */}
               <Route path="/community" element={<CommunityFeed />} />

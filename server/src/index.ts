@@ -8,6 +8,8 @@ import publicRoutes from './routes/public';
 import studentRoutes from './routes/student';
 import communityRoutes from './routes/community';
 import adminRoutes from './routes/admin';
+import leaderboardRoutes from './routes/leaderboard';
+import subwingRoutes from './routes/subwings';
 import { query } from './db';
 import argon2 from 'argon2';
 import { ROLES } from '../../shared/types';
@@ -77,6 +79,8 @@ app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/community', communityRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/leaderboard', leaderboardRoutes);
+app.use('/api/v1/subwings', subwingRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

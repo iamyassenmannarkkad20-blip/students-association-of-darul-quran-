@@ -67,6 +67,18 @@ export const Navbar: React.FC = () => {
               Units
             </Link>
             <Link
+              to="/class-leaderboard"
+              className="px-3 py-1.5 rounded-full text-[#ffd014] font-bold hover:bg-white/10 transition-all"
+            >
+              Leaderboard
+            </Link>
+            <Link
+              to="/results"
+              className="px-3 py-1.5 rounded-full hover:text-[#ffd014] hover:bg-white/10 transition-all"
+            >
+              Results
+            </Link>
+            <Link
               to="/explore"
               className="px-3 py-1.5 rounded-full hover:text-[#ffd014] hover:bg-white/10 transition-all"
             >
@@ -123,6 +135,21 @@ export const Navbar: React.FC = () => {
                     Admin
                   </Link>
                 ) : null}
+
+                <Link
+                  to="/subwing"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-blue-900/60 text-amber-200 border border-amber-300/30 rounded-xl hover:bg-blue-900 transition-all shadow-sm"
+                >
+                  <Award className="w-3.5 h-3.5 text-[#ffd014]" />
+                  Sub-Wing Portal
+                </Link>
+
+                <Link
+                  to="/student/results"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all border border-white/15"
+                >
+                  My Honors
+                </Link>
 
                 <Link
                   to="/student/create"
@@ -198,6 +225,20 @@ export const Navbar: React.FC = () => {
             About SADQ
           </Link>
           <Link
+            to="/class-leaderboard"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-bold text-[#ffd014] hover:bg-white/5"
+          >
+            🏆 Class Championship Leaderboard
+          </Link>
+          <Link
+            to="/results"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/5"
+          >
+            Competition & Task Results
+          </Link>
+          <Link
             to="/organisation"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/5"
@@ -270,6 +311,20 @@ export const Navbar: React.FC = () => {
                   className="block w-full py-2.5 text-center font-bold text-navy-950 bg-gold-400 rounded-lg"
                 >
                   Student Dashboard ({user.fullName.split(' ')[0]})
+                </Link>
+                <Link
+                  to="/subwing"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full py-2 text-center font-bold text-amber-300 bg-blue-950/70 border border-amber-300/30 rounded-lg text-sm"
+                >
+                  🎯 Sub-Wing Portal (Programs & Marks)
+                </Link>
+                <Link
+                  to="/student/results"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full py-2 text-center font-bold text-white bg-white/10 rounded-lg text-sm"
+                >
+                  🎖️ My Competition Honors & Points
                 </Link>
                 {user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' ? (
                   <Link

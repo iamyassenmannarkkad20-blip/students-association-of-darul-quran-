@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { query } from '../db';
+import { query, getClient } from '../db';
 import { requireAuth, requireRoles, RequestWithUser } from '../middleware/auth';
 import { ROLES } from '../../../shared/types';
 
@@ -212,7 +212,7 @@ router.get('/users', async (_req, res) => {
       `SELECT u.id, u.email, u.role, u.is_active, u.created_at,
               sp.full_name, sp.class_code, sp.profile_slug, sp.profile_photo_url,
               COALESCE(
-                (SELECT json_agg(json_build_object('unit_code', om.unit_code, 'role_in_unit', om.role_in_unit, 'position', om.position))
+                (SELECT json_agg(json_build_object('unit_code', om.unit_code, 'role_in_unit', om.designation, 'position', om.designation, 'is_leadership', om.is_leadership))
                  FROM organisation_memberships om
                  WHERE om.user_id = u.id AND om.is_active = TRUE),
                 '[]'::json
@@ -396,6 +396,266 @@ router.delete('/committee/:id', async (req, res) => {
   } catch (error) {
     console.error('Admin delete committee error:', error);
     res.status(500).json({ success: false, error: 'Failed to delete committee member.' });
+  }
+});
+
+// --- MAIN COMMITTEE CLASS TASKS ---
+// 1. List all class tasks
+router.get('/class-tasks', async (_req, res) => {
+  try {
+    const tasksRes = await query(`
+      SELECT 
+        ct.*,
+        (SELECT COUNT(*)::int FROM class_task_results ctr WHERE ctr.task_id = ct.id) as classes_marked_count
+      FROM class_tasks ct
+      ORDER BY ct.task_date DESC, ct.created_at DESC
+    `);
+
+    res.json({ success: true, data: tasksRes.rows });
+  } catch (error) {
+    console.error('Fetch class tasks error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load class tasks.' });
+  }
+});
+
+// 2. Create class task
+router.post('/class-tasks', async (req: RequestWithUser, res) => {
+  try {
+    const userId = req.user!.id;
+    const schema = z.object({
+      title: z.string().min(2),
+      description: z.string().optional().default(''),
+      assigned_class: z.enum(['01', '02', '03', '04', '05', '06', '07', '08']).optional().nullable(),
+      maximum_mark: z.number().positive().default(20),
+      task_date: z.string().optional().default(new Date().toISOString().split('T')[0]),
+      task_category: z.string().optional().default('Main Committee Task'),
+      winner_poster_url: z.string().optional().default(''),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `INSERT INTO class_tasks (title, description, assigned_class, maximum_mark, task_date, task_category, winner_poster_url, created_by, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'DRAFT')
+       RETURNING *`,
+      [d.title, d.description, d.assigned_class || null, d.maximum_mark, d.task_date, d.task_category, d.winner_poster_url, userId]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: 'Class task created successfully.' });
+  } catch (error) {
+    console.error('Create class task error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create class task.' });
+  }
+});
+
+// 3. Get specific task and results
+router.get('/class-tasks/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const taskRes = await query('SELECT * FROM class_tasks WHERE id = $1', [id]);
+    if (taskRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Task not found.' });
+    }
+
+    const resultsRes = await query('SELECT * FROM class_task_results WHERE task_id = $1 ORDER BY class_code ASC', [id]);
+
+    res.json({
+      success: true,
+      data: {
+        task: taskRes.rows[0],
+        results: resultsRes.rows,
+      },
+    });
+  } catch (error) {
+    console.error('Get task details error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch task details.' });
+  }
+});
+
+// 4. Save marks and Publish Class Task (Atomic Transaction + Double-Count Protection)
+router.post('/class-tasks/:id/results', async (req, res) => {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+    const taskRes = await client.query('SELECT * FROM class_tasks WHERE id = $1', [id]);
+    if (taskRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Task not found.' });
+    }
+    const task = taskRes.rows[0];
+
+    const markEntrySchema = z.object({
+      class_code: z.enum(['01', '02', '03', '04', '05', '06', '07', '08']),
+      mark: z.number().min(0),
+      winner_poster_url: z.string().optional().default(''),
+    });
+
+    const bodySchema = z.object({
+      class_results: z.array(markEntrySchema),
+      winner_poster_url: z.string().optional(),
+      publish_now: z.boolean().optional().default(true),
+    });
+
+    const parsed = bodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const { class_results, winner_poster_url, publish_now } = parsed.data;
+
+    await client.query('BEGIN');
+
+    // 1. Delete existing task results
+    await client.query('DELETE FROM class_task_results WHERE task_id = $1', [id]);
+
+    // 2. Insert class results
+    for (const cr of class_results) {
+      // In Main Committee Tasks, mark directly represents class points
+      const classPoints = Math.round(cr.mark);
+      await client.query(
+        `INSERT INTO class_task_results (task_id, class_code, mark, class_points, winner_poster_url, status, published_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          id,
+          cr.class_code,
+          cr.mark,
+          classPoints,
+          cr.winner_poster_url || winner_poster_url || '',
+          publish_now ? 'PUBLISHED' : 'DRAFT',
+          publish_now ? new Date() : null,
+        ]
+      );
+    }
+
+    if (winner_poster_url !== undefined) {
+      await client.query('UPDATE class_tasks SET winner_poster_url = $1 WHERE id = $2', [winner_poster_url, id]);
+    }
+
+    if (publish_now) {
+      // 3. Mark task as PUBLISHED
+      await client.query(
+        `UPDATE class_tasks 
+         SET status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [id]
+      );
+
+      // 4. Double-count protection: clear previous ledger entries for this task
+      await client.query(
+        `DELETE FROM class_score_ledger 
+         WHERE source_type = 'MAIN_COMMITTEE_TASK' AND source_id = $1`,
+        [id]
+      );
+
+      // 5. Insert ledger records
+      for (const cr of class_results) {
+        const points = Math.round(cr.mark);
+        if (points > 0) {
+          const desc = `${task.title} (Main Committee) — Class ${cr.class_code} (${cr.mark} Marks)`;
+          await client.query(
+            `INSERT INTO class_score_ledger (class_code, source_type, source_id, points, description)
+             VALUES ($1, 'MAIN_COMMITTEE_TASK', $2, $3, $4)`,
+            [cr.class_code, id, points, desc]
+          );
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: publish_now
+        ? '✅ Class task results published! Class scores and leaderboard updated live.'
+        : 'Class task results saved as draft.',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Save task results error:', error);
+    res.status(500).json({ success: false, error: 'Failed to record task results.' });
+  } finally {
+    client.release();
+  }
+});
+
+// 5. Delete task & clean ledger
+router.delete('/class-tasks/:id', async (req, res) => {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+    await client.query('BEGIN');
+    await client.query('DELETE FROM class_score_ledger WHERE source_type = \'MAIN_COMMITTEE_TASK\' AND source_id = $1', [id]);
+    await client.query('DELETE FROM class_tasks WHERE id = $1', [id]);
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Class task deleted successfully.' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Delete task error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete class task.' });
+  } finally {
+    client.release();
+  }
+});
+
+// --- SUB-WINGS LEADERSHIP MANAGEMENT ---
+// List sub-wings with leadership
+router.get('/subwings', async (_req, res) => {
+  try {
+    const result = await query(`
+      SELECT 
+        sw.id, sw.code, sw.name, sw.description, sw.status,
+        sw.chairman_id, sw.convener_id,
+        u_c.full_name as chairman_name,
+        u_v.full_name as convener_name,
+        (SELECT COUNT(*)::int FROM programs p WHERE p.sub_wing_id = sw.id) as programs_count
+      FROM sub_wings sw
+      LEFT JOIN student_profiles u_c ON u_c.user_id = sw.chairman_id
+      LEFT JOIN student_profiles u_v ON u_v.user_id = sw.convener_id
+      ORDER BY sw.code ASC
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Admin subwings error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sub-wings.' });
+  }
+});
+
+// Assign Chairman & Convener to a Sub-Wing
+router.patch('/subwings/:id/leadership', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schema = z.object({
+      chairman_id: z.string().uuid().optional().nullable(),
+      convener_id: z.string().uuid().optional().nullable(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `UPDATE sub_wings
+       SET chairman_id = COALESCE($1, chairman_id),
+           convener_id = COALESCE($2, convener_id),
+           name = COALESCE($3, name),
+           description = COALESCE($4, description),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $5
+       RETURNING *`,
+      [d.chairman_id, d.convener_id, d.name, d.description, id]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: 'Sub-Wing leadership assigned successfully.' });
+  } catch (error) {
+    console.error('Update subwing error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update Sub-Wing.' });
   }
 });
 

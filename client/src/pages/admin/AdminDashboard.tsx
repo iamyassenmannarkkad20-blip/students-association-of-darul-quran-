@@ -5,8 +5,11 @@ import { Link } from 'react-router-dom';
 import {
   Shield, BookOpen, CheckCircle, XCircle, Plus, ExternalLink,
   Users, Check, AlertCircle, RefreshCw, Megaphone, UserCheck, ShieldAlert,
-  Crown, Camera, Trash2, Edit2, Image as ImageIcon, Upload, User as UserIcon
+  Crown, Camera, Trash2, Edit2, Image as ImageIcon, Upload, User as UserIcon,
+  Trophy, Award
 } from 'lucide-react';
+import { AdminClassTasks } from './AdminClassTasks';
+import { AdminSubWings } from './AdminSubWings';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -25,7 +28,9 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'committee' | 'users' | 'announcement' | 'magazines' | 'queue' | 'stats'>('committee');
+  const [activeTab, setActiveTab] = useState<
+    'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'queue' | 'stats'
+  >('committee');
 
   // Executive Committee State
   const [committeeList, setCommitteeList] = useState<any[]>([]);
@@ -372,6 +377,26 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setActiveTab('class-tasks')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'class-tasks' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Trophy className="w-4 h-4 text-[#ffd014]" />
+          Class Tasks & Scores
+        </button>
+
+        <button
+          onClick={() => setActiveTab('subwings')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'subwings' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Award className="w-4 h-4 text-[#02167f]" />
+          13 Sub-Wings Leadership
+        </button>
+
+        <button
           onClick={() => setActiveTab('users')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
             activeTab === 'users' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -687,6 +712,12 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* TAB: CLASS TASKS & SCORES */}
+      {activeTab === 'class-tasks' && <AdminClassTasks />}
+
+      {/* TAB: 13 SUB-WINGS LEADERSHIP */}
+      {activeTab === 'subwings' && <AdminSubWings />}
 
       {/* TAB 1: USERS & 10 UNIT ASSIGNMENTS */}
       {activeTab === 'users' && (

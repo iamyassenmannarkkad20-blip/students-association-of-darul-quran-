@@ -435,4 +435,80 @@ router.get('/organisation', async (req: RequestWithUser, res) => {
   res.json({ success: true, data: result.rows });
 });
 
+// 8. My Results & Class Performance (/student/results)
+router.get('/my-results', async (req: RequestWithUser, res) => {
+  try {
+    const userId = req.user!.id;
+
+    // Get student profile
+    const profileRes = await query('SELECT full_name, class_code FROM student_profiles WHERE user_id = $1', [userId]);
+    const profile = profileRes.rows[0];
+    const classCode = profile?.class_code;
+
+    // Get competition results for this student
+    const results = await query(
+      `SELECT 
+        pr.id, pr.student_name, pr.class_code, pr.mark, pr.position, pr.class_points,
+        COALESCE(NULLIF(pr.winner_poster_url, ''), p.winner_poster_url) as winner_poster_url,
+        pr.published_at,
+        p.title as program_title, p.description as program_desc, p.program_date,
+        sw.name as sub_wing_name, sw.code as sub_wing_code
+       FROM program_results pr
+       JOIN programs p ON p.id = pr.program_id
+       JOIN sub_wings sw ON sw.id = p.sub_wing_id
+       WHERE pr.status = 'PUBLISHED' AND (pr.student_id = $1 OR LOWER(pr.student_name) = LOWER($2))
+       ORDER BY p.program_date DESC`,
+      [userId, profile?.full_name || '']
+    );
+
+    // Get current class rank and score
+    let classSummary = null;
+    let recentContributions: any[] = [];
+    if (classCode) {
+      const classRankRes = await query(
+        `WITH class_scores AS (
+          SELECT 
+            c.code as class_code,
+            COALESCE(SUM(l.points), 0)::int as total_points,
+            COALESCE(SUM(CASE WHEN l.source_type = 'SUB_WING_RESULT' THEN l.points ELSE 0 END), 0)::int as sub_wing_points,
+            COALESCE(SUM(CASE WHEN l.source_type = 'MAIN_COMMITTEE_TASK' THEN l.points ELSE 0 END), 0)::int as main_committee_points
+          FROM (VALUES ('01'), ('02'), ('03'), ('04'), ('05'), ('06'), ('07'), ('08')) as c(code)
+          LEFT JOIN class_score_ledger l ON l.class_code = c.code
+          GROUP BY c.code
+        ),
+        ranked AS (
+          SELECT *, DENSE_RANK() OVER (ORDER BY total_points DESC, class_code ASC) as rank
+          FROM class_scores
+        )
+        SELECT * FROM ranked WHERE class_code = $1`,
+        [classCode]
+      );
+      classSummary = classRankRes.rows[0] || null;
+
+      const contribRes = await query(
+        `SELECT id, points, description, created_at, source_type 
+         FROM class_score_ledger 
+         WHERE class_code = $1 
+         ORDER BY created_at DESC 
+         LIMIT 5`,
+        [classCode]
+      );
+      recentContributions = contribRes.rows;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        results: results.rows,
+        classCode,
+        classSummary,
+        recentContributions,
+      },
+    });
+  } catch (error) {
+    console.error('Fetch my results error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch personal results.' });
+  }
+});
+
 export default router;
