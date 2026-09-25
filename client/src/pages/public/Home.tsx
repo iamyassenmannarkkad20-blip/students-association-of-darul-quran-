@@ -95,46 +95,52 @@ export const Home: React.FC = () => {
       <section className="relative overflow-hidden bg-gradient-to-b from-[#071026] via-[#0B1B3D] to-navy-950 text-white pt-16 pb-28 px-4 sm:px-6 lg:px-8 border-b border-gold-500/20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold-500/15 via-transparent to-transparent pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-8">
-          {/* Prominent Majestic Emblem (VALUTHAKKI VENAM) */}
+        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
+          {/* Official Royal Seal / Insignia */}
           <div className="flex flex-col items-center justify-center animate-fade-in">
             <div className="relative group">
-              {/* Glowing Aura */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-gold-500/30 to-amber-500/30 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition duration-1000" />
-              
-              {/* Grand Shield Crest */}
-              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-b from-[#102A43] to-[#071026] p-1.5 shadow-2xl border-2 border-gold-400 flex items-center justify-center">
-                <div className="w-full h-full rounded-[22px] border border-gold-500/40 bg-gradient-to-b from-navy-800 to-navy-950 flex flex-col items-center justify-center p-2">
-                  <div className="w-8 h-8 rounded-full border border-gold-400/50 flex items-center justify-center mb-1">
-                    <Sparkles className="w-4 h-4 text-gold-400" />
+              {/* Golden Ambient Glow */}
+              <div className="absolute -inset-3 bg-gradient-to-r from-gold-500/30 via-amber-500/20 to-gold-500/30 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition duration-700" />
+
+              {/* Royal Circular Seal */}
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-gold-500 via-amber-300 to-gold-400 p-[2px] shadow-2xl shadow-gold-500/20 flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-gradient-to-b from-[#0B1B3D] to-[#071026] flex flex-col items-center justify-center border border-gold-500/40 p-2">
+                  <div className="w-7 h-7 rounded-full bg-gold-500/10 border border-gold-400/50 flex items-center justify-center mb-1">
+                    <BookOpen className="w-3.5 h-3.5 text-gold-400" />
                   </div>
-                  <span className="font-cinzel font-extrabold text-2xl sm:text-3xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-amber-500">
+                  <span className="font-cinzel font-extrabold text-lg sm:text-xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-amber-400">
                     SADQ
                   </span>
-                  <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-slate-300 font-semibold mt-0.5">
-                    Est. 2016
+                  <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-gold-300/80 font-bold">
+                    Official
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs sm:text-sm font-semibold tracking-wide">
-              <span>Students Association of Darul Quran Islamic Academy</span>
+            {/* Sub-badge: Beyond The Curriculum */}
+            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs font-bold tracking-widest uppercase">
+              <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+              <span>Beyond The Curriculum</span>
             </div>
           </div>
 
-          {/* Heading */}
-          <div className="space-y-4">
-            <h1 className="font-cinzel text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight">
-              BEYOND THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-amber-400">CURRICULUM</span>
+          {/* Main Heading: Full Official Name */}
+          <div className="space-y-3">
+            <h1 className="font-cinzel text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              STUDENTS ASSOCIATION OF <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-amber-400">
+                DARUL QURAN ISLAMIC ACADEMY
+              </span>
             </h1>
 
-            <div className="max-w-3xl mx-auto space-y-2">
-              <p className="text-base sm:text-xl text-gold-200/95 font-medium italic leading-relaxed">
-                “Your true potential begins where the textbook ends. Discover your passion, nurture your creative gifts, and rise with knowledge and purpose to illuminate the world.”
+            {/* Meaningful & Clean Motivation */}
+            <div className="max-w-2xl mx-auto space-y-1.5 pt-1">
+              <p className="text-sm sm:text-base text-gold-200/90 font-medium">
+                Fostering Creative Talents, Leadership, and Holistic Growth in Islamic Education.
               </p>
-              <p className="text-xs sm:text-sm text-slate-300/90 font-normal tracking-wide">
-                പാഠപുസ്തകങ്ങളുടെ അതിരുകൾക്കപ്പുറം ചിറകുവിരിക്കൂ; അറിവും സർഗ്ഗാത്മകതയും കൊണ്ട് ലോകത്തെ നയിക്കാം.
+              <p className="text-xs sm:text-sm text-slate-300 font-normal">
+                സർഗ്ഗാത്മകത, വിദ്യാർത്ഥി വളർച്ച, നേതൃത്വ പാടവം — അറിവിനൊപ്പം കർമ്മശേഷി.
               </p>
             </div>
           </div>
