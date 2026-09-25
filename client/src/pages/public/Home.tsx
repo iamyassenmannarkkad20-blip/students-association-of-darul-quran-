@@ -776,7 +776,7 @@ export const Home: React.FC = () => {
           onClick={() => setActiveVideoModal(null)}
         >
           <div
-            className="bg-slate-950 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl border border-white/10 relative"
+            className="bg-slate-950 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl border border-white/10 relative max-h-[90dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 bg-slate-900/80 border-b border-white/10 flex items-center justify-between text-white">

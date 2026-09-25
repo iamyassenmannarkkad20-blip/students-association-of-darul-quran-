@@ -143,25 +143,25 @@ export const AdminCycles: React.FC = () => {
   const leadingClass = standings.length > 0 && standings[0].total_points > 0 ? standings[0] : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Top Banner & Action */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#02167f]" />
-            Academic Cycles & "Best Class of the Month" Manager
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-[#02167f] shrink-0" />
+            <span>Academic Cycles & "Best Class of the Month" Manager</span>
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Dynamic cycles based on campus leaves/vacations. When leave arrives, close the cycle to automatically award the Best Class trophy.
           </p>
         </div>
 
         <button
           onClick={() => setShowStartModal(true)}
-          className="inline-flex items-center gap-2 bg-[#02167f] hover:bg-[#0320b3] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow transition"
+          className="w-full sm:w-auto justify-center inline-flex items-center gap-2 bg-[#02167f] hover:bg-[#0320b3] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow transition active:scale-95"
         >
           <Plus className="w-4 h-4" />
-          Start New Academic Cycle
+          <span>Start New Academic Cycle</span>
         </button>
       </div>
 
@@ -174,22 +174,22 @@ export const AdminCycles: React.FC = () => {
 
       {/* Active Cycle Control Panel */}
       {activeCycle ? (
-        <div className="bg-gradient-to-br from-slate-900 via-[#02167f] to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-xl border border-blue-800/40 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 via-[#02167f] to-slate-900 text-white rounded-2xl p-5 sm:p-6 md:p-8 shadow-xl border border-blue-800/40 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 sm:gap-6">
+            <div className="w-full lg:w-auto">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   ACTIVE CYCLE IN PROGRESS
                 </span>
-                <span className="text-xs text-blue-200">Year: {activeCycle.academic_year}</span>
+                <span className="text-xs text-blue-200 font-mono">Year: {activeCycle.academic_year}</span>
               </div>
 
-              <h3 className="text-2xl md:text-3xl font-black text-white">{activeCycle.name}</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white">{activeCycle.name}</h3>
 
-              <div className="flex items-center gap-4 mt-2 text-xs md:text-sm text-blue-200">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs sm:text-sm text-blue-200">
                 <span>Start Date: <strong>{new Date(activeCycle.start_date).toLocaleDateString()}</strong></span>
                 {activeCycle.target_leave_date && (
                   <span>• Target Leave: <strong>{new Date(activeCycle.target_leave_date).toLocaleDateString()}</strong></span>
@@ -197,7 +197,7 @@ export const AdminCycles: React.FC = () => {
               </div>
 
               {activeCycle.notes && (
-                <p className="text-xs text-blue-100/80 mt-2 italic bg-white/5 p-2 rounded max-w-xl">
+                <p className="text-xs text-blue-100/80 mt-2 italic bg-white/5 p-2 rounded-xl max-w-xl">
                   Note: {activeCycle.notes}
                 </p>
               )}
@@ -206,42 +206,42 @@ export const AdminCycles: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
               <button
                 onClick={() => setShowCloseModal(true)}
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/20 transition"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/20 transition active:scale-95"
               >
-                <Trophy className="w-5 h-5 text-slate-950" />
-                Close Cycle & Award Best Class
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950 shrink-0" />
+                <span>Close Cycle & Award Best Class</span>
               </button>
             </div>
           </div>
 
           {/* Live Standings within this cycle */}
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2">
+          <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2">
                 <Award className="w-4 h-4 text-amber-400" />
-                Live Standings for this Cycle
+                <span>Live Standings for this Cycle</span>
               </h4>
               {leadingClass && (
-                <span className="text-xs bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-full font-bold">
+                <span className="text-[11px] sm:text-xs bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-full font-bold self-start sm:self-auto">
                   Current Leader: Class {leadingClass.class_code} ({leadingClass.total_points} pts)
                 </span>
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
               {standings.map((s) => (
                 <div
                   key={s.class_code}
-                  className={`p-3 rounded-xl border text-center transition ${
+                  className={`p-2 sm:p-3 rounded-xl border text-center transition ${
                     s.rank === 1 && s.total_points > 0
                       ? 'bg-amber-400/20 border-amber-400/50 shadow-md shadow-amber-500/10'
                       : 'bg-white/5 border-white/10 hover:bg-white/10'
                   }`}
                 >
-                  <div className="text-[10px] font-bold text-blue-200 uppercase">Rank #{s.rank}</div>
-                  <div className="text-lg font-black text-white mt-0.5">Class {s.class_code}</div>
-                  <div className="text-sm font-extrabold text-amber-400">{s.total_points} pts</div>
-                  <div className="text-[10px] text-blue-200 mt-1 truncate" title={s.union_name || ''}>
+                  <div className="text-[9px] sm:text-[10px] font-bold text-blue-200 uppercase">Rank #{s.rank}</div>
+                  <div className="text-base sm:text-lg font-black text-white mt-0.5">Class {s.class_code}</div>
+                  <div className="text-xs sm:text-sm font-extrabold text-amber-400">{s.total_points} pts</div>
+                  <div className="text-[9px] sm:text-[10px] text-blue-200 mt-1 truncate" title={s.union_name || ''}>
                     {s.union_name || `Class ${s.class_code}`}
                   </div>
                 </div>
@@ -267,23 +267,67 @@ export const AdminCycles: React.FC = () => {
       )}
 
       {/* Historical Cycles & Defending Champions Archive */}
+      {/* Historical Cycles & Defending Champions Archive */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-amber-500" />
-              Past Cycles & "Best Class Award" Honor Roll
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
+              <span>Past Cycles & "Best Class Award" Honor Roll</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Historical ledger of concluded campus cycles and their awarded Best Classes.
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full self-start sm:self-auto">
             {history.filter((c) => c.status === 'CLOSED').length} Archived Cycles
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Card List View (< md) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {history.length === 0 ? (
+            <div className="py-8 text-center text-slate-400 text-xs">No academic cycles recorded yet.</div>
+          ) : (
+            history.map((c) => (
+              <div key={c.id} className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm text-slate-900">{c.name}</h4>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      c.status === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    {c.status}
+                  </span>
+                </div>
+                <div className="text-xs text-slate-500 flex items-center justify-between">
+                  <span>Year: <strong className="font-mono text-slate-700">{c.academic_year}</strong></span>
+                  <span>{new Date(c.start_date).toLocaleDateString()} {c.closed_at ? `➔ ${new Date(c.closed_at).toLocaleDateString()}` : ''}</span>
+                </div>
+                <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <div>
+                    {c.best_class_code ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-300">
+                        🏆 Class {c.best_class_code} ({c.best_class_union_name || `Union`})
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Pending closure</span>
+                    )}
+                  </div>
+                  <span className="font-bold text-amber-700">
+                    {c.best_class_points ? `${c.best_class_points} pts` : '—'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto no-scrollbar scroll-touch">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-100 uppercase text-[11px] tracking-wider">
               <tr>
@@ -349,8 +393,8 @@ export const AdminCycles: React.FC = () => {
 
       {/* START CYCLE MODAL */}
       {showStartModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-[#02167f]" />
@@ -452,8 +496,8 @@ export const AdminCycles: React.FC = () => {
 
       {/* CLOSE CYCLE MODAL */}
       {showCloseModal && activeCycle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
               <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-amber-500" />

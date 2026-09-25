@@ -240,15 +240,15 @@ export const PortfolioView: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2.5 rounded-2xl bg-white/10 border border-white/15 text-center">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-white/10 border border-white/15 text-center">
               <span className="text-[10px] text-amber-200 uppercase font-bold block">Standing</span>
               <span className="text-xl font-black text-[#ffd014]">
                 {score?.rank ? `Rank #${score.rank}` : 'Unranked'}
               </span>
             </div>
 
-            <div className="px-5 py-2.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-center shadow-lg">
+            <div className="flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-center shadow-lg">
               <span className="text-[10px] uppercase font-black block tracking-wider">Academy Score</span>
               <span className="text-2xl font-black leading-none">{score?.total_points || 0} PTS</span>
             </div>
@@ -400,7 +400,7 @@ export const PortfolioView: React.FC = () => {
 
       {showIdCard && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-gold-500/40 space-y-6 relative animate-scale-up">
+          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-sm w-full shadow-2xl border border-gold-500/40 space-y-6 relative animate-scale-up max-h-[90dvh] overflow-y-auto">
             <button
               onClick={() => setShowIdCard(false)}
               className="absolute right-4 top-4 p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"

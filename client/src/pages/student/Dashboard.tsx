@@ -89,39 +89,39 @@ export const StudentDashboard: React.FC = () => {
           </h1>
           <p className="text-sm text-slate-500 mt-1">Your Student Growth Dashboard — SADQ Platform</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           {hasSubWingRole && (
             <Link
               to="/subwing"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-navy-950 font-bold text-xs shadow-md transition-colors"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-navy-950 font-bold text-xs shadow-md transition-colors"
             >
-              <Award className="w-4 h-4 text-navy-900" />
-              <span>Open Wing Portal ({assignedSubWings[0].code})</span>
+              <Award className="w-4 h-4 text-navy-900 shrink-0" />
+              <span>Wing Portal ({assignedSubWings[0].code})</span>
             </Link>
           )}
           {assignedClassUnion && (
             <Link
               to="/student/class-union"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-colors"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-colors"
             >
-              <Users className="w-4 h-4 text-amber-300" />
-              <span>Manage Class {assignedClassUnion.class_code} Union</span>
+              <Users className="w-4 h-4 text-amber-300 shrink-0" />
+              <span>Class {assignedClassUnion.class_code} Union</span>
             </Link>
           )}
           <button
             type="button"
             onClick={() => setShowIdCard(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-navy-950 font-bold text-xs shadow-md transition-all active:scale-95"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-navy-950 font-bold text-xs shadow-md transition-all active:scale-95"
           >
-            <QrCode className="w-4 h-4 text-navy-950" />
-            <span>Digital ID & QR Pass</span>
+            <QrCode className="w-4 h-4 text-navy-950 shrink-0" />
+            <span>Digital ID & QR</span>
           </button>
 
           <Link
             to="/student/create"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-xs shadow-md transition-colors"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-xs shadow-md transition-colors"
           >
-            <PlusCircle className="w-4 h-4 text-gold-400" />
+            <PlusCircle className="w-4 h-4 text-gold-400 shrink-0" />
             <span>Create Content</span>
           </Link>
         </div>
@@ -252,15 +252,15 @@ export const StudentDashboard: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2 rounded-2xl bg-white/10 border border-white/15 text-center">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex-1 sm:flex-initial px-4 py-2 rounded-2xl bg-white/10 border border-white/15 text-center">
               <span className="text-[10px] text-amber-200 uppercase font-bold block">Standing</span>
               <span className="text-xl font-black text-[#ffd014]">
                 {score?.rank ? `Rank #${score.rank}` : 'Unranked'}
               </span>
             </div>
 
-            <div className="px-5 py-2.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-center shadow-lg">
+            <div className="flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-center shadow-lg">
               <span className="text-[10px] uppercase font-black block tracking-wider">Total Score</span>
               <span className="text-2xl font-black leading-none">{score?.total_points || 0} PTS</span>
             </div>

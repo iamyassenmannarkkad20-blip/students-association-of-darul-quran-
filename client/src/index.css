@@ -3,13 +3,51 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-[#F8FAFC] text-slate-800 antialiased font-sans;
+    overflow-x: hidden;
+    width: 100%;
+    min-width: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   h1, h2, h3, .font-cinzel {
     font-family: 'Cinzel', serif, system-ui;
+    overflow-wrap: break-word;
   }
+
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Prevent flex/grid items from blowing out containers */
+  * {
+    min-width: 0;
+  }
+}
+
+/* Touch-friendly smooth scroll container */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Utility to hide scrollbars cleanly while preserving scrollability */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Custom scrollbar */

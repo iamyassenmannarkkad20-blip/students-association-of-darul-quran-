@@ -96,40 +96,40 @@ export const ClassLeaderboard: React.FC = () => {
 
         {/* Tab Toggle Pill */}
         <div className="flex items-center justify-center pt-3">
-          <div className="inline-flex p-1.5 rounded-2xl bg-white border border-slate-200 shadow-md gap-1.5">
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto p-1.5 rounded-2xl bg-white border border-slate-200 shadow-md gap-1.5">
             <button
               onClick={() => setActiveTab('classes')}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'classes'
-                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20 scale-105'
+                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
-              <Trophy className="w-4 h-4" />
+              <Trophy className="w-4 h-4 shrink-0" />
               <span>Class Championship (8 Batches)</span>
             </button>
 
             <button
               onClick={() => setActiveTab('students')}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'students'
-                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20 scale-105'
+                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
-              <Sparkles className="w-4 h-4 text-amber-500" />
+              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Student Star Achievers</span>
             </button>
 
             <button
               onClick={() => setActiveTab('archive')}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'archive'
-                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20 scale-105'
+                  ? 'bg-[#02167f] text-[#ffd014] shadow-md shadow-[#02167f]/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
-              <Award className="w-4 h-4 text-emerald-500" />
+              <Award className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Hall of Fame & History Archive</span>
             </button>
           </div>
@@ -310,7 +310,63 @@ export const ClassLeaderboard: React.FC = () => {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile Cards List (< 768px) */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {classes.map((c) => (
+                  <div key={c.class_code} className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`inline-flex items-center justify-center w-7 h-7 rounded-full font-black text-xs shrink-0 ${
+                            c.rank === 1
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300 font-extrabold shadow-sm'
+                              : c.rank === 2
+                              ? 'bg-slate-200 text-slate-800 border border-slate-300'
+                              : c.rank === 3
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          #{c.rank}
+                        </span>
+                        <div>
+                          <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                            <span>Class {c.class_code}</span>
+                            {c.rank === 1 && <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                          </div>
+                          <span className="text-[11px] text-slate-400">Batch Sangadhana</span>
+                        </div>
+                      </div>
+
+                      <span className="inline-flex items-center px-3 py-1 rounded-xl bg-navy-50 text-[#02167f] font-black text-sm border border-navy-200">
+                        {c.total_points} PTS
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <div>
+                        <span className="text-slate-400 text-[10px] block uppercase font-bold">Sub-Wing Pts</span>
+                        <span className="font-bold text-slate-800">{c.sub_wing_points} pts</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 text-[10px] block uppercase font-bold">Committee Pts</span>
+                        <span className="font-bold text-slate-800">{c.main_committee_points} pts</span>
+                      </div>
+                    </div>
+
+                    <Link
+                      to={`/class/${c.class_code}`}
+                      className="w-full inline-flex items-center justify-center gap-1 py-2 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 text-xs font-bold transition-all shadow-sm"
+                    >
+                      <span>View Class Breakdown</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (>= 768px) */}
+              <div className="hidden md:block overflow-x-auto no-scrollbar scroll-touch">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
@@ -576,7 +632,79 @@ export const ClassLeaderboard: React.FC = () => {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile Cards List (< 768px) */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {students.map((s) => (
+                  <div key={s.user_id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`inline-flex items-center justify-center w-7 h-7 rounded-full font-black text-xs shrink-0 ${
+                            s.rank === 1
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300 font-extrabold shadow-sm'
+                              : s.rank === 2
+                              ? 'bg-slate-200 text-slate-800 border border-slate-300'
+                              : s.rank === 3
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          #{s.rank}
+                        </span>
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                          {s.profile_photo_url ? (
+                            <img
+                              src={s.profile_photo_url}
+                              alt={s.full_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-5 h-5 m-2 text-slate-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5 truncate">
+                            <span className="truncate">{s.full_name}</span>
+                            {s.rank === 1 && <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                          </div>
+                          <span className="text-[11px] text-gold-700 font-semibold block truncate">
+                            @{s.username}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-xl bg-navy-50 text-[#02167f] font-black text-sm border border-navy-200">
+                        {s.total_points} PTS
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white text-[#02167f] font-bold text-[11px] border border-slate-200">
+                        <GraduationCap className="w-3 h-3" />
+                        <span>Class {s.class_code}</span>
+                      </span>
+
+                      <div className="inline-flex items-center gap-2 font-bold text-slate-700">
+                        <span>🥇 {s.first_places}</span>
+                        <span>🥈 {s.second_places}</span>
+                        <span>🥉 {s.third_places}</span>
+                        <span className="text-emerald-700">📜 {s.certificates_count}</span>
+                      </div>
+                    </div>
+
+                    <Link
+                      to={`/portfolio/${s.profile_slug}`}
+                      className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 text-xs font-bold transition-all shadow-sm"
+                    >
+                      <span>View Student Portfolio</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (>= 768px) */}
+              <div className="hidden md:block overflow-x-auto no-scrollbar scroll-touch">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
@@ -740,27 +868,27 @@ export const ClassLeaderboard: React.FC = () => {
 
                     {/* Best Class Winner Spotlight */}
                     {cy.best_class_code ? (
-                      <div className="bg-gradient-to-r from-amber-50 to-amber-100/60 rounded-2xl p-4 border border-amber-300/80 flex items-center justify-between gap-3">
+                      <div className="bg-gradient-to-r from-amber-50 to-amber-100/60 rounded-2xl p-4 border border-amber-300/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center font-black text-xl shadow-md">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center font-black text-xl shadow-md shrink-0">
                             🏆
                           </div>
-                          <div>
-                            <span className="text-[10px] font-black uppercase text-amber-800 tracking-wider">
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-black uppercase text-amber-800 tracking-wider block">
                               Best Class Golden Trophy Winner
                             </span>
-                            <h4 className="font-cinzel text-base font-black text-[#02167f] leading-tight">
+                            <h4 className="font-cinzel text-base font-black text-[#02167f] leading-tight truncate">
                               Class {cy.best_class_code} {cy.best_class_union_name ? `• ${cy.best_class_union_name}` : ''}
                             </h4>
                             {cy.best_class_motto && (
-                              <p className="text-[11px] text-slate-600 italic">"{cy.best_class_motto}"</p>
+                              <p className="text-[11px] text-slate-600 italic line-clamp-1">"{cy.best_class_motto}"</p>
                             )}
                           </div>
                         </div>
 
                         <Link
                           to={`/class/${cy.best_class_code}`}
-                          className="px-3 py-1.5 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#010e52] transition-colors shrink-0 shadow-sm"
+                          className="w-full sm:w-auto text-center px-3.5 py-2 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#010e52] transition-colors shrink-0 shadow-sm"
                         >
                           View Class 360°
                         </Link>

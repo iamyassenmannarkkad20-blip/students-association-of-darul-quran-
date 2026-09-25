@@ -598,8 +598,8 @@ export const SubWingDashboard: React.FC = () => {
 
       {/* ENTER MARKS MODAL */}
       {activeProgram && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] flex flex-col justify-between">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 sm:p-8 shadow-2xl relative max-h-[90dvh] flex flex-col justify-between">
             <div className="overflow-y-auto space-y-5 pr-2">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
@@ -672,7 +672,7 @@ export const SubWingDashboard: React.FC = () => {
                   {participants.map((p, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-200/80"
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-200/80"
                     >
                       <div className="flex-1">
                         <input
@@ -685,62 +685,64 @@ export const SubWingDashboard: React.FC = () => {
                         />
                       </div>
 
-                      <div className="w-28">
-                        <select
-                          aria-label="Class Code"
-                          value={p.class_code}
-                          onChange={(e) => updateParticipant(idx, 'class_code', e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold focus:outline-none"
-                        >
-                          {(['01', '02', '03', '04', '05', '06', '07', '08'] as const).map((c) => (
-                            <option key={c} value={c}>
-                              Class {c}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="w-20">
-                        <input
-                          type="number"
-                          min="0"
-                          max={activeProgram.maximum_mark}
-                          placeholder="Mark"
-                          value={p.mark}
-                          onChange={(e) => updateParticipant(idx, 'mark', Number(e.target.value))}
-                          className="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-center focus:outline-none focus:border-[#02167f]"
-                        />
-                      </div>
-
-                      {p.position !== undefined && p.position > 0 && (
-                        <div className="shrink-0 text-center w-20">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider block ${
-                              p.position === 1
-                                ? 'bg-amber-100 text-amber-900'
-                                : p.position === 2
-                                ? 'bg-slate-200 text-slate-800'
-                                : p.position === 3
-                                ? 'bg-amber-900/10 text-amber-900'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 sm:w-28">
+                          <select
+                            aria-label="Class Code"
+                            value={p.class_code}
+                            onChange={(e) => updateParticipant(idx, 'class_code', e.target.value)}
+                            className="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold focus:outline-none"
                           >
-                            {p.position === 1 ? '1st' : p.position === 2 ? '2nd' : p.position === 3 ? '3rd' : 'Part.'}
-                          </span>
-                          <span className="text-[10px] font-bold text-emerald-600 block">
-                            +{p.class_points} pts
-                          </span>
+                            {(['01', '02', '03', '04', '05', '06', '07', '08'] as const).map((c) => (
+                              <option key={c} value={c}>
+                                Class {c}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                      )}
 
-                      <button
-                        type="button"
-                        onClick={() => removeParticipantRow(idx)}
-                        className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-white transition-all"
-                        title="Remove row"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        <div className="w-20">
+                          <input
+                            type="number"
+                            min="0"
+                            max={activeProgram.maximum_mark}
+                            placeholder="Mark"
+                            value={p.mark}
+                            onChange={(e) => updateParticipant(idx, 'mark', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-center focus:outline-none focus:border-[#02167f]"
+                          />
+                        </div>
+
+                        {p.position !== undefined && p.position > 0 && (
+                          <div className="shrink-0 text-center w-16 sm:w-20">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider block ${
+                                p.position === 1
+                                  ? 'bg-amber-100 text-amber-900'
+                                  : p.position === 2
+                                  ? 'bg-slate-200 text-slate-800'
+                                  : p.position === 3
+                                  ? 'bg-amber-900/10 text-amber-900'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              {p.position === 1 ? '1st' : p.position === 2 ? '2nd' : p.position === 3 ? '3rd' : 'Part.'}
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-600 block">
+                              +{p.class_points} pts
+                            </span>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => removeParticipantRow(idx)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-white transition-all shrink-0"
+                          title="Remove row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

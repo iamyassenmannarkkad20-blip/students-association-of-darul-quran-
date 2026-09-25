@@ -355,26 +355,26 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5 sm:pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gold-100 text-gold-800 border border-gold-300">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-gold-100 text-gold-800 border border-gold-300">
               {user.role}
             </span>
-            <span className="text-xs text-slate-500 font-medium">Logged in as {user.fullName}</span>
+            <span className="text-xs text-slate-500 font-medium truncate max-w-[200px] sm:max-w-none">Logged in as {user.fullName}</span>
           </div>
-          <h1 className="font-cinzel text-3xl font-extrabold text-navy-950 mt-1 flex items-center gap-2">
-            <Shield className="w-8 h-8 text-gold-500" />
-            Institutional Admin Suite
+          <h1 className="font-cinzel text-2xl sm:text-3xl font-extrabold text-navy-950 mt-1 flex items-center gap-2">
+            <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-gold-500 shrink-0" />
+            <span>Institutional Admin Suite</span>
           </h1>
         </div>
 
         <button
           onClick={loadData}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm"
+          className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition-all active:scale-95"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Refresh Data
@@ -388,156 +388,156 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-2 overflow-x-auto">
+      {/* Tabs with smooth touch scrolling and no scrollbar blowout */}
+      <div className="flex border-b border-slate-200 gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar scroll-touch pb-1">
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'analytics' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <BarChart3 className="w-4 h-4 text-indigo-600" />
+          <BarChart3 className="w-4 h-4 text-indigo-600 shrink-0" />
           <span>Campus Analytics</span>
         </button>
 
         <button
           onClick={() => setActiveTab('cycles')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'cycles' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Calendar className="w-4 h-4 text-amber-500" />
+          <Calendar className="w-4 h-4 text-amber-500 shrink-0" />
           <span>Cycles & Best Class</span>
         </button>
 
         <button
           onClick={() => setActiveTab('score-ledger')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'score-ledger' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Trophy className="w-4 h-4 text-amber-500" />
+          <Trophy className="w-4 h-4 text-amber-500 shrink-0" />
           <span>Score Corrections & Ledger</span>
         </button>
 
         <button
           onClick={() => setActiveTab('class-unions')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'class-unions' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <GraduationCap className="w-4 h-4 text-emerald-600" />
+          <GraduationCap className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>8 Class Unions & Alumni</span>
         </button>
 
         <button
           onClick={() => setActiveTab('committee')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'committee' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Crown className="w-4 h-4 text-amber-500" />
-          Executive Committee ({committeeList.length})
+          <Crown className="w-4 h-4 text-amber-500 shrink-0" />
+          <span>Executive Committee ({committeeList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('competitions')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'competitions' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Trophy className="w-4 h-4 text-[#ffd014]" />
+          <Trophy className="w-4 h-4 text-[#ffd014] shrink-0" />
           <span>Central Competitions & Awards</span>
         </button>
 
         <button
           onClick={() => setActiveTab('certificates')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'certificates' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Award className="w-4 h-4 text-emerald-600" />
+          <Award className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>Certificates Registry</span>
         </button>
 
         <button
           onClick={() => setActiveTab('class-tasks')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'class-tasks' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Trophy className="w-4 h-4 text-slate-400" />
-          Class Tasks & Scores
+          <Trophy className="w-4 h-4 text-slate-400 shrink-0" />
+          <span>Class Tasks & Scores</span>
         </button>
 
         <button
           onClick={() => setActiveTab('subwings')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'subwings' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Award className="w-4 h-4 text-[#02167f]" />
-          10 Official Sub-Wings Leadership
+          <Award className="w-4 h-4 text-[#02167f] shrink-0" />
+          <span>10 Official Sub-Wings Leadership</span>
         </button>
 
         <button
           onClick={() => setActiveTab('users')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'users' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Users className="w-4 h-4" />
-          Students & Alumni Directory
+          <Users className="w-4 h-4 shrink-0" />
+          <span>Students & Alumni Directory</span>
         </button>
 
         <button
           onClick={() => setActiveTab('announcement')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'announcement' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Megaphone className="w-4 h-4 text-gold-600" />
-          Home Notice Banner
+          <Megaphone className="w-4 h-4 text-gold-600 shrink-0" />
+          <span>Home Notice Banner</span>
         </button>
 
         <button
           onClick={() => setActiveTab('magazines')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'magazines' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <BookOpen className="w-4 h-4" />
-          Magazines & Publications ({magazines.length})
+          <BookOpen className="w-4 h-4 shrink-0" />
+          <span>Magazines & Publications ({magazines.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('media')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'media' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Video className="w-4 h-4 text-red-600" />
-          Media & Videos
+          <Video className="w-4 h-4 text-red-600 shrink-0" />
+          <span>Media & Videos</span>
         </button>
 
         <button
           onClick={() => setActiveTab('queue')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'queue' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <CheckCircle className="w-4 h-4" />
-          Pending Approvals ({queue.posts.length + queue.articles.length + queue.library.length})
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          <span>Pending Approvals ({queue.posts.length + queue.articles.length + queue.library.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('stats')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`shrink-0 pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all ${
             activeTab === 'stats' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ShieldAlert className="w-4 h-4" />
-          Database Stats
+          <ShieldAlert className="w-4 h-4 shrink-0" />
+          <span>Database Stats</span>
         </button>
       </div>
 

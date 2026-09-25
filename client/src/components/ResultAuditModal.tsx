@@ -65,7 +65,7 @@ export const ResultAuditModal: React.FC<ResultAuditModalProps> = ({ onClose }) =
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-3xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl space-y-4 my-auto max-h-[90dvh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">

@@ -344,7 +344,7 @@ export const AdminUsersManager: React.FC = () => {
       </div>
 
       {/* Filters and Search Bar */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row gap-2.5 sm:gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -359,7 +359,7 @@ export const AdminUsersManager: React.FC = () => {
         <select
           value={classFilter}
           onChange={(e) => setClassFilter(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+          className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#02167f]"
         >
           <option value="">All Batches & Alumni</option>
           {['01', '02', '03', '04', '05', '06', '07', '08'].map((c) => (
@@ -373,7 +373,7 @@ export const AdminUsersManager: React.FC = () => {
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+          className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#02167f]"
         >
           <option value="">All System Roles</option>
           {ROLES.map((r) => (
@@ -386,7 +386,101 @@ export const AdminUsersManager: React.FC = () => {
 
       {/* Users & Alumni Table */}
       <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Mobile Card List View (< md) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="py-12 text-center text-slate-400 text-xs">Loading directory...</div>
+          ) : users.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 text-xs">No users found matching this filter.</div>
+          ) : (
+            users.map((u) => (
+              <div key={u.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-navy-900 text-gold-300 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-gold-400/30">
+                      {u.profile_photo_url ? (
+                        <img src={u.profile_photo_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-bold text-sm text-slate-900 block truncate">{u.full_name || 'Anonymous User'}</span>
+                      <span className="text-xs text-slate-400 block truncate">@{u.username}</span>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-slate-100 text-slate-700 shrink-0">
+                    {u.role}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 pt-1">
+                  <div>
+                    {u.class_code === 'ALUMNI' ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                        🎓 Alumni {u.graduation_year ? `(${u.graduation_year})` : ''}
+                      </span>
+                    ) : u.class_code ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#02167f] border border-blue-200">
+                        Class {u.class_code}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">None</span>
+                    )}
+                  </div>
+                  <span className="font-black text-emerald-700">+{u.lifetime_points} PTS</span>
+                </div>
+
+                <div className="text-xs text-slate-500 truncate" title={u.email}>
+                  ✉️ {u.email}
+                </div>
+
+                {u.units && u.units.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {u.units.map((unit: any) => (
+                      <span key={unit.unit_code} className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-navy-50 text-navy-900 border border-navy-200">
+                        {unit.unit_code}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(u)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedUserForUnit(u);
+                      setUnitForm({ unitCode: 'EB', roleInUnit: 'Member', position: 'Member' });
+                    }}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold"
+                  >
+                    <Building className="w-3 h-3" />
+                    <span>Assign Unit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(u)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto no-scrollbar scroll-touch">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
               <tr>
@@ -513,8 +607,8 @@ export const AdminUsersManager: React.FC = () => {
 
       {/* CREATE USER / ALUMNI MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up max-h-[90dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-cinzel text-lg font-black text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-[#02167f]" />
@@ -663,8 +757,8 @@ export const AdminUsersManager: React.FC = () => {
 
       {/* EDIT USER / ALUMNI MODAL */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up max-h-[90dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-cinzel text-lg font-black text-slate-900 flex items-center gap-2">

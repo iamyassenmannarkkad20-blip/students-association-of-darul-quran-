@@ -309,11 +309,11 @@ export const ClassDetail: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar scroll-touch">
           <button
             type="button"
             onClick={() => setActiveTab('OVERVIEW')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+            className={`shrink-0 px-4 py-2 rounded-2xl text-xs font-black transition-all ${
               activeTab === 'OVERVIEW'
                 ? 'bg-[#02167f] text-[#ffd014] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -324,7 +324,7 @@ export const ClassDetail: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('PROGRESSION')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+            className={`shrink-0 px-4 py-2 rounded-2xl text-xs font-black transition-all ${
               activeTab === 'PROGRESSION'
                 ? 'bg-[#02167f] text-[#ffd014] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -335,7 +335,7 @@ export const ClassDetail: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('CONTRIBUTORS')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+            className={`shrink-0 px-4 py-2 rounded-2xl text-xs font-black transition-all ${
               activeTab === 'CONTRIBUTORS'
                 ? 'bg-[#02167f] text-[#ffd014] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -346,7 +346,7 @@ export const ClassDetail: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('MEMBERS')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+            className={`shrink-0 px-4 py-2 rounded-2xl text-xs font-black transition-all ${
               activeTab === 'MEMBERS'
                 ? 'bg-[#02167f] text-[#ffd014] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -357,7 +357,7 @@ export const ClassDetail: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('PUBLICATIONS')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+            className={`shrink-0 px-4 py-2 rounded-2xl text-xs font-black transition-all ${
               activeTab === 'PUBLICATIONS'
                 ? 'bg-[#02167f] text-[#ffd014] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -368,7 +368,7 @@ export const ClassDetail: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('LEDGER')}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+            className={`shrink-0 px-4 py-2 rounded-2xl text-xs font-black transition-all ${
               activeTab === 'LEDGER'
                 ? 'bg-[#02167f] text-[#ffd014] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'

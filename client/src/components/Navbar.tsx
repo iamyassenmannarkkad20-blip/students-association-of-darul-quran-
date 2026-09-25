@@ -155,22 +155,22 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20" ref={dropdownRef}>
           {/* Logo & Brand Identity */}
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#02167f] via-blue-900 to-[#010a38] border-2 border-[#ffd014]/60 flex items-center justify-center shadow-lg shadow-[#02167f]/40 group-hover:border-[#ffd014] group-hover:scale-105 transition-all">
-              <span className="font-cinzel font-black text-[#ffd014] text-xl tracking-wider">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#02167f] via-blue-900 to-[#010a38] border-2 border-[#ffd014]/60 flex items-center justify-center shadow-lg shadow-[#02167f]/40 group-hover:border-[#ffd014] group-hover:scale-105 transition-all shrink-0">
+              <span className="font-cinzel font-black text-[#ffd014] text-lg sm:text-xl tracking-wider">
                 S
               </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-cinzel font-black text-xl sm:text-2xl text-white tracking-wider">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-cinzel font-black text-lg sm:text-2xl text-white tracking-wider">
                   SADQ
                 </span>
                 <span className="hidden sm:inline-block px-2.5 py-0.5 text-[9px] uppercase font-black tracking-widest text-[#02167f] bg-[#ffd014] rounded-full shadow-sm">
                   Official
                 </span>
               </div>
-              <p className="text-[10px] sm:text-xs text-amber-200/90 tracking-wider font-semibold">
+              <p className="text-[9px] sm:text-xs text-amber-200/90 tracking-wider font-semibold truncate max-w-[130px] sm:max-w-none">
                 Beyond The Curriculum
               </p>
             </div>
@@ -730,7 +730,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* MOBILE HAMBURGER & SEARCH BUTTONS */}
-          <div className="flex lg:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Mobile Search Button */}
             <button
               onClick={() => setCommandOpen(true)}
@@ -746,17 +746,18 @@ export const Navbar: React.FC = () => {
             {user && (
               <Link
                 to="/student"
-                className="p-2 rounded-xl bg-white/10 text-[#ffd014] text-xs font-bold"
+                className="hidden sm:inline-block px-2.5 py-1.5 rounded-xl bg-white/10 text-[#ffd014] text-xs font-bold truncate max-w-[90px]"
+                title="My Profile"
               >
                 {user.fullName.split(' ')[0]}
               </Link>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 focus:outline-none transition-colors"
+              className="p-2 sm:p-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 focus:outline-none transition-colors"
               aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6 text-[#ffd014]" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6 text-[#ffd014]" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
@@ -772,7 +773,7 @@ export const Navbar: React.FC = () => {
           />
 
           {/* Drawer Content */}
-          <div className="relative ml-auto w-full max-w-sm bg-[#01092e] text-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-[#ffd014]/30 z-10 p-5 space-y-6">
+          <div className="relative ml-auto w-full max-w-[85vw] sm:max-w-sm bg-[#01092e] text-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-[#ffd014]/30 z-10 p-4 sm:p-5 space-y-5">
             {/* Drawer Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2.5">

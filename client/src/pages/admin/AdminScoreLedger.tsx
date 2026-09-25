@@ -218,12 +218,12 @@ export const AdminScoreLedger: React.FC = () => {
       </div>
 
       {/* Points Ledger Table */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <h3 className="font-cinzel text-lg font-black text-slate-900">
+      <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 gap-1">
+          <h3 className="font-cinzel text-base sm:text-lg font-black text-slate-900">
             Recorded Point Transactions ({entries.length})
           </h3>
-          <span className="text-xs text-slate-400">Click 🗑️ on any row to delete mistake points</span>
+          <span className="text-[11px] text-slate-400">Click 🗑️ on any entry to delete mistake points</span>
         </div>
 
         {loading ? (
@@ -234,20 +234,80 @@ export const AdminScoreLedger: React.FC = () => {
             <p>No score transactions found matching this filter.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-4 rounded-l-xl">Class</th>
-                  <th className="py-3 px-3">Points</th>
-                  <th className="py-3 px-3">Type</th>
-                  <th className="py-3 px-4">Description / Reason</th>
-                  <th className="py-3 px-3">Cycle</th>
-                  <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-4 text-right rounded-r-xl">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium">
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {entries.map((entry) => (
+                <div key={entry.id} className="py-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#02167f] bg-navy-50 px-2 py-0.5 rounded border border-navy-200 text-xs">
+                      Class {entry.class_code}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`font-black text-xs px-2 py-0.5 rounded ${
+                          entry.points > 0
+                            ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+                            : 'text-rose-700 bg-rose-50 border border-rose-200'
+                        }`}
+                      >
+                        {entry.points > 0 ? `+${entry.points}` : entry.points} PTS
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget(entry)}
+                        className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Delete mistake point"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-800 font-semibold leading-snug">
+                    {entry.description}
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-400 pt-1">
+                    <span
+                      className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                        entry.source_type === 'MANUAL_ADJUSTMENT'
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : entry.source_type === 'SUB_WING_RESULT'
+                          ? 'bg-blue-100 text-blue-900'
+                          : 'bg-purple-100 text-purple-900'
+                      }`}
+                    >
+                      {entry.source_type.replace(/_/g, ' ')}
+                    </span>
+                    <span>
+                      {entry.cycle_name ? `${entry.cycle_name} • ` : ''}
+                      {new Date(entry.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto no-scrollbar scroll-touch">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-4 rounded-l-xl">Class</th>
+                    <th className="py-3 px-3">Points</th>
+                    <th className="py-3 px-3">Type</th>
+                    <th className="py-3 px-4">Description / Reason</th>
+                    <th className="py-3 px-3">Cycle</th>
+                    <th className="py-3 px-3">Date</th>
+                    <th className="py-3 px-4 text-right rounded-r-xl">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
                 {entries.map((entry) => (
                   <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4">
@@ -314,13 +374,14 @@ export const AdminScoreLedger: React.FC = () => {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 
       {/* Manual Add / Adjust Points Modal */}
       {showAdjustModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 animate-scale-up max-h-[90dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-cinzel text-lg font-black text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-[#02167f]" />
@@ -403,8 +464,8 @@ export const AdminScoreLedger: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-rose-200 space-y-4 animate-scale-up text-center">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-sm w-full shadow-2xl border border-rose-200 space-y-4 animate-scale-up text-center max-h-[90dvh] overflow-y-auto">
             <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
               <ShieldAlert className="w-6 h-6" />
             </div>
