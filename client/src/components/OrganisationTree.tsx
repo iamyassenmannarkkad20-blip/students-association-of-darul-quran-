@@ -80,7 +80,7 @@ export const OrganisationTree: React.FC = () => {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-50 text-navy-900 border border-navy-200 text-xs font-bold">
             <Award className="w-3.5 h-3.5 text-navy-700" />
-            <span>10 Official Specialized Sub-Wings (യൂണിറ്റുകൾ)</span>
+            <span>10 Official Specialized Sub-Wings (Units)</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 max-w-4xl mx-auto">
@@ -142,7 +142,7 @@ export const OrganisationTree: React.FC = () => {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold">
             <GraduationCap className="w-3.5 h-3.5 text-emerald-700" />
-            <span>8 Batch Sangadhanakal (ബാച്ച് സംഘടനകൾ • Classes 01 to 08)</span>
+            <span>8 Class Sangadhanakal (Batch Councils • Classes 01 to 08)</span>
           </div>
 
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 max-w-4xl mx-auto">

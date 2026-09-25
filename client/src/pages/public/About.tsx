@@ -74,7 +74,7 @@ export const About: React.FC = () => {
         </div>
       </div>
 
-      {/* SECTION: SADQ EXECUTIVE COMMITTEE (കേന്ദ്ര സാരഥികൾ) */}
+      {/* SECTION: SADQ CENTRAL EXECUTIVE COMMITTEE */}
       <section className="max-w-5xl mx-auto space-y-8">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold uppercase tracking-wider">
@@ -194,7 +194,7 @@ export const About: React.FC = () => {
         <div className="border-b border-slate-200 pb-3 flex items-center gap-2">
           <History className="w-6 h-6 text-[#02167f]" />
           <h2 className="font-cinzel text-2xl font-black text-slate-900">
-            Chronology & Origins (ചരിത്ര നാഴികക്കല്ലുകൾ)
+            Chronology & Origins (Historical Milestones)
           </h2>
         </div>
 

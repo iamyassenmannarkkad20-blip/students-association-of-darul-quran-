@@ -161,7 +161,7 @@ export const Home: React.FC = () => {
                 Fostering Creative Talents, Leadership, and Holistic Growth in Islamic Education.
               </p>
               <p className="text-xs sm:text-sm text-slate-300 font-light">
-                സർഗ്ഗാത്മകത, വിദ്യാർത്ഥി വളർച്ച, നേതൃത്വ പാടവം — അറിവിനൊപ്പം കർമ്മശേഷി.
+                Creativity, Student Growth, Leadership — Knowledge in Action.
               </p>
             </div>
           </div>
@@ -300,7 +300,7 @@ export const Home: React.FC = () => {
             <span>SADQ Executive Committee</span>
           </div>
           <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-[#02167f] tracking-tight">
-            കേന്ദ്ര സാരഥികൾ
+            Central Executive Committee
           </h2>
           <p className="mt-2.5 text-sm sm:text-base text-slate-600 font-medium">
             Students Association of Darul Quran (SADQ) apex leadership driving academic excellence, spiritual vitality, and student empowerment.

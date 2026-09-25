@@ -219,6 +219,22 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteMagazine = async (id: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete the publication "${title}"?`)) return;
+    try {
+      const res = await apiRequest(`/admin/magazines/${id}`, { method: 'DELETE' });
+      if (res.success) {
+        setMagazines((prev) => prev.filter((m) => m.id !== id));
+        setActionNotice(`✅ Magazine "${title}" deleted successfully.`);
+        setTimeout(() => setActionNotice(null), 3500);
+      } else {
+        alert(res.error || 'Failed to delete magazine.');
+      }
+    } catch {
+      alert('Error deleting magazine.');
+    }
+  };
+
   // --- COMMITTEE HANDLERS ---
   const handleOpenEditLeader = (leader: any) => {
     setEditingMember(leader);
@@ -468,7 +484,7 @@ export const AdminDashboard: React.FC = () => {
                 <span>Apex Leadership</span>
               </div>
               <h2 className="font-cinzel text-xl sm:text-2xl font-bold text-[#02167f]">
-                SADQ Executive Committee (കേന്ദ്ര സാരഥികൾ)
+                SADQ Apex Executive Committee (2026–2027)
               </h2>
               <p className="text-xs text-slate-600 mt-1">
                 Manage the apex leaders displayed on the Welcome Page. Upload photos, change names, edit designations, and reorder ranks.
@@ -581,7 +597,7 @@ export const AdminDashboard: React.FC = () => {
                 {/* Photo Upload and Preview Section */}
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                   <label className="text-xs font-bold text-slate-800 block">
-                    Leader Photo (ഫോട്ടോ മാറ്റുക / ചേർക്കുക)
+                    Leader Photograph (Upload / Update)
                   </label>
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 rounded-full p-0.5 bg-[#02167f] shadow-md shrink-0">
@@ -658,7 +674,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">
-                      Designation / സ്ഥാനം *
+                      Designation / Official Title *
                     </label>
                     <input
                       type="text"
@@ -1021,16 +1037,27 @@ export const AdminDashboard: React.FC = () => {
                   <h3 className="font-bold text-slate-900 text-base mt-2">{m.title}</h3>
                   <p className="text-xs text-slate-500 mt-1 line-clamp-2">{m.description}</p>
                 </div>
-                {m.pdf_url && (
-                  <a
-                    href={m.pdf_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-navy-900 hover:underline"
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  {m.pdf_url ? (
+                    <a
+                      href={m.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-navy-900 hover:underline"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> Open Drive Link
+                    </a>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">Direct Release</span>
+                  )}
+                  <button
+                    onClick={() => handleDeleteMagazine(m.id, m.title)}
+                    className="p-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors"
+                    title="Delete publication"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> Open Drive Link
-                  </a>
-                )}
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

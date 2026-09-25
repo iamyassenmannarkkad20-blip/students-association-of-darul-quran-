@@ -170,6 +170,18 @@ router.post('/magazines', async (req, res) => {
   }
 });
 
+// Delete Magazine
+router.delete('/magazines/:id', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    await query('DELETE FROM magazines WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Magazine deleted successfully.' });
+  } catch (error) {
+    console.error('Delete magazine error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete magazine.' });
+  }
+});
+
 // Update Public Site Configuration
 const configSchema = z.object({
   instagramUrl: z.string().url().optional(),

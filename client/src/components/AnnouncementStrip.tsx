@@ -25,7 +25,7 @@ export const AnnouncementStrip: React.FC = () => {
               to="/about"
               className="inline-flex items-center gap-1.5 text-slate-200 hover:text-gold-300 transition-colors"
             >
-              <span>👑 SADQ Central Executive Committee 2026–27 (കേന്ദ്ര സാരഥികൾ) Published</span>
+              <span>👑 SADQ Central Executive Committee 2026–27 Officially Published</span>
               <ChevronRight className="w-3 h-3 text-gold-400" />
             </Link>
 

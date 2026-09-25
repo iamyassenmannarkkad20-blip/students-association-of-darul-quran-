@@ -660,14 +660,6 @@ export const Navbar: React.FC = () => {
                   Sign In
                 </Link>
                 <Link
-                  to="/admin/login"
-                  className="px-2.5 py-1.5 text-[11px] font-bold text-amber-300/90 hover:text-[#ffd014] hover:bg-white/10 rounded-xl border border-amber-400/30 transition-all flex items-center gap-1 shadow-sm"
-                  title="Official Admin Gateway"
-                >
-                  <Shield className="w-3 h-3 text-[#ffd014]" />
-                  <span>Admin</span>
-                </Link>
-                <Link
                   to="/register"
                   className="px-4 py-2 text-xs font-black uppercase tracking-wider text-[#02167f] bg-gradient-to-r from-[#ffd014] to-amber-300 rounded-xl hover:from-amber-200 hover:to-[#ffd014] shadow-md shadow-[#ffd014]/25 hover:scale-105 active:scale-95 transition-all ml-1"
                 >
@@ -1065,13 +1057,6 @@ export const Navbar: React.FC = () => {
                       Register
                     </Link>
                   </div>
-                  <Link
-                    to="/admin/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-center text-[11px] font-bold text-amber-300 border border-amber-400/30 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 transition-all"
-                  >
-                    🛡️ Official Admin Gateway
-                  </Link>
                 </div>
               )}
             </div>

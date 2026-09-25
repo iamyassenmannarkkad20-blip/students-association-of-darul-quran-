@@ -4,12 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   Lock,
   User,
-  Sparkles,
   ArrowRight,
-  Shield,
-  KeyRound,
-  GraduationCap,
-  ChevronRight,
   AlertCircle,
 } from 'lucide-react';
 
@@ -40,74 +35,18 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleQuickFill = (fillId: string, fillPass: string) => {
-    setIdentifier(fillId);
-    setPassword(fillPass);
-    setError(null);
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-xl space-y-6">
-        {/* Portal Switcher Tabs */}
-        <div className="flex rounded-2xl bg-slate-100 p-1.5 border border-slate-200">
-          <button
-            type="button"
-            className="flex-1 py-2 rounded-xl text-xs font-bold bg-white text-navy-900 shadow-sm flex items-center justify-center gap-1.5"
-          >
-            <GraduationCap className="w-3.5 h-3.5 text-navy-700" />
-            <span>Student & Member</span>
-          </button>
-          <Link
-            to="/admin/login"
-            className="flex-1 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-navy-900 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Shield className="w-3.5 h-3.5 text-gold-600" />
-            <span>Admin Gateway</span>
-          </Link>
-        </div>
-
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-navy-900 border border-gold-500/40 flex items-center justify-center mx-auto text-gold-400 shadow">
-            <Lock className="w-6 h-6" />
+          <div className="w-14 h-14 rounded-2xl bg-[#02167f] border border-[#ffd014]/40 flex items-center justify-center mx-auto text-[#ffd014] shadow-lg">
+            <Lock className="w-7 h-7" />
           </div>
           <h1 className="font-cinzel text-2xl font-bold text-navy-900">Sign In to SADQ</h1>
           <p className="text-xs text-slate-500">
-            Access your student growth dashboard, event results & official records
+            Enter your username or email address and password to continue
           </p>
-        </div>
-
-        {/* Quick Demo Fill Pills */}
-        <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 space-y-2">
-          <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-            <KeyRound className="w-3.5 h-3.5 text-gold-600" />
-            Quick Sign In (1-Click Fill):
-          </span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('yaseen', '12345678')}
-              className="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-navy-900 text-gold-300 hover:bg-navy-800 transition-colors shadow-sm flex items-center gap-1.5"
-            >
-              <Shield className="w-3 h-3 text-gold-400" />
-              <span>Yaseen (@username)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('foryaseen@gmail.com', '12345678')}
-              className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-1"
-            >
-              <span>By Email</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('admin@sadq.org', 'SadqAdmin@2026')}
-              className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-1"
-            >
-              <span>Admin</span>
-            </button>
-          </div>
         </div>
 
         {error && (
@@ -128,14 +67,11 @@ export const Login: React.FC = () => {
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="e.g. yaseen or student@gmail.com"
+                placeholder="Username or email address"
                 required
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-navy-900"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#02167f]"
               />
             </div>
-            <span className="text-[10px] text-slate-400 mt-1 block">
-              You can log in with your unique @username or registered email.
-            </span>
           </div>
 
           <div>
@@ -148,7 +84,7 @@ export const Login: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-navy-900"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#02167f]"
               />
             </div>
           </div>
@@ -156,26 +92,17 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-sm shadow-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-[#02167f] hover:bg-[#010e52] text-[#ffd014] font-bold text-sm shadow-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
-            <ArrowRight className="w-4 h-4 text-gold-400" />
+            <ArrowRight className="w-4 h-4 text-[#ffd014]" />
           </button>
         </form>
 
-        <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-          <div>
-            Enrolled student?{' '}
-            <Link to="/register" className="font-bold text-navy-900 hover:text-gold-600 underline">
-              Register here
-            </Link>
-          </div>
-          <Link
-            to="/admin/login"
-            className="font-bold text-gold-700 hover:underline flex items-center gap-1"
-          >
-            <span>Admin Gateway</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+        <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
+          Enrolled student?{' '}
+          <Link to="/register" className="font-bold text-[#02167f] hover:text-[#ffd014] hover:underline">
+            Register here
           </Link>
         </div>
       </div>
