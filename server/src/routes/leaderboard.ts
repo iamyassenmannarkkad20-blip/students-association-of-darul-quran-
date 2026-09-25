@@ -12,7 +12,7 @@ router.get('/leaderboard', async (_req, res) => {
           c.code as class_code,
           COALESCE(SUM(l.points), 0)::int as total_points,
           COALESCE(SUM(CASE WHEN l.source_type = 'SUB_WING_RESULT' THEN l.points ELSE 0 END), 0)::int as sub_wing_points,
-          COALESCE(SUM(CASE WHEN l.source_type = 'MAIN_COMMITTEE_TASK' THEN l.points ELSE 0 END), 0)::int as main_committee_points,
+          COALESCE(SUM(CASE WHEN l.source_type IN ('MAIN_COMMITTEE_TASK', 'MAIN_COMMITTEE_PROGRAM') THEN l.points ELSE 0 END), 0)::int as main_committee_points,
           COUNT(l.id)::int as entries_count
         FROM (VALUES ('01'), ('02'), ('03'), ('04'), ('05'), ('06'), ('07'), ('08')) as c(code)
         LEFT JOIN class_score_ledger l ON l.class_code = c.code
@@ -51,7 +51,7 @@ router.get('/leaderboard/class/:code', async (req, res) => {
           c.code as class_code,
           COALESCE(SUM(l.points), 0)::int as total_points,
           COALESCE(SUM(CASE WHEN l.source_type = 'SUB_WING_RESULT' THEN l.points ELSE 0 END), 0)::int as sub_wing_points,
-          COALESCE(SUM(CASE WHEN l.source_type = 'MAIN_COMMITTEE_TASK' THEN l.points ELSE 0 END), 0)::int as main_committee_points
+          COALESCE(SUM(CASE WHEN l.source_type IN ('MAIN_COMMITTEE_TASK', 'MAIN_COMMITTEE_PROGRAM') THEN l.points ELSE 0 END), 0)::int as main_committee_points
         FROM (VALUES ('01'), ('02'), ('03'), ('04'), ('05'), ('06'), ('07'), ('08')) as c(code)
         LEFT JOIN class_score_ledger l ON l.class_code = c.code
         GROUP BY c.code

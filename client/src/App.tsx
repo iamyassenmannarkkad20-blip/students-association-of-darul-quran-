@@ -40,6 +40,7 @@ import { ProjectsPage } from './pages/student/ProjectsPage';
 import { OrganisationView } from './pages/student/OrganisationView';
 import { CreateCenter } from './pages/student/CreateCenter';
 import { StudentResults } from './pages/student/StudentResults';
+import { ClassUnionPortal } from './pages/student/ClassUnionPortal';
 
 // Sub-Wing Workspace
 import { SubWingDashboard } from './pages/subwing/SubWingDashboard';
@@ -113,6 +114,7 @@ export const App: React.FC = () => {
               <Route path="/student/organisation" element={<OrganisationView />} />
               <Route path="/student/create" element={<CreateCenter />} />
               <Route path="/student/results" element={<StudentResults />} />
+              <Route path="/student/class-union" element={<ClassUnionPortal />} />
 
               {/* Sub-Wing Workspace */}
               <Route path="/subwing" element={<SubWingDashboard />} />

@@ -244,4 +244,172 @@ router.post('/admin/assign-leadership', requireAuth, requireRoles([ROLES.SUPER_A
   }
 });
 
+// ==================================================
+// 5. GET /items/all - All Class Union releases across batches
+// ==================================================
+router.get('/items/all', async (req, res) => {
+  try {
+    const category = req.query.category as string;
+    const classCode = req.query.classCode as string;
+
+    let queryStr = `
+      SELECT 
+        i.*,
+        u.name as union_name,
+        u.logo_url as union_logo_url,
+        usr.username as creator_username,
+        sp.full_name as creator_name
+      FROM class_union_items i
+      JOIN class_sangadhanakal u ON u.class_code = i.class_code
+      LEFT JOIN users usr ON usr.id = i.created_by
+      LEFT JOIN student_profiles sp ON sp.user_id = i.created_by
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (category) {
+      params.push(category);
+      queryStr += ` AND i.category = $${params.length}`;
+    }
+
+    if (classCode) {
+      params.push(classCode);
+      queryStr += ` AND i.class_code = $${params.length}`;
+    }
+
+    queryStr += ` ORDER BY i.created_at DESC LIMIT 100`;
+
+    const result = await query(queryStr, params);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch union items error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch class union publications.' });
+  }
+});
+
+// ==================================================
+// 6. GET /:class_code/items - Items for a specific Class Union
+// ==================================================
+router.get('/:class_code/items', async (req, res) => {
+  try {
+    const { class_code } = req.params;
+    const result = await query(
+      `SELECT i.*, usr.username as creator_username, sp.full_name as creator_name
+       FROM class_union_items i
+       LEFT JOIN users usr ON usr.id = i.created_by
+       LEFT JOIN student_profiles sp ON sp.user_id = i.created_by
+       WHERE i.class_code = $1
+       ORDER BY i.created_at DESC`,
+      [class_code]
+    );
+
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch class union items error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch items.' });
+  }
+});
+
+// ==================================================
+// 7. POST /:class_code/items - Appointed Chairman/Convener adds Release
+// ==================================================
+const createItemSchema = z.object({
+  title: z.string().min(2, 'Title is required'),
+  description: z.string().optional().default(''),
+  category: z.enum(['PROJECT', 'MAGAZINE', 'VIDEO', 'POSTER', 'DOCUMENT']),
+  item_url: z.string().url('A valid link (Google Drive, YouTube, external PDF) is required'),
+  thumbnail_url: z.string().optional().default(''),
+});
+
+router.post('/:class_code/items', requireAuth, async (req: RequestWithUser, res) => {
+  try {
+    const { class_code } = req.params;
+    const userId = req.user!.id;
+    const userRole = req.user!.role;
+
+    if (!['01', '02', '03', '04', '05', '06', '07', '08'].includes(class_code)) {
+      return res.status(400).json({ success: false, error: 'Invalid class code.' });
+    }
+
+    // Verify user is Chairman, Convener, or Admin
+    const unionCheck = await query(
+      `SELECT chairman_id, convener_id FROM class_sangadhanakal WHERE class_code = $1`,
+      [class_code]
+    );
+
+    if (unionCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Class union not found.' });
+    }
+
+    const union = unionCheck.rows[0];
+    const isAdmin = userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN;
+    const isLeader = union.chairman_id === userId || union.convener_id === userId;
+
+    if (!isAdmin && !isLeader) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden. Only the designated Class Chairman or Convener may publish releases for this Class Union.',
+      });
+    }
+
+    const parsed = createItemSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `INSERT INTO class_union_items (class_code, title, description, category, item_url, thumbnail_url, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [class_code, d.title, d.description, d.category, d.item_url, d.thumbnail_url, userId]
+    );
+
+    res.json({
+      success: true,
+      data: result.rows[0],
+      message: `🎉 Release "${d.title}" published under Class ${class_code} Union successfully!`,
+    });
+  } catch (error) {
+    console.error('Create union item error:', error);
+    res.status(500).json({ success: false, error: 'Failed to publish class union release.' });
+  }
+});
+
+// ==================================================
+// 8. DELETE /items/:itemId - Delete Release
+// ==================================================
+router.delete('/items/:itemId', requireAuth, async (req: RequestWithUser, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user!.id;
+    const userRole = req.user!.role;
+
+    const itemRes = await query(`SELECT * FROM class_union_items WHERE id = $1`, [itemId]);
+    if (itemRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Item not found.' });
+    }
+
+    const item = itemRes.rows[0];
+    const unionCheck = await query(
+      `SELECT chairman_id, convener_id FROM class_sangadhanakal WHERE class_code = $1`,
+      [item.class_code]
+    );
+
+    const union = unionCheck.rows[0];
+    const isAdmin = userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN;
+    const isLeader = union && (union.chairman_id === userId || union.convener_id === userId);
+
+    if (!isAdmin && !isLeader) {
+      return res.status(403).json({ success: false, error: 'Forbidden. Not authorized to delete this release.' });
+    }
+
+    await query(`DELETE FROM class_union_items WHERE id = $1`, [itemId]);
+    res.json({ success: true, message: 'Class Union release deleted successfully.' });
+  } catch (error) {
+    console.error('Delete union item error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete release.' });
+  }
+});
+
 export default router;

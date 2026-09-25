@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api';
 import { Trophy, ArrowLeft, Award, ExternalLink, Calendar, ShieldCheck, Sparkles, Filter } from 'lucide-react';
+import { ClassUnionReleasesFeed } from '../../components/ClassUnionReleasesFeed';
 
 interface ClassSummary {
   class_code: string;
@@ -223,6 +224,11 @@ export const ClassDetail: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Official Class Union Releases & Media */}
+        <div className="pt-6 border-t border-slate-200">
+          <ClassUnionReleasesFeed limit={12} classCode={code} />
         </div>
       </div>
 

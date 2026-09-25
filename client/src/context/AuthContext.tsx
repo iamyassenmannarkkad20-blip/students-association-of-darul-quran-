@@ -17,12 +17,14 @@ export interface User {
   profileSlug: string;
   classCode?: string | null;
   assignedSubWings?: AssignedSubWing[];
+  assignedClassUnion?: any | null;
 }
 
 interface AuthContextType {
   user: User | null;
   profile: any | null;
   assignedSubWings: AssignedSubWing[];
+  assignedClassUnion: any | null;
   loading: boolean;
   login: (identifier: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
   register: (
@@ -42,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [assignedSubWings, setAssignedSubWings] = useState<AssignedSubWing[]>([]);
+  const [assignedClassUnion, setAssignedClassUnion] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshUser = async () => {
@@ -51,15 +54,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(res.data.user);
         setProfile(res.data.profile);
         setAssignedSubWings(res.data.assignedSubWings || res.data.user?.assignedSubWings || []);
+        setAssignedClassUnion(res.data.assignedClassUnion || res.data.user?.assignedClassUnion || null);
       } else {
         setUser(null);
         setProfile(null);
         setAssignedSubWings([]);
+        setAssignedClassUnion(null);
       }
     } catch {
       setUser(null);
       setProfile(null);
       setAssignedSubWings([]);
+      setAssignedClassUnion(null);
     } finally {
       setLoading(false);
     }
@@ -112,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, assignedSubWings, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, profile, assignedSubWings, assignedClassUnion, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

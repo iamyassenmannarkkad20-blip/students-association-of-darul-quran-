@@ -8,9 +8,10 @@ import {
   Trophy, FileCheck, ExternalLink,
 } from 'lucide-react';
 import { DefendingChampionBanner } from '../../components/DefendingChampionBanner';
+import { ClassUnionReleasesFeed } from '../../components/ClassUnionReleasesFeed';
 
 export const StudentDashboard: React.FC = () => {
-  const { user, profile, assignedSubWings, refreshUser } = useAuth();
+  const { user, profile, assignedSubWings, assignedClassUnion, refreshUser } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,9 +41,9 @@ export const StudentDashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Dual Profile Mode Switcher Pill */}
-      {hasSubWingRole && (
-        <div className="flex items-center justify-between bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-sm">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+      {(hasSubWingRole || assignedClassUnion) && (
+        <div className="flex items-center justify-between bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-sm flex-wrap gap-2">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl flex-wrap">
             <button
               type="button"
               className="px-4 py-2 rounded-lg bg-navy-900 text-gold-300 font-bold text-xs flex items-center gap-2 shadow-sm"
@@ -50,16 +51,27 @@ export const StudentDashboard: React.FC = () => {
               <User className="w-3.5 h-3.5 text-gold-400" />
               <span>Student Profile (Active)</span>
             </button>
-            <Link
-              to="/subwing"
-              className="px-4 py-2 rounded-lg text-slate-600 hover:text-navy-900 font-bold text-xs flex items-center gap-2 transition-colors hover:bg-white"
-            >
-              <Award className="w-3.5 h-3.5 text-navy-700" />
-              <span>Wing Leadership Portal ({assignedSubWings[0].code})</span>
-            </Link>
+            {hasSubWingRole && (
+              <Link
+                to="/subwing"
+                className="px-4 py-2 rounded-lg text-slate-600 hover:text-navy-900 font-bold text-xs flex items-center gap-2 transition-colors hover:bg-white"
+              >
+                <Award className="w-3.5 h-3.5 text-navy-700" />
+                <span>Wing Portal ({assignedSubWings[0].code})</span>
+              </Link>
+            )}
+            {assignedClassUnion && (
+              <Link
+                to="/student/class-union"
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-700 to-indigo-800 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
+              >
+                <Users className="w-3.5 h-3.5 text-amber-300" />
+                <span>Class {assignedClassUnion.class_code} Union ({assignedClassUnion.leadership_role})</span>
+              </Link>
+            )}
           </div>
           <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline px-3">
-            Two active profiles linked to your account
+            Leadership privileges active
           </span>
         </div>
       )}
@@ -83,6 +95,15 @@ export const StudentDashboard: React.FC = () => {
             >
               <Award className="w-4 h-4 text-navy-900" />
               <span>Open Wing Portal ({assignedSubWings[0].code})</span>
+            </Link>
+          )}
+          {assignedClassUnion && (
+            <Link
+              to="/student/class-union"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-colors"
+            >
+              <Users className="w-4 h-4 text-amber-300" />
+              <span>Manage Class {assignedClassUnion.class_code} Union</span>
             </Link>
           )}
           <Link
@@ -145,6 +166,37 @@ export const StudentDashboard: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* DUAL PROFILE: CLASS UNION LEADERSHIP CARD */}
+      {assignedClassUnion && (
+        <div className="rounded-3xl bg-gradient-to-r from-[#010e52] via-[#02167f] to-[#0a2399] text-white p-6 sm:p-8 border-2 border-amber-400/50 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black uppercase tracking-wider shadow">
+                  ⭐ Designated {assignedClassUnion.leadership_role}
+                </span>
+                <span className="text-xs text-blue-200 font-bold">
+                  Class {assignedClassUnion.class_code} Union
+                </span>
+              </div>
+              <h2 className="font-cinzel text-xl sm:text-2xl font-black text-white">
+                {assignedClassUnion.name || `Class ${assignedClassUnion.class_code} Union`}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-200 max-w-2xl leading-relaxed">
+                As the Class Chairman/Leader, you can name your batch union, set your motto, and publish projects, magazines, posters, and YouTube/Drive links to the campus.
+              </p>
+            </div>
+            <Link
+              to="/student/class-union"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-lg transition-transform hover:scale-105 shrink-0"
+            >
+              <Users className="w-4 h-4" />
+              <span>Open Class Union Portal</span>
+            </Link>
+          </div>
         </div>
       )}
 
@@ -356,6 +408,9 @@ export const StudentDashboard: React.FC = () => {
           </Link>
         ))}
       </div>
+
+      {/* Class Union Publications, Projects & Videos Feed */}
+      <ClassUnionReleasesFeed limit={6} />
 
       {/* View Portfolio */}
       {profile?.profile_slug && (

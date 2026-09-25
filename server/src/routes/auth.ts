@@ -271,15 +271,33 @@ router.get('/me', requireAuth, async (req: RequestWithUser, res) => {
       assignedWings = userWings.rows;
     }
 
+    // Fetch any Class Union where user is Chairman or Convener
+    let assignedUnion = null;
+    const userUnionRes = await query(
+      `SELECT u.*,
+              CASE WHEN u.chairman_id = $1 THEN 'Chairman'
+                   WHEN u.convener_id = $1 THEN 'Convener'
+                   ELSE 'Executive' END as leadership_role
+       FROM class_sangadhanakal u
+       WHERE u.chairman_id = $1 OR u.convener_id = $1
+       LIMIT 1`,
+      [user.id]
+    );
+    if (userUnionRes.rows.length > 0) {
+      assignedUnion = userUnionRes.rows[0];
+    }
+
     res.json({
       success: true,
       data: {
         user: {
           ...user,
           assignedSubWings: assignedWings,
+          assignedClassUnion: assignedUnion,
         },
         profile: profileRes.rows[0] || null,
         assignedSubWings: assignedWings,
+        assignedClassUnion: assignedUnion,
       },
     });
   } catch (error) {

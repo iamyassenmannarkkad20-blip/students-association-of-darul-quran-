@@ -4,6 +4,7 @@ import { BookMarked, Search, ExternalLink, Download, Sparkles, Filter, FileText 
 
 const CATEGORIES = [
   'All Subjects',
+  'Class Union Releases',
   'Quranic Studies',
   'Hadith & Fiqh',
   'Arabic Literature',
@@ -16,6 +17,7 @@ const CLASS_CODES = ['All', '01', '02', '03', '04', '05', '06', '07', '08'];
 export const Library: React.FC = () => {
   const [resources, setResources] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
+  const [unionItems, setUnionItems] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Subjects');
   const [selectedClass, setSelectedClass] = useState('All');
@@ -24,13 +26,15 @@ export const Library: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const [libRes, notesRes] = await Promise.all([
+        const [libRes, notesRes, unionRes] = await Promise.all([
           apiRequest<any[]>('/public/library'),
           apiRequest<any[]>('/community/notes'),
+          apiRequest<any[]>('/class-unions/items/all'),
         ]);
 
         if (libRes.success && libRes.data) setResources(libRes.data);
         if (notesRes.success && notesRes.data) setNotes(notesRes.data);
+        if (unionRes.success && unionRes.data) setUnionItems(unionRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -40,7 +44,7 @@ export const Library: React.FC = () => {
     loadData();
   }, []);
 
-  // Combine official library items and student verified notes
+  // Combine official library items, student verified notes, and Class Union releases
   const allItems = [
     ...resources.map((r) => ({
       id: r.id,
@@ -51,6 +55,7 @@ export const Library: React.FC = () => {
       downloadable: r.downloadable,
       description: '',
       type: 'official',
+      classCode: null,
     })),
     ...notes.map((n) => ({
       id: n.id,
@@ -61,6 +66,18 @@ export const Library: React.FC = () => {
       downloadable: n.downloadable,
       description: n.description,
       type: 'notes',
+      classCode: null,
+    })),
+    ...unionItems.map((u) => ({
+      id: u.id,
+      title: u.title,
+      author: u.union_name || `Class ${u.class_code} Union`,
+      category: 'Class Union Releases',
+      externalUrl: u.item_url,
+      downloadable: true,
+      description: u.description || `Published by Class ${u.class_code} Union (${u.category})`,
+      type: 'class_union',
+      classCode: u.class_code,
     })),
   ];
 
@@ -76,6 +93,7 @@ export const Library: React.FC = () => {
 
     const matchesClass =
       selectedClass === 'All' ||
+      item.classCode === selectedClass ||
       (item.description && item.description.includes(`Class ${selectedClass}`));
 
     return matchesSearch && matchesCategory && matchesClass;
