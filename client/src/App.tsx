@@ -15,6 +15,7 @@ import { Opportunities } from './pages/public/Opportunities';
 import { ServicesMarketplace } from './pages/public/ServicesMarketplace';
 import { Certificates } from './pages/public/Certificates';
 import { PortfolioView } from './pages/public/PortfolioView';
+import { TalentDiscovery } from './pages/public/TalentDiscovery';
 
 // Auth
 import { Login } from './pages/auth/Login';
@@ -28,6 +29,8 @@ import { SkillsPage } from './pages/student/SkillsPage';
 import { AchievementsPage } from './pages/student/AchievementsPage';
 import { ProjectsPage } from './pages/student/ProjectsPage';
 import { OrganisationView } from './pages/student/OrganisationView';
+import { CreateCenter } from './pages/student/CreateCenter';
+
 
 // Community
 import { CommunityFeed } from './pages/student/CommunityFeed';
@@ -72,6 +75,7 @@ export const App: React.FC = () => {
               <Route path="/services" element={<ServicesMarketplace />} />
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/portfolio/:slug" element={<PortfolioView />} />
+              <Route path="/explore" element={<TalentDiscovery />} />
 
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
@@ -85,23 +89,14 @@ export const App: React.FC = () => {
               <Route path="/student/achievements" element={<AchievementsPage />} />
               <Route path="/student/projects" element={<ProjectsPage />} />
               <Route path="/student/organisation" element={<OrganisationView />} />
+              <Route path="/student/create" element={<CreateCenter />} />
 
               {/* Community */}
               <Route path="/community" element={<CommunityFeed />} />
 
-              {/* Create Center */}
-              <Route
-                path="/student/create"
-                element={
-                  <FallbackModule
-                    title="Create Center"
-                    subtitle="Submit articles, community posts, and learning notes for publication review."
-                  />
-                }
-              />
-
               {/* Admin */}
               <Route path="/admin" element={<AdminDashboard />} />
+
 
 
               {/* 404 */}

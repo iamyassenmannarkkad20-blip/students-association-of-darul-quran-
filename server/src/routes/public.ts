@@ -321,4 +321,59 @@ router.get('/portfolio/:slug', async (req, res) => {
   }
 });
 
+// Public Students Directory for Talent Discovery (/explore)
+router.get('/students', async (req, res) => {
+  try {
+    const talent = req.query.talent as string;
+    const classCode = req.query.classCode as string;
+    const search = req.query.search as string;
+
+    let queryStr = `
+      SELECT sp.id, sp.user_id, sp.full_name, sp.display_name, sp.profile_slug, sp.class_code,
+             sp.bio, sp.profile_photo_url, sp.interests,
+             COALESCE(
+               (SELECT json_agg(json_build_object('id', st.id, 'title', st.title, 'category', st.category))
+                FROM student_talents st
+                WHERE st.user_id = sp.user_id AND st.visibility IN ('COMMUNITY', 'PUBLIC')),
+               '[]'::json
+             ) as talents
+      FROM student_profiles sp
+      WHERE sp.is_public = TRUE
+    `;
+    const params: any[] = [];
+
+    if (classCode) {
+      params.push(classCode);
+      queryStr += ` AND sp.class_code = $${params.length}`;
+    }
+
+    if (search) {
+      params.push(`%${search}%`);
+      queryStr += ` AND (sp.full_name ILIKE $${params.length} OR sp.bio ILIKE $${params.length})`;
+    }
+
+    queryStr += ` ORDER BY sp.full_name ASC LIMIT 50`;
+
+    const result = await query(queryStr, params);
+
+    let rows = result.rows;
+    if (talent) {
+      rows = rows.filter((s: any) =>
+        s.talents &&
+        s.talents.some(
+          (t: any) =>
+            t.title.toLowerCase().includes(talent.toLowerCase()) ||
+            t.category.toLowerCase().includes(talent.toLowerCase())
+        )
+      );
+    }
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Fetch public students error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch student directory.' });
+  }
+});
+
 export default router;
+

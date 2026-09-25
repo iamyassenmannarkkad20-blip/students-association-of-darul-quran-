@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import path from 'path';
+import fs from 'fs';
 import { query } from '../db';
 import { requireAuth, requireRoles, RequestWithUser } from '../middleware/auth';
 import { ROLES, SKILL_PROFICIENCIES, SkillProficiency } from '../../../shared/types';
+
 
 const router = Router();
 
@@ -80,8 +83,8 @@ router.get('/dashboard', async (req: RequestWithUser, res) => {
 const profileUpdateSchema = z.object({
   bio: z.string().max(1000).optional(),
   interests: z.array(z.string()).max(20).optional(),
-  profilePhotoUrl: z.string().url().or(z.literal('')).optional(),
-  coverPhotoUrl: z.string().url().or(z.literal('')).optional(),
+  profilePhotoUrl: z.string().optional(),
+  coverPhotoUrl: z.string().optional(),
   whatsappNumber: z.string().max(30).optional(),
   emailContact: z.string().email().or(z.literal('')).optional(),
   isPublic: z.boolean().optional(),
@@ -149,6 +152,69 @@ router.patch('/profile', async (req: RequestWithUser, res) => {
     res.status(500).json({ success: false, error: 'Failed to update profile.' });
   }
 });
+
+// Direct Profile Picture Upload / Avatar Selection
+router.post('/avatar', async (req: RequestWithUser, res) => {
+  try {
+    const userId = req.user!.id;
+    const { imageBase64, presetUrl } = req.body;
+
+    if (presetUrl) {
+      await query(
+        `UPDATE student_profiles SET profile_photo_url = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2`,
+        [presetUrl, userId]
+      );
+      res.json({ success: true, profilePhotoUrl: presetUrl });
+      return;
+    }
+
+    if (!imageBase64) {
+      res.status(400).json({ success: false, error: 'No image data provided.' });
+      return;
+    }
+
+    // Match base64 data URL: data:image/png;base64,...
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      res.status(400).json({ success: false, error: 'Invalid image format.' });
+      return;
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    if (buffer.length > 5 * 1024 * 1024) {
+      res.status(400).json({ success: false, error: 'Image file size must be less than 5MB.' });
+      return;
+    }
+
+    let ext = 'jpg';
+    if (mimeType.includes('png')) ext = 'png';
+    else if (mimeType.includes('webp')) ext = 'webp';
+
+    const filename = `avatar_${userId}_${Date.now()}.${ext}`;
+    const targetDir = path.join(__dirname, '../../uploads/avatars');
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    const uploadPath = path.join(targetDir, filename);
+
+    fs.writeFileSync(uploadPath, buffer);
+    const photoUrl = `/uploads/avatars/${filename}`;
+
+    await query(
+      `UPDATE student_profiles SET profile_photo_url = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2`,
+      [photoUrl, userId]
+    );
+
+    res.json({ success: true, profilePhotoUrl: photoUrl });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ success: false, error: 'Failed to upload avatar.' });
+  }
+});
+
 
 // 3. Talents CRUD (Ownership Enforced)
 const talentSchema = z.object({

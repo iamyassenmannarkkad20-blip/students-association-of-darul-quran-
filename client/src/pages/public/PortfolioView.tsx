@@ -116,22 +116,28 @@ export const PortfolioView: React.FC = () => {
             <div className="pt-3 flex flex-wrap items-center justify-center sm:justify-start gap-3">
               {profile.whatsappNumber && (
                 <a
-                  href={`https://wa.me/${profile.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                  href={`https://wa.me/${profile.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    `Assalamu Alaikum ${profile.fullName}, I saw your student portfolio on the SADQ Platform and would like to connect with you.`
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-colors"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
+                  <span>Connect on WhatsApp</span>
                 </a>
               )}
               {profile.emailContact && (
                 <a
-                  href={`mailto:${profile.emailContact}`}
+                  href={`mailto:${profile.emailContact}?subject=${encodeURIComponent(
+                    `Connecting via SADQ Platform — ${profile.fullName}`
+                  )}&body=${encodeURIComponent(
+                    `Assalamu Alaikum ${profile.fullName},\n\nI saw your public student portfolio on the SADQ Platform and would like to get in touch regarding your work/skills.\n\nBest regards.`
+                  )}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow-sm transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  <span>Email</span>
+                  <span>Send Email</span>
                 </a>
               )}
             </div>

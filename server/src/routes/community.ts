@@ -245,4 +245,59 @@ router.get('/notes', async (req, res) => {
   res.json({ success: true, data: result.rows });
 });
 
+// Articles Submission (Draft / Review)
+const articleSchema = z.object({
+  title: z.string().min(2).max(255),
+  summary: z.string().optional(),
+  content: z.string().min(10),
+  category: z.string().min(2).max(100),
+  coverImageUrl: z.string().optional(),
+  visibility: z.enum(['PRIVATE', 'COMMUNITY', 'PUBLIC']).default('COMMUNITY'),
+});
+
+router.post('/articles', requireAuth, async (req: RequestWithUser, res) => {
+  try {
+    const parse = articleSchema.safeParse(req.body);
+    if (!parse.success) {
+      res.status(400).json({ success: false, error: parse.error.errors[0].message });
+      return;
+    }
+
+    const d = parse.data;
+    const baseSlug = d.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+    const result = await query(
+      `INSERT INTO articles (author_id, title, slug, summary, content, category, cover_image_url, visibility, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'PENDING_REVIEW')
+       RETURNING *`,
+      [req.user!.id, d.title, slug, d.summary || '', d.content, d.category, d.coverImageUrl || null, d.visibility]
+    );
+
+    res.status(201).json({ success: true, data: result.rows[0], message: 'Article submitted for review.' });
+  } catch (error) {
+    console.error('Create article error:', error);
+    res.status(500).json({ success: false, error: 'Failed to submit article.' });
+  }
+});
+
+router.get('/articles', async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT a.*, sp.full_name as author_name, sp.profile_slug
+       FROM articles a
+       JOIN student_profiles sp ON sp.user_id = a.author_id
+       WHERE a.status = 'PUBLISHED' AND a.visibility IN ('COMMUNITY', 'PUBLIC')
+       ORDER BY a.created_at DESC`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch articles.' });
+  }
+});
+
 export default router;
+

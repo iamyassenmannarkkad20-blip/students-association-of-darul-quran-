@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -65,6 +65,12 @@ export const Navbar: React.FC = () => {
               className="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors"
             >
               Units
+            </Link>
+            <Link
+              to="/explore"
+              className="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors"
+            >
+              Explore
             </Link>
             <Link
               to="/library"
@@ -124,7 +130,15 @@ export const Navbar: React.FC = () => {
                   to="/student"
                   className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-navy-800 text-gold-300 border border-gold-500/30 rounded-lg hover:border-gold-400 transition-colors"
                 >
-                  <User className="w-3.5 h-3.5 text-gold-400" />
+                  {profile?.profile_photo_url ? (
+                    <img
+                      src={profile.profile_photo_url}
+                      alt={user.fullName}
+                      className="w-4 h-4 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-3.5 h-3.5 text-gold-400" />
+                  )}
                   {user.fullName.split(' ')[0]}
                 </Link>
 
@@ -183,6 +197,13 @@ export const Navbar: React.FC = () => {
             className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/5"
           >
             10 Official Units
+          </Link>
+          <Link
+            to="/explore"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/5"
+          >
+            Explore Talents
           </Link>
           <Link
             to="/library"

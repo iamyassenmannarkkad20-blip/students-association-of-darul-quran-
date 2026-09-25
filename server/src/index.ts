@@ -12,11 +12,20 @@ import { query } from './db';
 import argon2 from 'argon2';
 import { ROLES } from '../../shared/types';
 
+import path from 'path';
+import fs from 'fs';
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+
+// Ensure uploads/avatars directory exists
+const uploadsDir = path.join(__dirname, '../uploads/avatars');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Security & Parsing Middlewares
 app.use(
@@ -40,9 +49,13 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+
+// Serve static uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 
 // Health Check
 app.get('/api/v1/health', async (_req, res) => {
