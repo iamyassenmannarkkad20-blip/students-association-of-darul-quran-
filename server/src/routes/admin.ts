@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import crypto from 'crypto';
+import argon2 from 'argon2';
 import { z } from 'zod';
 import { query, getClient } from '../db';
 import { requireAuth, requireRoles, RequestWithUser } from '../middleware/auth';
@@ -218,21 +220,46 @@ router.patch('/config', async (req, res) => {
 });
 
 // User Management: List all users with student profile and unit memberships
-router.get('/users', async (_req, res) => {
+router.get('/users', async (req, res) => {
   try {
-    const result = await query(
-      `SELECT u.id, u.email, u.role, u.is_active, u.created_at,
-              sp.full_name, sp.class_code, sp.profile_slug, sp.profile_photo_url,
-              COALESCE(
-                (SELECT json_agg(json_build_object('unit_code', om.unit_code, 'role_in_unit', om.designation, 'position', om.designation, 'is_leadership', om.is_leadership))
-                 FROM organisation_memberships om
-                 WHERE om.user_id = u.id AND om.is_active = TRUE),
-                '[]'::json
-              ) as units
-       FROM users u
-       LEFT JOIN student_profiles sp ON sp.user_id = u.id
-       ORDER BY u.created_at DESC`
-    );
+    const search = req.query.search as string;
+    const classCode = req.query.classCode as string;
+    const role = req.query.role as string;
+
+    let queryStr = `
+      SELECT u.id, u.email, u.username, u.role, u.is_active, u.created_at,
+             sp.full_name, sp.class_code, sp.graduation_year, sp.bio, sp.profile_slug, sp.profile_photo_url,
+             sp.whatsapp_number, sp.email_contact,
+             COALESCE(
+               (SELECT json_agg(json_build_object('unit_code', om.unit_code, 'role_in_unit', om.designation, 'position', om.designation, 'is_leadership', om.is_leadership))
+                FROM organisation_memberships om
+                WHERE om.user_id = u.id AND om.is_active = TRUE),
+               '[]'::json
+             ) as units,
+             (SELECT COUNT(*)::int FROM certificate_records cr WHERE cr.recipient_user_id = u.id) as certificates_count,
+             COALESCE((SELECT SUM(pr.class_points)::int FROM program_results pr WHERE pr.student_id = u.id AND pr.status = 'PUBLISHED'), 0) as lifetime_points
+      FROM users u
+      LEFT JOIN student_profiles sp ON sp.user_id = u.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (classCode) {
+      params.push(classCode);
+      queryStr += ` AND sp.class_code = $${params.length}`;
+    }
+    if (role) {
+      params.push(role);
+      queryStr += ` AND u.role = $${params.length}`;
+    }
+    if (search) {
+      params.push(`%${search.trim()}%`);
+      queryStr += ` AND (sp.full_name ILIKE $${params.length} OR u.username ILIKE $${params.length} OR u.email ILIKE $${params.length})`;
+    }
+
+    queryStr += ` ORDER BY u.created_at DESC LIMIT 200`;
+
+    const result = await query(queryStr, params);
     res.json({ success: true, data: result.rows });
   } catch (error) {
     console.error('Fetch users error:', error);
@@ -240,7 +267,181 @@ router.get('/users', async (_req, res) => {
   }
 });
 
-// Update User Role
+// Admin Create Any User (Student, Alumni, Teacher, Admin)
+const createUserAdminSchema = z.object({
+  email: z.string().email('Valid email is required'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  fullName: z.string().min(2, 'Full name is required'),
+  classCode: z.enum(['01', '02', '03', '04', '05', '06', '07', '08', 'ALUMNI']).optional().default('01'),
+  graduationYear: z.string().optional().nullable(),
+  role: z.enum([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.ORGANISATION_ADMIN, ROLES.STUDENT]).default(ROLES.STUDENT),
+  bio: z.string().optional().default(''),
+});
+
+router.post('/users/create', async (req: RequestWithUser, res) => {
+  const client = await getClient();
+  try {
+    const parse = createUserAdminSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ success: false, error: parse.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const { email, username, password, fullName, classCode, graduationYear, role, bio } = parse.data;
+
+    // Check unique email and username
+    const exists = await client.query(
+      `SELECT id FROM users WHERE LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($2)`,
+      [email, username]
+    );
+    if (exists.rows.length > 0) {
+      return res.status(400).json({ success: false, error: 'A user with this email or username already exists.' });
+    }
+
+    await client.query('BEGIN');
+
+    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+    const userRes = await client.query(
+      `INSERT INTO users (email, username, password_hash, role, is_active)
+       VALUES ($1, $2, $3, $4, TRUE)
+       RETURNING id, email, username, role, created_at`,
+      [email.toLowerCase(), username.toLowerCase(), passwordHash, role]
+    );
+
+    const newUser = userRes.rows[0];
+    const slugBase = username.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const profileSlug = `${slugBase}-${crypto.randomBytes(2).toString('hex')}`;
+
+    await client.query(
+      `INSERT INTO student_profiles (user_id, full_name, profile_slug, class_code, graduation_year, bio, is_public)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)`,
+      [newUser.id, fullName, profileSlug, classCode, graduationYear || null, bio]
+    );
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: `Account created successfully for ${fullName} (${role})!`,
+      data: newUser,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Create user error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create user account.' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin Edit Any User / Student / Alumni Details
+const editUserAdminSchema = z.object({
+  fullName: z.string().min(2).optional(),
+  classCode: z.enum(['01', '02', '03', '04', '05', '06', '07', '08', 'ALUMNI']).optional().nullable(),
+  graduationYear: z.string().optional().nullable(),
+  role: z.enum([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.ORGANISATION_ADMIN, ROLES.STUDENT]).optional(),
+  bio: z.string().optional(),
+  isActive: z.boolean().optional(),
+  password: z.string().min(6).optional().or(z.literal('')),
+});
+
+router.put('/users/:id', async (req: RequestWithUser, res) => {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+    const parse = editUserAdminSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ success: false, error: parse.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parse.data;
+
+    await client.query('BEGIN');
+
+    // Update users table fields
+    if (d.role !== undefined) {
+      await client.query(`UPDATE users SET role = $1 WHERE id = $2`, [d.role, id]);
+    }
+    if (d.isActive !== undefined) {
+      await client.query(`UPDATE users SET is_active = $1 WHERE id = $2`, [d.isActive, id]);
+    }
+    if (d.password && d.password.trim().length >= 6) {
+      const passwordHash = await argon2.hash(d.password.trim(), { type: argon2.argon2id });
+      await client.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [passwordHash, id]);
+    }
+
+    // Update student_profiles fields
+    const profUpdates: string[] = [];
+    const profVals: any[] = [];
+    let pIdx = 1;
+
+    if (d.fullName !== undefined) {
+      profUpdates.push(`full_name = $${pIdx++}`);
+      profVals.push(d.fullName);
+    }
+    if (d.classCode !== undefined) {
+      profUpdates.push(`class_code = $${pIdx++}`);
+      profVals.push(d.classCode);
+    }
+    if (d.graduationYear !== undefined) {
+      profUpdates.push(`graduation_year = $${pIdx++}`);
+      profVals.push(d.graduationYear);
+    }
+    if (d.bio !== undefined) {
+      profUpdates.push(`bio = $${pIdx++}`);
+      profVals.push(d.bio);
+    }
+
+    if (profUpdates.length > 0) {
+      profUpdates.push(`updated_at = CURRENT_TIMESTAMP`);
+      profVals.push(id);
+      await client.query(
+        `UPDATE student_profiles SET ${profUpdates.join(', ')} WHERE user_id = $${pIdx}`,
+        profVals
+      );
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: 'User details updated successfully!',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Update user error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update user profile.' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin Delete User Permanently (Cascading all records)
+router.delete('/users/:id', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user!.id;
+
+    if (id === currentUserId) {
+      return res.status(400).json({ success: false, error: 'Action denied. You cannot delete your own active administrator account.' });
+    }
+
+    const deleted = await query(`DELETE FROM users WHERE id = $1 RETURNING id, username, email`, [id]);
+    if (deleted.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'User account not found.' });
+    }
+
+    res.json({
+      success: true,
+      message: `User account @${deleted.rows[0].username} was permanently deleted. All related profile records removed.`,
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete user account.' });
+  }
+});
+
+// Update User Role (Compatibility alias)
 const roleSchema = z.object({
   role: z.enum([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.ORGANISATION_ADMIN, ROLES.STUDENT]),
 });

@@ -16,6 +16,7 @@ import { AdminCertificates } from './AdminCertificates';
 import { AdminCycles } from './AdminCycles';
 import { AdminClassUnions } from './AdminClassUnions';
 import { AdminScoreLedger } from './AdminScoreLedger';
+import { AdminUsersManager } from './AdminUsersManager';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -475,7 +476,7 @@ export const AdminDashboard: React.FC = () => {
           }`}
         >
           <Users className="w-4 h-4" />
-          Students & Roles ({usersList.length})
+          Students & Alumni Directory
         </button>
 
         <button
@@ -816,165 +817,8 @@ export const AdminDashboard: React.FC = () => {
       {/* TAB: 13 SUB-WINGS LEADERSHIP */}
       {activeTab === 'subwings' && <AdminSubWings />}
 
-      {/* TAB 1: USERS & 10 UNIT ASSIGNMENTS */}
-      {activeTab === 'users' && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="font-bold text-lg text-navy-900">Registered Students & Official Roles</h2>
-              <p className="text-xs text-slate-500">
-                Promote roles (Student, Teacher, Org Admin) and assign students to the 10 official units.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
-                  <tr>
-                    <th className="py-3.5 px-4">Student Name</th>
-                    <th className="py-3.5 px-4">Email</th>
-                    <th className="py-3.5 px-4">Class</th>
-                    <th className="py-3.5 px-4">System Role</th>
-                    <th className="py-3.5 px-4">Assigned Units</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {usersList.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4 font-semibold text-slate-900">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-navy-900 text-gold-300 flex items-center justify-center font-bold text-xs">
-                            {(u.full_name || u.email)[0].toUpperCase()}
-                          </div>
-                          <span>{u.full_name || 'Anonymous Student'}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-slate-600">{u.email}</td>
-                      <td className="py-3 px-4 font-bold text-navy-900">
-                        {u.class_code ? `Class ${u.class_code}` : '—'}
-                      </td>
-                      <td className="py-3 px-4">
-                        <select
-                          value={u.role}
-                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                          className="px-2 py-1 rounded-lg border border-slate-300 bg-white font-semibold text-[11px] focus:outline-none focus:ring-1 focus:ring-navy-900"
-                        >
-                          {ROLES.map((r) => (
-                            <option key={r} value={r}>{r}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="py-3 px-4">
-                        {u.units && u.units.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {u.units.map((unit: any) => (
-                              <span
-                                key={unit.unit_code}
-                                className="px-2 py-0.5 rounded text-[10px] font-bold bg-navy-50 text-navy-900 border border-navy-200"
-                              >
-                                {unit.unit_code}: {unit.position || 'Member'}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">None</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => {
-                            setSelectedUserForUnit(u);
-                            setUnitForm({ unitCode: 'EB', roleInUnit: 'Member', position: 'Member' });
-                          }}
-                          className="px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-[11px] shadow-sm transition-colors"
-                        >
-                          + Assign Unit
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Unit Assignment Modal */}
-          {selectedUserForUnit && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <form
-                onSubmit={handleAssignUnitSubmit}
-                className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up"
-              >
-                <div>
-                  <h3 className="font-cinzel text-lg font-bold text-navy-900">Assign to Official Unit</h3>
-                  <p className="text-xs text-slate-500">
-                    Student: <strong>{selectedUserForUnit.full_name || selectedUserForUnit.email}</strong>
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Select Official Unit (10 Units)</label>
-                  <select
-                    value={unitForm.unitCode}
-                    onChange={(e) => setUnitForm({ ...unitForm, unitCode: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-navy-900 bg-white"
-                  >
-                    {OFFICIAL_UNITS.map((u) => (
-                      <option key={u.code} value={u.code}>
-                        {u.code} — {u.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Role in Unit</label>
-                  <select
-                    value={unitForm.roleInUnit}
-                    onChange={(e) => setUnitForm({ ...unitForm, roleInUnit: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-navy-900 bg-white"
-                  >
-                    <option value="Executive">Executive</option>
-                    <option value="Convener">Convener</option>
-                    <option value="Editor">Editor</option>
-                    <option value="Member">General Member</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Specific Position / Title</label>
-                  <input
-                    value={unitForm.position}
-                    onChange={(e) => setUnitForm({ ...unitForm, position: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-navy-900"
-                    placeholder="e.g. President, General Secretary, Sub-editor"
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={assigningUnit}
-                    className="flex-1 py-2.5 rounded-xl bg-navy-900 text-gold-300 font-bold text-xs hover:bg-navy-800 disabled:opacity-50"
-                  >
-                    {assigningUnit ? 'Saving...' : 'Confirm Assignment'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedUserForUnit(null)}
-                    className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
-      )}
+      {/* TAB 1: USERS & 10 UNIT ASSIGNMENTS & COMPLETE ALUMNI AUTHORITY */}
+      {activeTab === 'users' && <AdminUsersManager />}
 
       {/* TAB 2: ANNOUNCEMENT NOTICE BANNER */}
       {activeTab === 'announcement' && (
