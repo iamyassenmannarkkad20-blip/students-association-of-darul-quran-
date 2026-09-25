@@ -14,7 +14,19 @@ import {
   ShieldCheck,
   Video,
   Megaphone,
+  Award,
+  Crown,
+  User as UserIcon,
 } from 'lucide-react';
+
+interface CommitteeMember {
+  id: string;
+  name: string;
+  designation: string;
+  photo_url: string;
+  order_index: number;
+  bio?: string;
+}
 
 interface Unit {
   code: string;
@@ -35,6 +47,7 @@ export const Home: React.FC = () => {
   const [units, setUnits] = useState<Unit[]>([]);
   const [magazines, setMagazines] = useState<any[]>([]);
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
+  const [committee, setCommittee] = useState<CommitteeMember[]>([]);
   const [announcement, setAnnouncement] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -63,16 +76,18 @@ export const Home: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const [uRes, mRes, medRes, confRes] = await Promise.all([
+        const [uRes, mRes, medRes, confRes, comRes] = await Promise.all([
           apiRequest<Unit[]>('/public/units'),
           apiRequest<any[]>('/public/magazines'),
           apiRequest<MediaItem[]>('/public/media'),
           apiRequest<any>('/public/config'),
+          apiRequest<CommitteeMember[]>('/public/committee'),
         ]);
         if (uRes.success && uRes.data) setUnits(uRes.data);
         if (mRes.success && mRes.data) setMagazines(mRes.data);
         if (medRes.success && medRes.data) setMediaList(medRes.data);
         if (confRes.success && confRes.data?.announcement) setAnnouncement(confRes.data.announcement);
+        if (comRes.success && comRes.data) setCommittee(comRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -174,6 +189,126 @@ export const Home: React.FC = () => {
               Explore 10 Official Units
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* SADQ Apex Executive Committee Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#02167f] text-[#ffd014] text-xs font-bold tracking-widest uppercase mb-3 shadow-lg shadow-[#02167f]/15 border border-[#ffd014]/40">
+            <Crown className="w-4 h-4 text-[#ffd014]" />
+            <span>SADQ Executive Committee</span>
+          </div>
+          <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-[#02167f] tracking-tight">
+            കേന്ദ്ര സാരഥികൾ
+          </h2>
+          <p className="mt-2.5 text-sm sm:text-base text-slate-600 font-medium">
+            Students Association of Darul Quran (SADQ) apex leadership driving academic excellence, spiritual vitality, and student empowerment.
+          </p>
+          <div className="mt-3 w-16 h-1 bg-gradient-to-r from-transparent via-[#ffd014] to-transparent mx-auto rounded-full" />
+        </div>
+
+        {/* Top 3 Apex Officers: President, Secretary, Treasurer */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {committee.slice(0, 3).map((leader) => (
+            <div
+              key={leader.id}
+              className="relative rounded-3xl bg-gradient-to-br from-[#02167f] via-[#031d96] to-[#010e52] text-white p-6 sm:p-8 border-2 border-[#ffd014] shadow-2xl shadow-[#02167f]/25 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group"
+            >
+              {/* Golden Crown badge on top card */}
+              <div className="absolute -top-3.5 px-3.5 py-0.5 rounded-full bg-[#ffd014] text-[#02167f] text-[10px] font-black tracking-widest uppercase shadow-md flex items-center gap-1 border border-white/40">
+                <Award className="w-3 h-3" />
+                <span>Apex Officer</span>
+              </div>
+
+              {/* Photo Frame with Dual Ring */}
+              <div className="relative mt-2 mb-5">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] shadow-xl group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-[#02167f] border-2 border-[#02167f] flex items-center justify-center">
+                    {leader.photo_url ? (
+                      <img
+                        src={leader.photo_url}
+                        alt={leader.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to avatar if broken image
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#02167f] to-[#010c47] text-[#ffd014]">
+                        <UserIcon className="w-10 h-10 opacity-60 mb-1" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90">
+                          {leader.name.split(' ').filter(n => !n.toLowerCase().includes('hafiz')).slice(0, 2).map(n => n[0]).join('') || 'HQ'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Designation Badge */}
+              <span className="inline-block px-4 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-[#ffd014] text-[#02167f] shadow-sm mb-2">
+                {leader.designation}
+              </span>
+
+              {/* Leader Full Name */}
+              <h3 className="font-cinzel text-xl sm:text-2xl font-bold text-white tracking-wide">
+                {leader.name}
+              </h3>
+
+              {/* Bio / Description */}
+              {leader.bio && (
+                <p className="text-xs text-blue-100/80 mt-2 line-clamp-2 leading-relaxed">
+                  {leader.bio}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Next Officers: Vice Presidents & Joint Secretaries */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {committee.slice(3).map((leader) => (
+            <div
+              key={leader.id}
+              className="rounded-2xl bg-white p-5 border-2 border-slate-200/80 hover:border-[#ffd014] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center group"
+            >
+              {/* Photo Frame */}
+              <div className="relative mb-4">
+                <div className="w-20 h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#02167f] to-[#ffd014] shadow-md group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-slate-100 border-2 border-white flex items-center justify-center">
+                    {leader.photo_url ? (
+                      <img
+                        src={leader.photo_url}
+                        alt={leader.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-[#02167f] text-[#ffd014]">
+                        <span className="text-xs font-bold uppercase tracking-wider">
+                          {leader.name.split(' ').filter(n => !n.toLowerCase().includes('hafiz')).slice(0, 2).map(n => n[0]).join('') || 'LE'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Designation Badge */}
+              <span className="inline-block px-3 py-0.5 rounded-md text-[11px] font-bold tracking-wide uppercase bg-[#02167f]/10 text-[#02167f] border border-[#02167f]/20 mb-1.5">
+                {leader.designation}
+              </span>
+
+              {/* Leader Full Name */}
+              <h3 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight">
+                {leader.name}
+              </h3>
+            </div>
+          ))}
         </div>
       </section>
 

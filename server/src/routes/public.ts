@@ -34,6 +34,22 @@ router.get('/units', async (_req, res) => {
   }
 });
 
+// Official SADQ Executive Committee (Apex Leaders)
+router.get('/committee', async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, name, designation, photo_url, order_index, bio, phone, email
+       FROM executive_committee
+       WHERE is_active = TRUE
+       ORDER BY order_index ASC, created_at ASC`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch committee error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch executive committee.' });
+  }
+});
+
 // Public Magazines
 router.get('/magazines', async (_req, res) => {
   try {

@@ -298,5 +298,106 @@ router.post('/announcement', async (req, res) => {
   }
 });
 
+// --- EXECUTIVE COMMITTEE MANAGEMENT ---
+// 1. List all committee members
+router.get('/committee', async (_req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, name, designation, photo_url, order_index, bio, phone, email, is_active, created_at, updated_at
+       FROM executive_committee
+       ORDER BY order_index ASC, created_at ASC`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Admin get committee error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch committee members.' });
+  }
+});
+
+// 2. Add new committee member
+router.post('/committee', async (req, res) => {
+  try {
+    const schema = z.object({
+      name: z.string().min(2),
+      designation: z.string().min(2),
+      photo_url: z.string().optional().default(''),
+      order_index: z.number().int().optional().default(0),
+      bio: z.string().optional().default(''),
+      phone: z.string().optional().default(''),
+      email: z.string().optional().default(''),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `INSERT INTO executive_committee (name, designation, photo_url, order_index, bio, phone, email, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)
+       RETURNING *`,
+      [d.name, d.designation, d.photo_url, d.order_index, d.bio, d.phone, d.email]
+    );
+
+    res.json({ success: true, data: result.rows[0], message: 'Committee member added successfully.' });
+  } catch (error) {
+    console.error('Admin create committee error:', error);
+    res.status(500).json({ success: false, error: 'Failed to add committee member.' });
+  }
+});
+
+// 3. Update committee member (including photo, order, designation)
+router.put('/committee/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schema = z.object({
+      name: z.string().min(2),
+      designation: z.string().min(2),
+      photo_url: z.string().optional().default(''),
+      order_index: z.number().int().optional().default(0),
+      bio: z.string().optional().default(''),
+      phone: z.string().optional().default(''),
+      email: z.string().optional().default(''),
+      is_active: z.boolean().optional().default(true),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const d = parsed.data;
+    const result = await query(
+      `UPDATE executive_committee
+       SET name = $1, designation = $2, photo_url = $3, order_index = $4, bio = $5, phone = $6, email = $7, is_active = $8, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $9
+       RETURNING *`,
+      [d.name, d.designation, d.photo_url, d.order_index, d.bio, d.phone, d.email, d.is_active, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Committee member not found.' });
+    }
+
+    res.json({ success: true, data: result.rows[0], message: 'Committee member updated successfully.' });
+  } catch (error) {
+    console.error('Admin update committee error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update committee member.' });
+  }
+});
+
+// 4. Delete committee member
+router.delete('/committee/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await query(`DELETE FROM executive_committee WHERE id = $1`, [id]);
+    res.json({ success: true, message: 'Committee member deleted successfully.' });
+  } catch (error) {
+    console.error('Admin delete committee error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete committee member.' });
+  }
+});
+
 export default router;
 

@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import {
   Shield, BookOpen, CheckCircle, XCircle, Plus, ExternalLink,
-  Users, Check, AlertCircle, RefreshCw, Megaphone, UserCheck, ShieldAlert
+  Users, Check, AlertCircle, RefreshCw, Megaphone, UserCheck, ShieldAlert,
+  Crown, Camera, Trash2, Edit2, Image as ImageIcon, Upload, User as UserIcon
 } from 'lucide-react';
 
 const OFFICIAL_UNITS = [
@@ -24,7 +25,22 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'magazines' | 'users' | 'announcement' | 'queue' | 'stats'>('users');
+  const [activeTab, setActiveTab] = useState<'committee' | 'users' | 'announcement' | 'magazines' | 'queue' | 'stats'>('committee');
+
+  // Executive Committee State
+  const [committeeList, setCommitteeList] = useState<any[]>([]);
+  const [editingMember, setEditingMember] = useState<any | null>(null);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [memberForm, setMemberForm] = useState({
+    name: '',
+    designation: 'President',
+    photo_url: '',
+    order_index: 1,
+    bio: '',
+    phone: '',
+    email: '',
+  });
+  const [savingMember, setSavingMember] = useState(false);
 
   // Stats
   const [stats, setStats] = useState<any>(null);
@@ -71,12 +87,13 @@ export const AdminDashboard: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [statsRes, queueRes, magRes, usersRes, configRes] = await Promise.all([
+      const [statsRes, queueRes, magRes, usersRes, configRes, comRes] = await Promise.all([
         apiRequest('/admin/stats'),
         apiRequest('/admin/pending-queue'),
         apiRequest('/public/magazines'),
         apiRequest('/admin/users'),
         apiRequest('/public/config'),
+        apiRequest('/admin/committee'),
       ]);
 
       if (statsRes.success) setStats(statsRes.data);
@@ -86,6 +103,7 @@ export const AdminDashboard: React.FC = () => {
       if (configRes.success && configRes.data?.announcement) {
         setAnnouncementText(configRes.data.announcement);
       }
+      if (comRes.success) setCommitteeList(comRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -195,6 +213,103 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  // --- COMMITTEE HANDLERS ---
+  const handleOpenEditLeader = (leader: any) => {
+    setEditingMember(leader);
+    setMemberForm({
+      name: leader.name || '',
+      designation: leader.designation || 'President',
+      photo_url: leader.photo_url || '',
+      order_index: leader.order_index ?? 1,
+      bio: leader.bio || '',
+      phone: leader.phone || '',
+      email: leader.email || '',
+    });
+    setShowMemberModal(true);
+  };
+
+  const handleOpenAddLeader = () => {
+    setEditingMember(null);
+    setMemberForm({
+      name: '',
+      designation: 'Vice President',
+      photo_url: '',
+      order_index: (committeeList.length || 0) + 1,
+      bio: '',
+      phone: '',
+      email: '',
+    });
+    setShowMemberModal(true);
+  };
+
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      alert('Please select an image smaller than 3MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setMemberForm((prev) => ({ ...prev, photo_url: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveMemberSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingMember(true);
+    try {
+      if (editingMember) {
+        const res = await apiRequest(`/admin/committee/${editingMember.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(memberForm),
+        });
+        if (res.success) {
+          setActionNotice('✅ Leader details & photo updated successfully! Live on Welcome Page.');
+          setTimeout(() => setActionNotice(null), 3500);
+          setShowMemberModal(false);
+          loadData();
+        } else {
+          alert(res.error || 'Failed to update leader.');
+        }
+      } else {
+        const res = await apiRequest('/admin/committee', {
+          method: 'POST',
+          body: JSON.stringify(memberForm),
+        });
+        if (res.success) {
+          setActionNotice('✅ New committee leader added successfully!');
+          setTimeout(() => setActionNotice(null), 3500);
+          setShowMemberModal(false);
+          loadData();
+        } else {
+          alert(res.error || 'Failed to add leader.');
+        }
+      }
+    } catch {
+      alert('Network error while saving leader.');
+    } finally {
+      setSavingMember(false);
+    }
+  };
+
+  const handleDeleteMember = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to remove ${name} from the Executive Committee?`)) return;
+    try {
+      const res = await apiRequest(`/admin/committee/${id}`, { method: 'DELETE' });
+      if (res.success) {
+        setActionNotice(`Leader ${name} removed from committee.`);
+        setTimeout(() => setActionNotice(null), 3500);
+        loadData();
+      } else {
+        alert(res.error || 'Failed to delete leader.');
+      }
+    } catch {
+      alert('Error deleting leader.');
+    }
+  };
+
   if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'ADMIN') {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-4">
@@ -247,6 +362,16 @@ export const AdminDashboard: React.FC = () => {
       {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-2 overflow-x-auto">
         <button
+          onClick={() => setActiveTab('committee')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'committee' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Crown className="w-4 h-4 text-amber-500" />
+          Executive Committee ({committeeList.length})
+        </button>
+
+        <button
           onClick={() => setActiveTab('users')}
           className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
             activeTab === 'users' ? 'border-navy-900 text-navy-900' : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -296,6 +421,272 @@ export const AdminDashboard: React.FC = () => {
           Database Stats
         </button>
       </div>
+
+      {/* TAB 0: EXECUTIVE COMMITTEE MANAGEMENT */}
+      {activeTab === 'committee' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#02167f]/10 via-[#ffd014]/10 to-transparent p-5 rounded-2xl border border-[#02167f]/20">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#02167f] text-[#ffd014] text-xs font-bold uppercase tracking-wider mb-2">
+                <Crown className="w-3.5 h-3.5 text-[#ffd014]" />
+                <span>Apex Leadership</span>
+              </div>
+              <h2 className="font-cinzel text-xl sm:text-2xl font-bold text-[#02167f]">
+                SADQ Executive Committee (കേന്ദ്ര സാരഥികൾ)
+              </h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Manage the apex leaders displayed on the Welcome Page. Upload photos, change names, edit designations, and reorder ranks.
+              </p>
+            </div>
+            <button
+              onClick={handleOpenAddLeader}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#02167f] text-[#ffd014] font-bold text-xs hover:bg-[#010e52] transition-colors shadow-md self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add New Leader</span>
+            </button>
+          </div>
+
+          {/* Leaders Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {committeeList.map((leader) => (
+              <div
+                key={leader.id}
+                className="bg-white rounded-2xl border-2 border-slate-200/80 hover:border-[#ffd014] shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-md bg-[#02167f] text-[#ffd014]">
+                      {leader.designation}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">
+                      Rank #{leader.order_index}
+                    </span>
+                  </div>
+
+                  {/* Photo Frame */}
+                  <div className="w-24 h-24 rounded-full mx-auto p-1 bg-gradient-to-tr from-[#02167f] via-blue-800 to-[#ffd014] shadow-md mb-4 group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                      {leader.photo_url ? (
+                        <img
+                          src={leader.photo_url}
+                          alt={leader.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-[#02167f] text-[#ffd014]">
+                          <UserIcon className="w-6 h-6 mb-0.5 opacity-70" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">
+                            {leader.name.split(' ').filter((n: string) => !n.toLowerCase().includes('hafiz')).slice(0, 2).map((n: string) => n[0]).join('') || 'HQ'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <h3 className="font-bold text-slate-900 text-base">{leader.name}</h3>
+                    {leader.bio && (
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                        {leader.bio}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-slate-100 flex gap-2">
+                  <button
+                    onClick={() => handleOpenEditLeader(leader)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#02167f] hover:bg-[#010e52] text-white text-xs font-semibold transition-colors shadow-sm"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 text-[#ffd014]" />
+                    <span>Edit & Photo</span>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMember(leader.id, leader.name)}
+                    className="px-3 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors"
+                    title="Delete leader"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Leader Edit / Add Modal */}
+          {showMemberModal && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <form
+                onSubmit={handleSaveMemberSubmit}
+                className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="font-cinzel text-xl font-bold text-[#02167f]">
+                      {editingMember ? 'Edit Leader & Photo' : 'Add Executive Leader'}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      This information updates live on the SADQ Welcome Page.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowMemberModal(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Photo Upload and Preview Section */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <label className="text-xs font-bold text-slate-800 block">
+                    Leader Photo (ഫോട്ടോ മാറ്റുക / ചേർക്കുക)
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-full p-0.5 bg-[#02167f] shadow-md shrink-0">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
+                        {memberForm.photo_url ? (
+                          <img
+                            src={memberForm.photo_url}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-[#02167f] text-[#ffd014]">
+                            <UserIcon className="w-6 h-6 opacity-60" />
+                            <span className="text-[9px] uppercase font-bold">No Photo</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 flex-1">
+                      <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#010e52] transition-colors shadow-sm">
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>Upload from Computer / Mobile</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {memberForm.photo_url && (
+                        <button
+                          type="button"
+                          onClick={() => setMemberForm({ ...memberForm, photo_url: '' })}
+                          className="block text-xs font-semibold text-red-600 hover:text-red-700 hover:underline"
+                        >
+                          Remove Photo (Reset to Default Avatar)
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600 block mb-1">
+                      Or Paste Image Direct URL:
+                    </label>
+                    <input
+                      type="url"
+                      value={memberForm.photo_url}
+                      onChange={(e) => setMemberForm({ ...memberForm, photo_url: e.target.value })}
+                      placeholder="https://example.com/photo.jpg"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+                    />
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Leader Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={memberForm.name}
+                    onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
+                    placeholder="e.g. Hafiz Rishad Omanoor"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+                  />
+                </div>
+
+                {/* Designation & Order */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Designation / സ്ഥാനം *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={memberForm.designation}
+                      onChange={(e) => setMemberForm({ ...memberForm, designation: e.target.value })}
+                      placeholder="President, Secretary, Treasurer..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Display Rank Order (1-20)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={memberForm.order_index}
+                      onChange={(e) =>
+                        setMemberForm({ ...memberForm, order_index: parseInt(e.target.value) || 1 })
+                      }
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+                    />
+                  </div>
+                </div>
+
+                {/* Bio / Quote */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Bio / Short Leadership Note (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={memberForm.bio}
+                    onChange={(e) => setMemberForm({ ...memberForm, bio: e.target.value })}
+                    placeholder="Brief message or leadership role focus..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#02167f]"
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="submit"
+                    disabled={savingMember}
+                    className="flex-1 py-3 rounded-xl bg-[#02167f] text-[#ffd014] font-bold text-xs hover:bg-[#010e52] transition-colors shadow-lg disabled:opacity-50"
+                  >
+                    {savingMember ? 'Saving Changes...' : 'Save & Publish Live'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMemberModal(false)}
+                    className="px-5 py-3 rounded-xl border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* TAB 1: USERS & 10 UNIT ASSIGNMENTS */}
       {activeTab === 'users' && (
