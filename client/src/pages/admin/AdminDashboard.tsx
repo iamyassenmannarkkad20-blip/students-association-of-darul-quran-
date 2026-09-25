@@ -393,7 +393,7 @@ export const AdminDashboard: React.FC = () => {
           }`}
         >
           <Award className="w-4 h-4 text-[#02167f]" />
-          13 Sub-Wings Leadership
+          10 Official Sub-Wings Leadership
         </button>
 
         <button

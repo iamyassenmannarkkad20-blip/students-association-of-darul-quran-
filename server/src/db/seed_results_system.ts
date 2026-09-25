@@ -130,24 +130,23 @@ async function seedResultsSystem() {
     console.log('✅ Seeded default class score rules.');
   }
 
-  // 3. Pre-seed 13 Sub-Wings (Data-Driven list, editable by Admin)
-  const defaultSubWings = [
-    { code: 'SW01', name: 'Quranic Hifz & Recitation Wing', description: 'Promoting Quran memorization, tajweed, and tartil competitions.' },
-    { code: 'SW02', name: 'Hadith & Sunnah Studies Wing', description: 'Classical hadith memorization, narration, and comprehension.' },
-    { code: 'SW03', name: 'Arabic Language & Eloquence Wing', description: 'Arabic rhetoric, public speaking, poetry, and classical grammar.' },
-    { code: 'SW04', name: 'English Oratory & Debate Wing', description: 'English debate, extempore speech, essays, and leadership communication.' },
-    { code: 'SW05', name: 'Malayalam Literary & Creative Wing', description: 'Malayalam essays, short stories, poetry, and cultural writing.' },
-    { code: 'SW06', name: 'Urdu & Multi-lingual Wing', description: 'Multi-lingual oratory, Urdu poetry, and translation crafts.' },
-    { code: 'SW07', name: 'Da\'wah & Public Outreach Wing', description: 'Spiritual guidance, public discourse, and ethical community outreach.' },
-    { code: 'SW08', name: 'Islamic Arts & Calligraphy Wing', description: 'Traditional Arabic calligraphy, Islamic design, and sacred illumination.' },
-    { code: 'SW09', name: 'Media, Design & Tech Wing', description: 'Video editing, poster designing, digital publishing, and tech development.' },
-    { code: 'SW10', name: 'Research & Publications Wing', description: 'Scholarly papers, monograph documentation, and academic surveys.' },
-    { code: 'SW11', name: 'Community Welfare & Health Wing', description: 'Health awareness, community service, medical aid, and campus hygiene.' },
-    { code: 'SW12', name: 'Moral Studies & Ethics Wing', description: 'Tarbiya sessions, ethical discourse, and spiritual reflection circles.' },
-    { code: 'SW13', name: 'Creative Innovations & Special Tasks Wing', description: 'Inter-disciplinary student projects and special organizational initiatives.' },
+  // 3. Sync 10 Official Sub-Wings (CS, DW, EB, IA, LB, LIB, MB, MPW, RW, SB)
+  await query(`DELETE FROM sub_wings WHERE code LIKE 'SW%'`);
+
+  const realSubWings = [
+    { code: 'CS', name: 'Campus Squad', description: 'Discipline, event volunteer corps, and campus coordination.' },
+    { code: 'DW', name: 'Da\'wah Wing', description: 'Islamic outreach, spiritual development, and community ethics.' },
+    { code: 'EB', name: 'Excellence Bureau', description: 'Academic excellence, strategic coordination, and guidance.' },
+    { code: 'IA', name: 'Islamic Arts', description: 'Traditional Islamic calligraphy, design, and cultural arts.' },
+    { code: 'LB', name: 'Literary Board', description: 'Literature, debate, oratory, essays, and creative writing.' },
+    { code: 'LIB', name: 'Library Board', description: 'Digital resource management, reading promotion, and archiving.' },
+    { code: 'MB', name: 'Medical Board', description: 'Health awareness, medical welfare, and first-aid coordination.' },
+    { code: 'MPW', name: 'Media & Publishing Wing', description: 'Publications, magazines, photography, and video media.' },
+    { code: 'RW', name: 'Research Wing', description: 'Academic research, Islamic studies analysis, and documentation.' },
+    { code: 'SB', name: 'Samajam Board', description: 'Student assemblies, union sessions, and public speaking gatherings.' },
   ];
 
-  for (const sw of defaultSubWings) {
+  for (const sw of realSubWings) {
     await query(
       `INSERT INTO sub_wings (code, name, description)
        VALUES ($1, $2, $3)
@@ -156,7 +155,7 @@ async function seedResultsSystem() {
       [sw.code, sw.name, sw.description]
     );
   }
-  console.log('✅ Seeded 13 official Sub-Wings.');
+  console.log('✅ Synchronized 10 real Official Sub-Wings (CS, DW, EB, IA, LB, LIB, MB, MPW, RW, SB).');
 
   console.log('🎉 SADQ Result & Class Performance System initialization complete!');
   process.exit(0);

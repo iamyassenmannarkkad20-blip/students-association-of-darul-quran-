@@ -112,10 +112,10 @@ export const AdminSubWings: React.FC = () => {
           SADQ Official Structure
         </span>
         <h2 className="font-cinzel text-xl sm:text-2xl font-black text-slate-900 mt-1">
-          13 Sub-Wings Leadership Directory
+          10 Official Sub-Wings Leadership Directory
         </h2>
         <p className="text-xs text-slate-500 mt-1 max-w-xl">
-          Designate Chairman and Convener for each of the 13 official Sub-Wings. Designated leaders gain permissions to create offline programs and record competition marks in their Sub-Wing portal.
+          Designate Chairman and Convener for each of the 10 official Sub-Wings (CS, DW, EB, IA, LB, LIB, MB, MPW, RW, SB). Designated leaders gain permissions to create offline programs and record competition marks in their Sub-Wing portal.
         </p>
       </div>
 
