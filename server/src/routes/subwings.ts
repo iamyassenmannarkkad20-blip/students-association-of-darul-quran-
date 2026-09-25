@@ -98,6 +98,23 @@ router.get('/my', async (req: RequestWithUser, res) => {
   }
 });
 
+// Get Students Directory for quick mark entry selection
+router.get('/students-directory', async (_req: RequestWithUser, res) => {
+  try {
+    const result = await query(
+      `SELECT sp.user_id, sp.full_name, sp.class_code, sp.profile_slug, u.username, u.email
+       FROM student_profiles sp
+       JOIN users u ON u.id = sp.user_id
+       WHERE u.is_active = TRUE
+       ORDER BY sp.class_code ASC, sp.full_name ASC`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch students directory error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch students directory.' });
+  }
+});
+
 // List programs for a specific sub-wing
 router.get('/:subWingId/programs', async (req: RequestWithUser, res) => {
   try {

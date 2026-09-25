@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export const StudentDashboard: React.FC = () => {
-  const { user, profile, refreshUser } = useAuth();
+  const { user, profile, assignedSubWings, refreshUser } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,9 +31,35 @@ export const StudentDashboard: React.FC = () => {
 
   const completion = dashboard?.completionPercentage ?? 0;
   const counts = dashboard?.counts ?? {};
+  const hasSubWingRole = assignedSubWings && assignedSubWings.length > 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      {/* Dual Profile Mode Switcher Pill */}
+      {hasSubWingRole && (
+        <div className="flex items-center justify-between bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-sm">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+            <button
+              type="button"
+              className="px-4 py-2 rounded-lg bg-navy-900 text-gold-300 font-bold text-xs flex items-center gap-2 shadow-sm"
+            >
+              <User className="w-3.5 h-3.5 text-gold-400" />
+              <span>Student Profile (Active)</span>
+            </button>
+            <Link
+              to="/subwing"
+              className="px-4 py-2 rounded-lg text-slate-600 hover:text-navy-900 font-bold text-xs flex items-center gap-2 transition-colors hover:bg-white"
+            >
+              <Award className="w-3.5 h-3.5 text-navy-700" />
+              <span>Wing Leadership Portal ({assignedSubWings[0].code})</span>
+            </Link>
+          </div>
+          <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline px-3">
+            Two active profiles linked to your account
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -42,14 +68,78 @@ export const StudentDashboard: React.FC = () => {
           </h1>
           <p className="text-sm text-slate-500 mt-1">Your Student Growth Dashboard — SADQ Platform</p>
         </div>
-        <Link
-          to="/student/create"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-sm shadow-md transition-colors"
-        >
-          <PlusCircle className="w-4 h-4 text-gold-400" />
-          <span>Create Content</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          {hasSubWingRole && (
+            <Link
+              to="/subwing"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-navy-950 font-bold text-xs shadow-md transition-colors"
+            >
+              <Award className="w-4 h-4 text-navy-900" />
+              <span>Open Wing Portal ({assignedSubWings[0].code})</span>
+            </Link>
+          )}
+          <Link
+            to="/student/create"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-xs shadow-md transition-colors"
+          >
+            <PlusCircle className="w-4 h-4 text-gold-400" />
+            <span>Create Content</span>
+          </Link>
+        </div>
       </div>
+
+      {/* DUAL PROFILE: SUB-WING LEADERSHIP CARD (If Assigned as Chairman / Convener) */}
+      {hasSubWingRole && (
+        <div className="rounded-3xl bg-gradient-to-r from-[#01092e] via-[#02167f] to-[#010e52] text-white p-6 sm:p-8 border-2 border-[#ffd014]/60 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-0.5 rounded-full bg-[#ffd014] text-[#02167f] text-[11px] font-black uppercase tracking-wider shadow">
+                  ⭐ Official {assignedSubWings[0].leadership_role}
+                </span>
+                <span className="text-xs text-amber-200 font-bold">
+                  {assignedSubWings[0].code} — {assignedSubWings[0].name}
+                </span>
+              </div>
+              <h2 className="font-cinzel text-xl sm:text-2xl font-black text-white">
+                Sub-Wing Operations & Results Portal
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                As the designated {assignedSubWings[0].leadership_role} of {assignedSubWings[0].name}, you can conduct offline campus competitions, enter student marks, auto-compute honors, and update class championship scores on the live leaderboard.
+              </p>
+            </div>
+
+            <div className="shrink-0 flex flex-col sm:items-end gap-2">
+              <Link
+                to="/subwing"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#ffd014] via-amber-300 to-[#ffd014] text-[#02167f] font-black text-xs sm:text-sm hover:from-amber-200 hover:to-[#ffd014] shadow-lg shadow-[#ffd014]/25 hover:scale-105 active:scale-95 transition-all"
+              >
+                <span>Enter Wing Portal ({assignedSubWings[0].code})</span>
+                <Award className="w-4 h-4 text-[#02167f]" />
+              </Link>
+              <span className="text-[10px] text-amber-200/80">
+                Switch from Student Mode to Wing Management Mode
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Sub-Wing Switcher if assigned to multiple wings */}
+          {assignedSubWings.length > 1 && (
+            <div className="pt-3 border-t border-white/10 flex items-center gap-2 flex-wrap text-xs">
+              <span className="text-slate-400">All your wings:</span>
+              {assignedSubWings.map((w) => (
+                <Link
+                  key={w.id}
+                  to="/subwing"
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold transition-colors"
+                >
+                  {w.code} ({w.leadership_role})
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Profile Completion */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">

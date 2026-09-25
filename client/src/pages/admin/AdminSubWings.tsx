@@ -47,10 +47,10 @@ export const AdminSubWings: React.FC = () => {
 
       if (usersRes.success && usersRes.data) {
         setStudents(
-          usersRes.data.map((u) => ({
+          usersRes.data.map((u: any) => ({
             id: u.id,
-            fullName: u.fullName || u.email,
-            class: u.class,
+            fullName: u.full_name || u.fullName || (u.username ? `@${u.username}` : u.email),
+            class: u.class_code || u.class,
             role: u.role,
           }))
         );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api';
 import {
   Trophy,
@@ -14,6 +15,7 @@ import {
   Send,
   AlertCircle,
   Award,
+  User,
 } from 'lucide-react';
 
 interface SubWing {
@@ -65,6 +67,7 @@ export const SubWingDashboard: React.FC = () => {
   const [selectedSubWing, setSelectedSubWing] = useState<SubWing | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
+  const [studentsDirectory, setStudentsDirectory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Create Program Modal State
@@ -89,9 +92,10 @@ export const SubWingDashboard: React.FC = () => {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [swRes, rulesRes] = await Promise.all([
+      const [swRes, rulesRes, studentsRes] = await Promise.all([
         apiRequest<SubWing[]>('/subwings/my'),
         apiRequest<ScoringRule[]>('/subwings/rules'),
+        apiRequest<any[]>('/subwings/students-directory'),
       ]);
 
       if (swRes.success && swRes.data) {
@@ -106,6 +110,10 @@ export const SubWingDashboard: React.FC = () => {
         if (rulesRes.data.length > 0) {
           setNewRuleId(rulesRes.data[0].id);
         }
+      }
+
+      if (studentsRes.success && studentsRes.data) {
+        setStudentsDirectory(studentsRes.data);
       }
     } catch (err) {
       console.error('Failed to load subwing initial data', err);
@@ -213,6 +221,23 @@ export const SubWingDashboard: React.FC = () => {
     );
   };
 
+  const handleStudentNameChange = (index: number, name: string) => {
+    const matched = studentsDirectory.find(
+      (s) => s.full_name?.toLowerCase() === name.toLowerCase().trim()
+    );
+    if (matched) {
+      setParticipants((prev) =>
+        prev.map((p, idx) =>
+          idx === index
+            ? { ...p, student_name: matched.full_name, class_code: matched.class_code || p.class_code }
+            : p
+        )
+      );
+    } else {
+      updateParticipant(index, 'student_name', name);
+    }
+  };
+
   const handleSaveMarks = async () => {
     if (!activeProgram) return;
     setSavingMarks(true);
@@ -309,6 +334,25 @@ export const SubWingDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 space-y-8">
       <div className="max-w-6xl mx-auto space-y-8">
+        {/* Dual Profile Switcher Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="px-3 py-1 rounded-full bg-[#02167f] text-[#ffd014] text-[11px] font-black uppercase tracking-wider shadow">
+              🏛️ Sub-Wing Portal Active
+            </span>
+            <span className="text-xs text-slate-600 font-medium">
+              You are managing <strong>{selectedSubWing?.name} ({selectedSubWing?.code})</strong>
+            </span>
+          </div>
+          <Link
+            to="/student"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 text-xs font-bold transition-all shadow-sm group"
+          >
+            <User className="w-3.5 h-3.5 text-navy-800 group-hover:text-[#ffd014]" />
+            <span>Switch to My Student Profile</span>
+          </Link>
+        </div>
+
         {/* Sub-Wing Selector & Header */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -616,6 +660,14 @@ export const SubWingDashboard: React.FC = () => {
                   </button>
                 </div>
 
+                <datalist id="registered-students-list">
+                  {studentsDirectory.map((st) => (
+                    <option key={st.user_id} value={st.full_name}>
+                      Class {st.class_code} ({st.username ? `@${st.username}` : st.email})
+                    </option>
+                  ))}
+                </datalist>
+
                 <div className="space-y-2">
                   {participants.map((p, idx) => (
                     <div
@@ -625,9 +677,10 @@ export const SubWingDashboard: React.FC = () => {
                       <div className="flex-1">
                         <input
                           type="text"
-                          placeholder="Student Name"
+                          list="registered-students-list"
+                          placeholder="Student Name (Pick from list or type...)"
                           value={p.student_name}
-                          onChange={(e) => updateParticipant(idx, 'student_name', e.target.value)}
+                          onChange={(e) => handleStudentNameChange(idx, e.target.value)}
                           className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:outline-none focus:border-[#02167f]"
                         />
                       </div>

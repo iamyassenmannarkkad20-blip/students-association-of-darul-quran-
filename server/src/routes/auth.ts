@@ -247,11 +247,39 @@ router.get('/me', requireAuth, async (req: RequestWithUser, res) => {
       [user.id]
     );
 
+    // Fetch any sub-wings where user is Chairman or Convener (or all if admin)
+    let assignedWings = [];
+    if (user.role === ROLES.SUPER_ADMIN || user.role === ROLES.ADMIN) {
+      const allWings = await query(
+        `SELECT sw.id, sw.code, sw.name, 'Admin Overseer' as leadership_role
+         FROM sub_wings sw
+         WHERE sw.status = 'ACTIVE'
+         ORDER BY sw.code ASC`
+      );
+      assignedWings = allWings.rows;
+    } else {
+      const userWings = await query(
+        `SELECT sw.id, sw.code, sw.name,
+                CASE WHEN sw.chairman_id = $1 THEN 'Chairman'
+                     WHEN sw.convener_id = $1 THEN 'Convener'
+                     ELSE 'Executive' END as leadership_role
+         FROM sub_wings sw
+         WHERE sw.status = 'ACTIVE' AND (sw.chairman_id = $1 OR sw.convener_id = $1)
+         ORDER BY sw.code ASC`,
+        [user.id]
+      );
+      assignedWings = userWings.rows;
+    }
+
     res.json({
       success: true,
       data: {
-        user,
+        user: {
+          ...user,
+          assignedSubWings: assignedWings,
+        },
         profile: profileRes.rows[0] || null,
+        assignedSubWings: assignedWings,
       },
     });
   } catch (error) {

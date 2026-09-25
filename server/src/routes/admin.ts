@@ -652,16 +652,34 @@ router.patch('/subwings/:id/leadership', async (req, res) => {
     }
 
     const d = parsed.data;
+    const updates: string[] = ['updated_at = CURRENT_TIMESTAMP'];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (d.chairman_id !== undefined) {
+      updates.push(`chairman_id = $${idx++}`);
+      values.push(d.chairman_id);
+    }
+    if (d.convener_id !== undefined) {
+      updates.push(`convener_id = $${idx++}`);
+      values.push(d.convener_id);
+    }
+    if (d.name !== undefined) {
+      updates.push(`name = $${idx++}`);
+      values.push(d.name);
+    }
+    if (d.description !== undefined) {
+      updates.push(`description = $${idx++}`);
+      values.push(d.description);
+    }
+
+    values.push(id);
     const result = await query(
       `UPDATE sub_wings
-       SET chairman_id = COALESCE($1, chairman_id),
-           convener_id = COALESCE($2, convener_id),
-           name = COALESCE($3, name),
-           description = COALESCE($4, description),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5
+       SET ${updates.join(', ')}
+       WHERE id = $${idx}
        RETURNING *`,
-      [d.chairman_id, d.convener_id, d.name, d.description, id]
+      values
     );
 
     res.json({ success: true, data: result.rows[0], message: 'Sub-Wing leadership assigned successfully.' });

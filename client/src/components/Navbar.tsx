@@ -31,7 +31,7 @@ import {
 import { CommandPalette } from './CommandPalette';
 
 export const Navbar: React.FC = () => {
-  const { user, profile, logout } = useAuth();
+  const { user, profile, assignedSubWings, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -78,17 +78,23 @@ export const Navbar: React.FC = () => {
         setHasSubWingAccess(true);
         return;
       }
+      if (assignedSubWings && assignedSubWings.length > 0) {
+        setHasSubWingAccess(true);
+        return;
+      }
       try {
         const res = await apiRequest<any[]>('/subwings/my');
         if (res.success && res.data && res.data.length > 0) {
           setHasSubWingAccess(true);
+        } else {
+          setHasSubWingAccess(false);
         }
       } catch {
         setHasSubWingAccess(false);
       }
     }
     checkSubWingAccess();
-  }, [user]);
+  }, [user, assignedSubWings]);
 
   // Close dropdown on outside click or route change
   useEffect(() => {
@@ -612,23 +618,35 @@ export const Navbar: React.FC = () => {
                   </Link>
                 )}
 
-                {/* My Sub-Wing Badge (Only shown to authorized Sub-Wing Leaders or Admin) */}
+                {/* Dual Profile: Wing Leadership Portal Pill */}
                 {hasSubWingAccess && (
                   <Link
                     to="/subwing"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-amber-400/20 text-[#ffd014] border border-[#ffd014]/40 rounded-xl hover:bg-amber-400/30 transition-all shadow-sm"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm ${
+                      location.pathname.startsWith('/subwing')
+                        ? 'bg-[#ffd014] text-[#02167f] ring-2 ring-[#ffd014]/60 font-black shadow-md'
+                        : 'bg-amber-400/20 text-[#ffd014] border border-[#ffd014]/40 hover:bg-amber-400/30'
+                    }`}
                     title="Sub-Wing Operations Portal"
                   >
-                    <Award className="w-3.5 h-3.5 text-[#ffd014]" />
-                    <span>My Sub-Wing</span>
+                    <Award className="w-3.5 h-3.5" />
+                    <span>
+                      {assignedSubWings && assignedSubWings[0]
+                        ? `${assignedSubWings[0].code} Portal`
+                        : 'Wing Portal'}
+                    </span>
                   </Link>
                 )}
 
-                {/* Student Workspace Profile Pill */}
+                {/* Dual Profile: Student Workspace Profile Pill */}
                 <Link
                   to="/student"
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-[#010a38] text-white border border-slate-700/60 rounded-xl hover:border-[#ffd014] transition-colors shadow-sm"
-                  title="My Student Dashboard"
+                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm ${
+                    location.pathname.startsWith('/student')
+                      ? 'bg-[#02167f] text-[#ffd014] border-2 border-[#ffd014]/80 ring-1 ring-[#ffd014]/40'
+                      : 'bg-[#010a38] text-white border border-slate-700/60 hover:border-[#ffd014]'
+                  }`}
+                  title="My Student Growth Dashboard"
                 >
                   {profile?.profile_photo_url ? (
                     <img
@@ -1015,17 +1033,34 @@ export const Navbar: React.FC = () => {
                     <Link
                       to="/student"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="py-2 text-center text-xs font-bold bg-white/10 text-white rounded-xl hover:bg-white/20"
+                      className={`py-2 text-center text-xs font-bold rounded-xl transition-all ${
+                        location.pathname.startsWith('/student')
+                          ? 'bg-[#ffd014] text-[#02167f] font-black'
+                          : 'bg-white/10 text-white hover:bg-white/20'
+                      }`}
                     >
                       🎓 Student Mode
                     </Link>
+                    {hasSubWingAccess && (
+                      <Link
+                        to="/subwing"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`py-2 text-center text-xs font-bold rounded-xl border border-amber-400/40 transition-all ${
+                          location.pathname.startsWith('/subwing')
+                            ? 'bg-[#ffd014] text-[#02167f] font-black'
+                            : 'bg-amber-400/20 text-[#ffd014] hover:bg-amber-400/30'
+                        }`}
+                      >
+                        🏛️ Wing Portal
+                      </Link>
+                    )}
                     {isAdmin && (
                       <Link
                         to="/admin"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="py-2 text-center text-xs font-bold bg-amber-400/20 text-[#ffd014] rounded-xl border border-amber-400/30"
+                        className="py-2 text-center text-xs font-bold bg-amber-400/20 text-[#ffd014] rounded-xl border border-amber-400/30 col-span-2"
                       >
-                        ⚡ Admin Suite
+                        ⚡ Admin Suite Portal
                       </Link>
                     )}
                   </div>
