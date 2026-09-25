@@ -238,10 +238,13 @@ export const Navbar: React.FC = () => {
                     to="/explore"
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <Sparkles className="w-4 h-4 text-[#ffd014]" />
                     <div>
-                      <div className="font-bold">Talents Showcase</div>
-                      <span className="text-[10px] text-slate-400">Student Portfolios</span>
+                      <div className="font-bold flex items-center gap-1.5">
+                        <span>Talents & Peer Connect</span>
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.2 bg-[#ffd014] text-[#02167f] rounded">New</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">All Student Profiles, Skills & WhatsApp</span>
                     </div>
                   </Link>
 

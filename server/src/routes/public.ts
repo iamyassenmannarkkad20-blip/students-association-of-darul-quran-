@@ -346,16 +346,50 @@ router.get('/students', async (req, res) => {
     const search = req.query.search as string;
 
     let queryStr = `
-      SELECT sp.id, sp.user_id, sp.full_name, sp.display_name, sp.profile_slug, sp.class_code,
+      SELECT sp.id, sp.user_id, sp.full_name, sp.profile_slug, sp.class_code,
              sp.bio, sp.profile_photo_url, sp.interests,
+             u.username,
+             sp.show_whatsapp,
+             sp.show_email,
+             sp.show_instagram,
+             CASE WHEN sp.show_whatsapp THEN sp.whatsapp_number ELSE NULL END as whatsapp_number,
+             CASE WHEN sp.show_email THEN sp.email_contact ELSE NULL END as email_contact,
+             CASE WHEN sp.show_instagram THEN sp.instagram_handle ELSE NULL END as instagram_handle,
+             CASE WHEN sp.show_talents THEN
+               COALESCE(
+                 (SELECT json_agg(json_build_object('id', st.id, 'title', st.title, 'category', st.category))
+                  FROM student_talents st
+                  WHERE st.user_id = sp.user_id AND st.visibility IN ('COMMUNITY', 'PUBLIC')),
+                 '[]'::json
+               )
+             ELSE '[]'::json END as talents,
+             CASE WHEN sp.show_skills THEN
+               COALESCE(
+                 (SELECT json_agg(json_build_object('id', ss.id, 'name', ss.skill_name, 'skill_name', ss.skill_name, 'proficiency', ss.proficiency))
+                  FROM student_skills ss
+                  WHERE ss.user_id = sp.user_id),
+                 '[]'::json
+               )
+             ELSE '[]'::json END as skills,
              COALESCE(
-               (SELECT json_agg(json_build_object('id', st.id, 'title', st.title, 'category', st.category))
-                FROM student_talents st
-                WHERE st.user_id = sp.user_id AND st.visibility IN ('COMMUNITY', 'PUBLIC')),
+               (SELECT json_agg(json_build_object('unit_code', om.unit_code, 'unit_name', ou.name, 'designation', om.designation, 'is_leadership', om.is_leadership))
+                FROM organisation_memberships om
+                JOIN organisation_units ou ON ou.code = om.unit_code
+                WHERE om.user_id = sp.user_id AND om.is_active = TRUE),
                '[]'::json
-             ) as talents
+             ) as units,
+             COALESCE(
+               (SELECT json_agg(json_build_object('code', sw.code, 'name', sw.name, 'role',
+                  CASE WHEN sw.chairman_id = sp.user_id THEN 'Chairman'
+                       WHEN sw.convener_id = sp.user_id THEN 'Convener'
+                       ELSE 'Leader' END))
+                FROM sub_wings sw
+                WHERE sw.chairman_id = sp.user_id OR sw.convener_id = sp.user_id),
+               '[]'::json
+             ) as sub_wings_leadership
       FROM student_profiles sp
-      WHERE sp.is_public = TRUE
+      JOIN users u ON u.id = sp.user_id
+      WHERE sp.is_public = TRUE AND u.is_active = TRUE
     `;
     const params: any[] = [];
 
@@ -366,7 +400,7 @@ router.get('/students', async (req, res) => {
 
     if (search) {
       params.push(`%${search}%`);
-      queryStr += ` AND (sp.full_name ILIKE $${params.length} OR sp.bio ILIKE $${params.length})`;
+      queryStr += ` AND (sp.full_name ILIKE $${params.length} OR sp.bio ILIKE $${params.length} OR u.username ILIKE $${params.length})`;
     }
 
     queryStr += ` ORDER BY sp.full_name ASC LIMIT 50`;
@@ -375,13 +409,20 @@ router.get('/students', async (req, res) => {
 
     let rows = result.rows;
     if (talent) {
+      const q = talent.toLowerCase();
       rows = rows.filter((s: any) =>
-        s.talents &&
-        s.talents.some(
-          (t: any) =>
-            t.title.toLowerCase().includes(talent.toLowerCase()) ||
-            t.category.toLowerCase().includes(talent.toLowerCase())
-        )
+        (s.talents &&
+          s.talents.some(
+            (t: any) =>
+              t.title.toLowerCase().includes(q) ||
+              (t.category && t.category.toLowerCase().includes(q))
+          )) ||
+        (s.skills &&
+          s.skills.some(
+            (sk: any) =>
+              sk.name.toLowerCase().includes(q) ||
+              (sk.category && sk.category.toLowerCase().includes(q))
+          ))
       );
     }
 

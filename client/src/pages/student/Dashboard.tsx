@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { apiRequest } from '../../services/api';
 import {
   User, Sparkles, Layers, Award, FolderGit2, Users, PlusCircle,
-  Edit3, Eye, EyeOff, CheckCircle2, TrendingUp, Shield,
+  Edit3, Eye, EyeOff, CheckCircle2, TrendingUp, Shield, Compass, MessageSquare,
 } from 'lucide-react';
 
 export const StudentDashboard: React.FC = () => {
@@ -195,6 +195,7 @@ export const StudentDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {[
           { title: 'Profile & Privacy', desc: 'Edit bio, photo, interests and privacy toggles', to: '/student/profile', icon: User },
+          { title: 'Peer Talents & Connect', desc: 'Explore all students, graded skills & WhatsApp connect', to: '/explore', icon: Compass },
           { title: 'Creative Talents', desc: 'Showcase your natural gifts and creative abilities', to: '/student/talents', icon: Sparkles },
           { title: 'Skills & Proficiency', desc: 'Track skills from Beginner to Expert level', to: '/student/skills', icon: Layers },
           { title: 'Achievements', desc: 'Log verified awards, certifications, and milestones', to: '/student/achievements', icon: Award },
