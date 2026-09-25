@@ -111,15 +111,18 @@ export const Home: React.FC = () => {
 
   return (
     <div className="space-y-24 pb-20">
-      {/* Hero Section with Large Official Emblem */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#071026] via-[#0B1B3D] to-navy-950 text-white pt-16 pb-28 px-4 sm:px-6 lg:px-8 border-b border-gold-500/20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold-500/15 via-transparent to-transparent pointer-events-none" />
+      {/* Modern Luxury Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#01092e] via-[#02167f] to-[#01092e] text-white pt-20 pb-32 px-4 sm:px-6 lg:px-8 border-b border-[#ffd014]/25 shadow-2xl">
+        {/* Ambient Radial Golden Light */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#ffd014]/15 via-[#02167f]/30 to-transparent blur-3xl pointer-events-none rounded-full" />
+        <div className="absolute -top-24 right-10 w-96 h-96 bg-[#ffd014]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 left-10 w-96 h-96 bg-[#02167f]/40 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
-          {/* Live Official Announcement Banner */}
-          {announcement && (
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-gold-500/20 via-amber-400/15 to-gold-500/20 border border-gold-400/50 text-gold-200 text-xs sm:text-sm font-semibold shadow-lg shadow-gold-500/10 animate-fade-in max-w-3xl mx-auto">
-              <Megaphone className="w-4 h-4 text-gold-400 shrink-0 animate-bounce" />
+        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-8">
+          {/* Live Official Announcement Banner (Rendered ONLY if admin posts a real message) */}
+          {Boolean(announcement && announcement.trim().length > 0) && (
+            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-[#ffd014]/15 border border-[#ffd014]/60 text-amber-200 text-xs sm:text-sm font-bold shadow-xl shadow-black/40 animate-fade-in max-w-3xl mx-auto backdrop-blur-md">
+              <Megaphone className="w-4 h-4 text-[#ffd014] shrink-0 animate-bounce" />
               <span>{announcement}</span>
             </div>
           )}
@@ -127,47 +130,45 @@ export const Home: React.FC = () => {
           {/* Official Royal Seal / Insignia */}
           <div className="flex flex-col items-center justify-center animate-fade-in">
             <div className="relative group">
-              {/* Golden Ambient Glow */}
-              <div className="absolute -inset-3 bg-gradient-to-r from-gold-500/30 via-amber-500/20 to-gold-500/30 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition duration-700" />
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#ffd014]/40 via-amber-400/20 to-[#ffd014]/40 rounded-full blur-2xl opacity-75 group-hover:opacity-100 transition duration-700" />
 
-              {/* Royal Circular Seal */}
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-gold-500 via-amber-300 to-gold-400 p-[2px] shadow-2xl shadow-gold-500/20 flex items-center justify-center">
-                <div className="w-full h-full rounded-full bg-gradient-to-b from-[#0B1B3D] to-[#071026] flex flex-col items-center justify-center border border-gold-500/40 p-2">
-                  <div className="w-7 h-7 rounded-full bg-gold-500/10 border border-gold-400/50 flex items-center justify-center mb-1">
-                    <BookOpen className="w-3.5 h-3.5 text-gold-400" />
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] p-[3px] shadow-2xl shadow-[#02167f]/60 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                <div className="w-full h-full rounded-full bg-gradient-to-b from-[#02167f] via-[#010e52] to-[#01092e] flex flex-col items-center justify-center border-2 border-[#ffd014]/40 p-2">
+                  <div className="w-8 h-8 rounded-full bg-[#ffd014]/15 border border-[#ffd014]/60 flex items-center justify-center mb-1 shadow-inner">
+                    <BookOpen className="w-4 h-4 text-[#ffd014]" />
                   </div>
-                  <span className="font-cinzel font-extrabold text-lg sm:text-xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-amber-400">
+                  <span className="font-cinzel font-black text-xl sm:text-2xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-[#ffd014] to-amber-300">
                     SADQ
                   </span>
-                  <span className="text-[7px] sm:text-[8px] uppercase tracking-widest text-gold-300/80 font-bold">
-                    Official
+                  <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-amber-200 font-black">
+                    OFFICIAL
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Sub-badge: Beyond The Curriculum */}
-            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs font-bold tracking-widest uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ffd014]/15 border border-[#ffd014]/40 text-[#ffd014] text-xs font-black tracking-widest uppercase shadow-md backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-[#ffd014]" />
               <span>Beyond The Curriculum</span>
             </div>
           </div>
 
           {/* Main Heading: Full Official Name */}
-          <div className="space-y-3">
-            <h1 className="font-cinzel text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+          <div className="space-y-4">
+            <h1 className="font-cinzel text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
               STUDENTS ASSOCIATION OF <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-amber-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#ffd014] to-amber-300 drop-shadow-md">
                 DARUL QURAN ISLAMIC ACADEMY
               </span>
             </h1>
 
-            {/* Meaningful & Clean Motivation */}
-            <div className="max-w-2xl mx-auto space-y-1.5 pt-1">
-              <p className="text-sm sm:text-base text-gold-200/90 font-medium">
+            {/* Meaningful Motivation */}
+            <div className="max-w-2xl mx-auto space-y-2 pt-1">
+              <p className="text-sm sm:text-lg text-amber-100/90 font-medium leading-relaxed">
                 Fostering Creative Talents, Leadership, and Holistic Growth in Islamic Education.
               </p>
-              <p className="text-xs sm:text-sm text-slate-300 font-normal">
+              <p className="text-xs sm:text-sm text-slate-300 font-light">
                 സർഗ്ഗാത്മകത, വിദ്യാർത്ഥി വളർച്ച, നേതൃത്വ പാടവം — അറിവിനൊപ്പം കർമ്മശേഷി.
               </p>
             </div>
@@ -177,16 +178,44 @@ export const Home: React.FC = () => {
           <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
             <Link
               to="/register"
-              className="px-8 py-3.5 rounded-xl font-bold text-navy-950 bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 shadow-xl shadow-gold-500/25 transition-all text-sm sm:text-base flex items-center gap-2 group"
+              className="px-8 py-4 rounded-2xl font-black text-[#02167f] bg-gradient-to-r from-[#ffd014] via-amber-300 to-[#ffd014] hover:from-amber-200 hover:to-[#ffd014] shadow-xl shadow-[#ffd014]/30 hover:scale-105 active:scale-95 transition-all text-sm sm:text-base flex items-center gap-2 group"
             >
               <span>Build Student Portfolio</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
             </Link>
             <Link
               to="/organisation"
-              className="px-6 py-3.5 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-all text-sm sm:text-base"
+              className="px-7 py-4 rounded-2xl font-bold text-white bg-white/10 hover:bg-white/15 border-2 border-white/20 hover:border-[#ffd014]/50 backdrop-blur-md transition-all text-sm sm:text-base"
             >
               Explore 10 Official Units
+            </Link>
+          </div>
+
+          {/* Quick Feature Chips */}
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs">
+            <Link
+              to="/organisation"
+              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+            >
+              <span>🏛️ 10 Wings</span>
+            </Link>
+            <Link
+              to="/library"
+              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+            >
+              <span>📖 Digital Library</span>
+            </Link>
+            <Link
+              to="/explore"
+              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+            >
+              <span>🏆 Portfolios & Talents</span>
+            </Link>
+            <Link
+              to="/media"
+              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+            >
+              <span>🎥 Live Broadcasts</span>
             </Link>
           </div>
         </div>
@@ -221,27 +250,22 @@ export const Home: React.FC = () => {
                 <span>Apex Officer</span>
               </div>
 
-              {/* Photo Frame with Dual Ring */}
+              {/* Photo Frame: Blank minimal frame when no photo uploaded */}
               <div className="relative mt-2 mb-5">
                 <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] shadow-xl group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-[#02167f] border-2 border-[#02167f] flex items-center justify-center">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-[#01092e] border-2 border-[#02167f] flex items-center justify-center">
                     {leader.photo_url ? (
                       <img
                         src={leader.photo_url}
                         alt={leader.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Fallback to avatar if broken image
                           (e.target as HTMLElement).style.display = 'none';
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#02167f] to-[#010c47] text-[#ffd014]">
-                        <UserIcon className="w-10 h-10 opacity-60 mb-1" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90">
-                          {leader.name.split(' ').filter(n => !n.toLowerCase().includes('hafiz')).slice(0, 2).map(n => n[0]).join('') || 'HQ'}
-                        </span>
-                      </div>
+                      /* Clean blank minimalist frame until admin adds photo */
+                      <div className="w-full h-full bg-[#010a38] flex items-center justify-center" />
                     )}
                   </div>
                 </div>
@@ -274,10 +298,10 @@ export const Home: React.FC = () => {
               key={leader.id}
               className="rounded-2xl bg-white p-5 border-2 border-slate-200/80 hover:border-[#ffd014] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center group"
             >
-              {/* Photo Frame */}
+              {/* Photo Frame: Blank minimal frame when no photo uploaded */}
               <div className="relative mb-4">
                 <div className="w-20 h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#02167f] to-[#ffd014] shadow-md group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-slate-100 border-2 border-white flex items-center justify-center">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-slate-900 border-2 border-white flex items-center justify-center">
                     {leader.photo_url ? (
                       <img
                         src={leader.photo_url}
@@ -288,11 +312,8 @@ export const Home: React.FC = () => {
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-[#02167f] text-[#ffd014]">
-                        <span className="text-xs font-bold uppercase tracking-wider">
-                          {leader.name.split(' ').filter(n => !n.toLowerCase().includes('hafiz')).slice(0, 2).map(n => n[0]).join('') || 'LE'}
-                        </span>
-                      </div>
+                      /* Clean blank minimalist frame until admin adds photo */
+                      <div className="w-full h-full bg-[#02167f] flex items-center justify-center" />
                     )}
                   </div>
                 </div>
@@ -415,19 +436,20 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-gold-600 mb-1">
-              Structure & Leadership
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#02167f]/10 text-[#02167f] text-xs font-bold uppercase tracking-wider mb-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#02167f]" />
+              <span>10 Official Wings</span>
             </div>
-            <h2 className="font-cinzel text-2xl sm:text-3xl font-bold text-navy-900">
+            <h2 className="font-cinzel text-2xl sm:text-4xl font-extrabold text-[#02167f]">
               10 Official Units of SADQ
             </h2>
           </div>
           <Link
             to="/organisation"
-            className="text-sm font-semibold text-navy-900 hover:text-gold-600 flex items-center gap-1 self-start sm:self-auto"
+            className="text-xs font-bold uppercase tracking-wider text-[#02167f] hover:text-[#ffd014] flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 hover:bg-[#02167f] hover:text-white px-4 py-2.5 rounded-xl transition-all shadow-sm"
           >
-            <span>Learn more about units</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Explore All 10 Units</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -435,16 +457,20 @@ export const Home: React.FC = () => {
           {units.map((unit) => (
             <div
               key={unit.code}
-              className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-gold-500/40 hover:shadow-md transition-all flex flex-col justify-between"
+              className="p-5 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-[#ffd014] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-cinzel font-bold text-base text-gold-600 px-2 py-0.5 bg-gold-50 rounded-md border border-gold-200">
+                  <span className="font-cinzel font-black text-sm text-[#02167f] px-2.5 py-1 bg-gradient-to-r from-[#ffd014]/20 to-amber-100 rounded-lg border border-[#ffd014]/40">
                     {unit.code}
                   </span>
-                  <span className="text-[10px] uppercase font-semibold text-slate-400">Official</span>
+                  <span className="text-[9px] uppercase font-black tracking-widest text-[#02167f] bg-slate-100 px-2 py-0.5 rounded">
+                    Official
+                  </span>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm mb-1">{unit.name}</h3>
+                <h3 className="font-bold text-slate-900 text-sm mb-1.5 group-hover:text-[#02167f] transition-colors">
+                  {unit.name}
+                </h3>
                 <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
                   {unit.description}
                 </p>

@@ -877,7 +877,7 @@ export const AdminDashboard: React.FC = () => {
               value={announcementText}
               onChange={(e) => setAnnouncementText(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-navy-900 resize-none"
-              placeholder="e.g. 📢 Registrations are now open for the Annual SADQ Oratory & Debate Fest 2026. Submit your entries via the Create Center!"
+              placeholder="Type an announcement here (e.g. Greetings from the SADQ Apex Executive Committee). If left empty, no banner is shown on the Home page."
             />
           </div>
 
