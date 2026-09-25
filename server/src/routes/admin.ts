@@ -1224,5 +1224,111 @@ router.post('/students/promote-batch', async (req: RequestWithUser, res) => {
   }
 });
 
+// ==================================================
+// 11. Score Ledger & Points Management
+// ==================================================
+
+// GET /admin/scores/ledger - List all score entries
+router.get('/scores/ledger', async (_req: RequestWithUser, res) => {
+  try {
+    const class_code = _req.query.class_code as string;
+    const cycle_id = _req.query.cycle_id as string;
+    const source_type = _req.query.source_type as string;
+
+    let queryStr = `
+      SELECT l.*, ac.name as cycle_name, ac.status as cycle_status
+      FROM class_score_ledger l
+      LEFT JOIN academic_cycles ac ON ac.id = l.cycle_id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+    if (class_code) {
+      params.push(class_code);
+      queryStr += ` AND l.class_code = $${params.length}`;
+    }
+    if (cycle_id) {
+      params.push(cycle_id);
+      queryStr += ` AND l.cycle_id = $${params.length}`;
+    }
+    if (source_type) {
+      params.push(source_type);
+      queryStr += ` AND l.source_type = $${params.length}`;
+    }
+    queryStr += ` ORDER BY l.created_at DESC LIMIT 300`;
+
+    const result = await query(queryStr, params);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch ledger error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch score ledger.' });
+  }
+});
+
+// POST /admin/scores/adjust - Manually add or deduct points
+const adjustScoreSchema = z.object({
+  class_code: z.enum(['01', '02', '03', '04', '05', '06', '07', '08']),
+  points: z.number().int().refine((val) => val !== 0, 'Points must be non-zero'),
+  description: z.string().min(2, 'Description/reason is required'),
+  cycle_id: z.string().uuid().optional().nullable(),
+});
+
+router.post('/scores/adjust', async (req: RequestWithUser, res) => {
+  try {
+    const parsed = adjustScoreSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid input' });
+    }
+
+    const { class_code, points, description } = parsed.data;
+    let targetCycleId = parsed.data.cycle_id;
+
+    if (!targetCycleId) {
+      const activeCycleRes = await query(`SELECT id FROM academic_cycles WHERE status = 'ACTIVE' LIMIT 1`);
+      targetCycleId = activeCycleRes.rows[0]?.id || null;
+    }
+
+    const result = await query(
+      `INSERT INTO class_score_ledger (class_code, source_type, points, description, cycle_id)
+       VALUES ($1, 'MANUAL_ADJUSTMENT', $2, $3, $4)
+       RETURNING *`,
+      [class_code, points, description, targetCycleId]
+    );
+
+    res.json({
+      success: true,
+      data: result.rows[0],
+      message: `Successfully recorded ${points > 0 ? '+' : ''}${points} points adjustment for Class ${class_code}!`,
+    });
+  } catch (error) {
+    console.error('Adjust score error:', error);
+    res.status(500).json({ success: false, error: 'Failed to record score adjustment.' });
+  }
+});
+
+// DELETE /admin/scores/ledger/:id - Delete any score entry
+router.delete('/scores/ledger/:id', async (req: RequestWithUser, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await query(
+      `DELETE FROM class_score_ledger WHERE id = $1 RETURNING *`,
+      [id]
+    );
+
+    if (deleted.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Score ledger entry not found.' });
+    }
+
+    const row = deleted.rows[0];
+    res.json({
+      success: true,
+      message: `Score entry "${row.description}" (${row.points > 0 ? '+' : ''}${row.points} pts) for Class ${row.class_code} was deleted successfully. Leaderboard updated!`,
+      data: row,
+    });
+  } catch (error) {
+    console.error('Delete score entry error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete score ledger entry.' });
+  }
+});
+
 export default router;
 

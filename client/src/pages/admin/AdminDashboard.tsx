@@ -15,6 +15,7 @@ import { AdminCompetitions } from './AdminCompetitions';
 import { AdminCertificates } from './AdminCertificates';
 import { AdminCycles } from './AdminCycles';
 import { AdminClassUnions } from './AdminClassUnions';
+import { AdminScoreLedger } from './AdminScoreLedger';
 
 const OFFICIAL_UNITS = [
   { code: 'EB', name: 'Excellence Bureau' },
@@ -34,7 +35,7 @@ const ROLES = ['STUDENT', 'TEACHER', 'ORGANISATION_ADMIN', 'ADMIN', 'SUPER_ADMIN
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'cycles' | 'class-unions' | 'competitions' | 'certificates' | 'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
+    'cycles' | 'score-ledger' | 'class-unions' | 'competitions' | 'certificates' | 'committee' | 'class-tasks' | 'subwings' | 'users' | 'announcement' | 'magazines' | 'media' | 'queue' | 'stats'
   >('cycles');
 
   // Executive Committee State
@@ -395,6 +396,16 @@ export const AdminDashboard: React.FC = () => {
         >
           <Calendar className="w-4 h-4 text-amber-500" />
           <span>Cycles & Best Class</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('score-ledger')}
+          className={`pb-3 px-4 text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'score-ledger' ? 'border-[#02167f] text-[#02167f]' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Trophy className="w-4 h-4 text-amber-500" />
+          <span>Score Corrections & Ledger</span>
         </button>
 
         <button
@@ -786,6 +797,9 @@ export const AdminDashboard: React.FC = () => {
 
       {/* TAB: ACADEMIC CYCLES & BEST CLASS OF THE MONTH */}
       {activeTab === 'cycles' && <AdminCycles />}
+
+      {/* TAB: SCORE CORRECTIONS & MASTER LEDGER */}
+      {activeTab === 'score-ledger' && <AdminScoreLedger />}
 
       {/* TAB: 8 CLASS SANGADHANAKAL & ANNUAL BATCH PROMOTION */}
       {activeTab === 'class-unions' && <AdminClassUnions />}
