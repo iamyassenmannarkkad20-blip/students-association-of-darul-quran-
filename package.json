@@ -4,6 +4,10 @@
   "private": true,
   "description": "SADQ Platform - Student Growth, Organisation, Creativity, Community & Opportunity",
   "scripts": {
+    "build": "cd client && npm install && npm run build && cd ../server && npm install && npm run build",
+    "build:client": "cd client && npm install && npm run build",
+    "build:server": "cd server && npm install && npm run build",
+    "start": "cd server && npm start",
     "test": "node tests/run-e2e.js"
   },
   "keywords": ["sadq", "student-platform", "education", "community"],
