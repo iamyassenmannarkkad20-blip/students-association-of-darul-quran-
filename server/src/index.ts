@@ -144,7 +144,7 @@ async function ensureSuperAdmin() {
   }
 }
 
-app.listen(PORT, async () => {
+app.listen(Number(PORT), '0.0.0.0', async () => {
   console.log(`=================================================`);
   console.log(` SADQ API Server running on port ${PORT}`);
   console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
