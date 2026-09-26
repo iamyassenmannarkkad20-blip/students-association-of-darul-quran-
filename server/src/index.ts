@@ -88,6 +88,18 @@ app.use('/api/v1/cycles', cyclesRoutes);
 app.use('/api/v1/class-unions', classUnionRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 
+// Serve Client SPA for all non-API web routes
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Unhandled server error:', err);
