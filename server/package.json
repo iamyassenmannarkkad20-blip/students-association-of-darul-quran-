@@ -2,11 +2,11 @@
   "name": "sadq-server",
   "version": "1.0.0",
   "description": "SADQ Platform Backend API Server",
-  "main": "dist/index.js",
+  "main": "dist/server/src/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "tsc && node -e \"const fs = require('fs'); if (fs.existsSync('dist/server/src/index.js')) fs.writeFileSync('dist/index.js', 'require(\\\"./server/src/index.js\\\");');\"",
+    "start": "node dist/server/src/index.js",
     "test": "echo \"Server tests passing\""
   },
   "dependencies": {

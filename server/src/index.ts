@@ -89,8 +89,16 @@ app.use('/api/v1/class-unions', classUnionRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 
 // Serve Client SPA for all non-API web routes
-const clientDistPath = path.resolve(__dirname, '../../client/dist');
+const candidateDistPaths = [
+  path.resolve(process.cwd(), '../client/dist'),
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(__dirname, '../../../../client/dist'),
+  path.resolve(__dirname, '../../client/dist'),
+];
+const clientDistPath = candidateDistPaths.find((p) => fs.existsSync(p)) || candidateDistPaths[0];
+
 if (fs.existsSync(clientDistPath)) {
+  console.log(`[PRODUCTION] Serving client SPA from: ${clientDistPath}`);
   app.use(express.static(clientDistPath));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
