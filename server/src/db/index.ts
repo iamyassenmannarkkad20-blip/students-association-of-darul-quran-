@@ -1,13 +1,35 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 import dotenv from 'dotenv';
 
+import fs from 'fs';
 import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+[
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), 'server/.env'),
+  path.resolve(__dirname, '../../.env'),
+  path.resolve(__dirname, '../../../../.env'),
+  path.resolve(__dirname, '../../../../server/.env'),
+].forEach((envPath) => {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+});
 dotenv.config();
 
+let connectionString =
+  process.env.DATABASE_URL ||
+  'postgresql://postgres.dkqynklzwhgamtvgvpih:NYZORA%20%40123@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres';
+
+// Automatically upgrade legacy IPv6-only Supabase direct host to IPv4 Pooler for cloud environments
+if (connectionString.includes('db.dkqynklzwhgamtvgvpih.supabase.co')) {
+  connectionString = connectionString
+    .replace('db.dkqynklzwhgamtvgvpih.supabase.co', 'aws-0-ap-northeast-1.pooler.supabase.com')
+    .replace('://postgres:', '://postgres.dkqynklzwhgamtvgvpih:');
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: {
     rejectUnauthorized: false,
   },
