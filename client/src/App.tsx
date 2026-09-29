@@ -24,6 +24,7 @@ import { ClassDetail } from './pages/public/ClassDetail';
 import { PublicResults } from './pages/public/PublicResults';
 import { ClassUnionsDirectory } from './pages/public/ClassUnionsDirectory';
 import { AlumniDirectory } from './pages/public/AlumniDirectory';
+import { StudentsDirectory } from './pages/public/StudentsDirectory';
 
 // Auth
 import { Login } from './pages/auth/Login';
@@ -98,6 +99,8 @@ export const App: React.FC = () => {
               <Route path="/leaderboard" element={<ClassLeaderboard />} />
               <Route path="/class/:code" element={<ClassDetail />} />
               <Route path="/class-unions" element={<ClassUnionsDirectory />} />
+              <Route path="/students" element={<StudentsDirectory />} />
+              <Route path="/directory" element={<StudentsDirectory />} />
               <Route path="/alumni" element={<AlumniDirectory />} />
               <Route path="/results" element={<PublicResults />} />
 

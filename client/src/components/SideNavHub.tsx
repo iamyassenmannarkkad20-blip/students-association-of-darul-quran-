@@ -216,6 +216,28 @@ export const SideNavHub: React.FC<SideNavHubProps> = ({ isOpen, onClose }) => {
 
               <div className="grid grid-cols-1 gap-2">
                 <Link
+                  to="/students"
+                  onClick={onClose}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-400/20 to-white/5 hover:from-[#ffd014]/30 hover:to-white/10 border border-[#ffd014]/40 transition-all hover:border-[#ffd014] group shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-[#ffd014] text-[#02167f] flex items-center justify-center font-black">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm group-hover:text-[#ffd014] transition-colors flex items-center gap-1.5">
+                        <span>Students Directory (Class 01–08)</span>
+                        <span className="text-[9px] bg-[#ffd014] text-[#02167f] font-black px-1.5 rounded">ALL</span>
+                      </div>
+                      <span className="text-[11px] text-amber-200/90 font-medium">
+                        Explore all student 360° dashboards & scores
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#ffd014] group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <Link
                   to="/explore"
                   onClick={onClose}
                   className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:border-[#ffd014]/50 group"

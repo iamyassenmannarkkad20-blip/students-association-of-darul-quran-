@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api';
 import {
   Users,
@@ -16,6 +17,7 @@ import {
   User,
   ShieldAlert,
   Building,
+  ExternalLink,
 } from 'lucide-react';
 
 const OFFICIAL_UNITS = [
@@ -446,6 +448,18 @@ export const AdminUsersManager: React.FC = () => {
                 )}
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  {u.username && (
+                    <Link
+                      to={`/portfolio/${u.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gold-300 bg-gold-50/60 text-[#02167f] hover:bg-gold-100 text-xs font-semibold"
+                      title="Open 360° Student Dashboard"
+                    >
+                      <ExternalLink className="w-3 h-3 text-[#02167f]" />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(u)}
@@ -519,7 +533,19 @@ export const AdminUsersManager: React.FC = () => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <span className="font-bold block truncate">{u.full_name || 'Anonymous User'}</span>
+                          {u.username ? (
+                            <Link
+                              to={`/portfolio/${u.username}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold block truncate text-slate-900 hover:text-[#02167f] hover:underline transition-colors"
+                              title="Open 360° Student Dashboard"
+                            >
+                              {u.full_name || 'Anonymous User'}
+                            </Link>
+                          ) : (
+                            <span className="font-bold block truncate">{u.full_name || 'Anonymous User'}</span>
+                          )}
                           <span className="text-[11px] text-slate-400 block truncate">@{u.username}</span>
                         </div>
                       </div>
@@ -566,6 +592,17 @@ export const AdminUsersManager: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="inline-flex items-center gap-1.5">
+                        {u.username && (
+                          <Link
+                            to={`/portfolio/${u.username}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg border border-gold-300 bg-gold-50/50 text-[#02167f] hover:bg-gold-100 hover:border-gold-400 transition-all"
+                            title="Open 360° Student Dashboard"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-[#02167f]" />
+                          </Link>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(u)}

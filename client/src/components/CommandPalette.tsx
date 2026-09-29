@@ -39,6 +39,7 @@ const COMMAND_ITEMS: CommandItem[] = [
   { id: 'p-magazines', title: 'Magazines & Releases', subtitle: 'Official Periodicals & Issuu Reads', category: 'Pages', path: '/magazines', icon: <FileText className="w-4 h-4 text-rose-400" /> },
   { id: 'p-opportunities', title: 'Opportunities Board', subtitle: 'Workshops, Roles & Internships', category: 'Pages', path: '/opportunities', icon: <Briefcase className="w-4 h-4 text-indigo-400" /> },
   { id: 'p-services', title: 'Services & Marketplace', subtitle: 'Student Skills & Talent Discovery', category: 'Pages', path: '/services', icon: <Briefcase className="w-4 h-4 text-cyan-400" /> },
+  { id: 'p-students', title: 'Students Directory & Dashboards', subtitle: 'Browse all students (Class 01 to 08) & individual 360° growth profiles', category: 'Pages', path: '/students', icon: <Users className="w-4 h-4 text-[#ffd014]" /> },
   { id: 'p-cert', title: 'Verify Certificates', subtitle: 'Authenticity & Credential Verification', category: 'Pages', path: '/certificates', icon: <Award className="w-4 h-4 text-emerald-400" /> },
 
   // 10 Official Sub-Wings

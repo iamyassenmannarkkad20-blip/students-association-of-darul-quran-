@@ -109,8 +109,8 @@ router.post('/register', async (req, res) => {
       const user = userRes.rows[0];
 
       await client.query(
-        `INSERT INTO student_profiles (user_id, full_name, profile_slug, class_code)
-         VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO student_profiles (user_id, full_name, profile_slug, class_code, is_public)
+         VALUES ($1, $2, $3, $4, TRUE)`,
         [user.id, fullName, profileSlug, classCode]
       );
 

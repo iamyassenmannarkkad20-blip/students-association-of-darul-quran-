@@ -34,6 +34,62 @@ router.get('/units', async (_req, res) => {
   }
 });
 
+// All Enrolled Students Directory (with points, medals, talents & class filters)
+router.get('/students', async (req, res) => {
+  try {
+    const classCode = req.query.class_code ? String(req.query.class_code).trim() : null;
+    const search = req.query.search ? String(req.query.search).toLowerCase().trim() : null;
+
+    let conditions = ["u.is_active = TRUE", "sp.is_public = TRUE"];
+    const params: any[] = [];
+
+    if (classCode && classCode !== 'ALL') {
+      params.push(classCode);
+      conditions.push(`sp.class_code = $${params.length}`);
+    }
+
+    if (search) {
+      params.push(`%${search}%`);
+      const pIdx = params.length;
+      conditions.push(
+        `(LOWER(sp.full_name) LIKE $${pIdx} OR LOWER(u.username) LIKE $${pIdx} OR EXISTS (SELECT 1 FROM student_talents st WHERE st.user_id = u.id AND LOWER(st.title) LIKE $${pIdx}))`
+      );
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const sql = `
+      SELECT 
+        u.id as user_id,
+        u.username,
+        sp.full_name,
+        sp.profile_slug,
+        sp.class_code,
+        sp.bio,
+        sp.profile_photo_url,
+        COALESCE(SUM(pr.class_points), 0)::int as total_points,
+        COUNT(CASE WHEN pr.position = 1 THEN 1 END)::int as gold_medals,
+        COUNT(CASE WHEN pr.position = 2 THEN 1 END)::int as silver_medals,
+        COUNT(CASE WHEN pr.position = 3 THEN 1 END)::int as bronze_medals,
+        (SELECT COUNT(*)::int FROM certificate_records cr WHERE cr.recipient_user_id = u.id AND cr.verification_status = 'VERIFIED') as verified_certs,
+        (SELECT om.designation FROM organisation_memberships om WHERE om.user_id = u.id AND om.is_leadership = TRUE AND om.is_active = TRUE LIMIT 1) as leadership_role,
+        (SELECT COALESCE(json_agg(json_build_object('title', st.title, 'category', st.category)), '[]'::json) FROM student_talents st WHERE st.user_id = u.id AND st.status = 'PUBLISHED') as talents
+      FROM users u
+      JOIN student_profiles sp ON sp.user_id = u.id
+      LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
+      ${whereClause}
+      GROUP BY u.id, u.username, sp.full_name, sp.profile_slug, sp.class_code, sp.bio, sp.profile_photo_url
+      ORDER BY total_points DESC, sp.class_code ASC, sp.full_name ASC
+    `;
+
+    const result = await query(sql, params);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Fetch students directory error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch students directory.' });
+  }
+});
+
 // Official SADQ Executive Committee (Apex Leaders)
 router.get('/committee', async (_req, res) => {
   try {

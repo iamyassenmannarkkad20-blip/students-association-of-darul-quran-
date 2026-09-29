@@ -210,6 +210,19 @@ export const Navbar: React.FC = () => {
               <span>CHAMPIONSHIP</span>
             </Link>
 
+            {/* 3. STUDENTS DIRECTORY & DASHBOARDS */}
+            <Link
+              to="/students"
+              className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
+                location.pathname === '/students'
+                  ? 'text-[#ffd014] bg-white/10'
+                  : 'hover:text-[#ffd014] hover:bg-white/5'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-[#ffd014]" />
+              <span>STUDENTS</span>
+            </Link>
+
             {/* 3. RESULTS */}
             <Link
               to="/results"
