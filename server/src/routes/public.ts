@@ -40,7 +40,7 @@ router.get('/students', async (req, res) => {
     const classCode = req.query.class_code ? String(req.query.class_code).trim() : null;
     const search = req.query.search ? String(req.query.search).toLowerCase().trim() : null;
 
-    let conditions = ["u.is_active = TRUE", "sp.is_public = TRUE"];
+    let conditions = ["u.is_active = TRUE", "sp.is_public = TRUE", "u.username != 'sadq_admin'"];
     const params: any[] = [];
 
     if (classCode && classCode !== 'ALL') {
@@ -424,7 +424,7 @@ router.get(['/portfolio/:slug', '/student-360/:slug'], async (req, res) => {
       ),
       query(
         `SELECT id, title, created_at
-         FROM community_posts
+         FROM posts
          WHERE author_id = $1 AND status = 'PUBLISHED'
          ORDER BY created_at DESC`,
         [userId]

@@ -280,16 +280,16 @@ export const Navbar: React.FC = () => {
             <NotificationCenter />
 
             {user ? (
-              <div className="flex items-center gap-2">
-                {/* User Profile & Portals Drawer Trigger */}
-                <button
-                  onClick={() => setProfileDrawerOpen(true)}
+              <div className="flex items-center gap-1.5">
+                {/* 1. Direct Student 360 Dashboard Link */}
+                <Link
+                  to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
                   className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm border ${
                     isAdmin
                       ? 'bg-[#010a38] text-white border-[#ffd014]/60 hover:bg-[#02167f]'
-                      : 'bg-[#010a38] text-white border-slate-700/60 hover:border-[#ffd014]'
+                      : 'bg-[#010a38] text-white border-slate-700/60 hover:border-[#ffd014] hover:bg-[#02167f]'
                   }`}
-                  title="Open User Profile and Leadership Portals"
+                  title="Open My 360° Student Dashboard"
                 >
                   {profile?.profile_photo_url ? (
                     <img
@@ -300,19 +300,27 @@ export const Navbar: React.FC = () => {
                   ) : (
                     <User className="w-3.5 h-3.5 text-[#ffd014]" />
                   )}
-                  <span className="max-w-[90px] truncate">
+                  <span className="max-w-[90px] truncate text-[#ffd014]">
                     {user.username ? `@${user.username}` : user.fullName.split(' ')[0]}
                   </span>
-                  {isAdmin && (
+                  {isAdmin ? (
                     <span className="px-1.5 py-0.5 text-[9px] bg-[#ffd014] text-[#02167f] font-black rounded-md">
                       Admin
                     </span>
-                  )}
-                  {!isAdmin && hasSubWingAccess && (
-                    <span className="px-1.5 py-0.5 text-[9px] bg-blue-500/20 text-blue-300 font-bold rounded-md border border-blue-400/30">
-                      Wing
+                  ) : (
+                    <span className="px-1.5 py-0.5 text-[9px] bg-gold-400/20 text-[#ffd014] font-black rounded-md border border-[#ffd014]/40">
+                      Dashboard ↗
                     </span>
                   )}
+                </Link>
+
+                {/* 2. Menu / Portals Drawer Trigger Button */}
+                <button
+                  onClick={() => setProfileDrawerOpen(true)}
+                  className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white border border-white/15 transition-all"
+                  title="Open Workspace Menu & Portals"
+                >
+                  <ChevronDown className="w-3.5 h-3.5 text-gold-400" />
                 </button>
               </div>
             ) : (
@@ -685,17 +693,29 @@ export const Navbar: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-slate-400 px-1">
                     <span>Signed in as</span>
-                    <strong className="text-white font-bold">
-                      {user.username ? `@${user.username}` : user.fullName}
-                    </strong>
+                    <Link
+                      to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[#ffd014] font-bold hover:underline"
+                    >
+                      {user.username ? `@${user.username}` : user.fullName} ↗
+                    </Link>
                   </div>
+                  <Link
+                    to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-2.5 px-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#ffd014] to-amber-400 text-[#02167f] font-black text-xs shadow-md"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Open My 360° Dashboard</span>
+                  </Link>
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <Link
                       to="/student"
                       onClick={() => setMobileMenuOpen(false)}
                       className={`py-2 text-center text-xs font-bold rounded-xl transition-all ${
                         location.pathname.startsWith('/student')
-                          ? 'bg-[#ffd014] text-[#02167f] font-black'
+                          ? 'bg-white/20 text-[#ffd014] font-black'
                           : 'bg-white/10 text-white hover:bg-white/20'
                       }`}
                     >

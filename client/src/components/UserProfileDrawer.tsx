@@ -71,11 +71,16 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-[#01092e] text-white shadow-2xl border-l border-[#ffd014]/30 flex flex-col justify-between">
-          {/* Drawer Header */}
+        <div className="w-screen max-w-md h-full bg-[#01092e] text-white shadow-2xl border-l border-[#ffd014]/30 flex flex-col justify-between">
+          {/* Drawer Header - Clickable to open 360 Dashboard */}
           <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-[#02167f] to-[#01092e]">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] p-0.5 shadow-md shrink-0">
+            <Link
+              to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
+              onClick={onClose}
+              className="flex items-center gap-3 flex-1 min-w-0 group hover:opacity-95 transition-all"
+              title="Open My 360° Student Dashboard"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] p-0.5 shadow-md shrink-0 group-hover:scale-105 transition-transform">
                 <div className="w-full h-full rounded-2xl overflow-hidden bg-[#02167f] flex items-center justify-center font-cinzel font-black text-[#ffd014]">
                   {profile?.profile_photo_url ? (
                     <img
@@ -89,9 +94,12 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
                 </div>
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-white text-base truncate">
-                  {user.fullName}
-                </h3>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-white text-base truncate group-hover:text-[#ffd014] transition-colors">
+                    {user.fullName}
+                  </h3>
+                  <ExternalLink className="w-3.5 h-3.5 text-[#ffd014] opacity-80 group-hover:opacity-100 transition-opacity shrink-0" />
+                </div>
                 <div className="flex items-center gap-2 text-xs text-amber-200 font-semibold truncate">
                   <span>@{user.username || 'user'}</span>
                   {profile?.class_code && (
@@ -99,13 +107,14 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
                       Class {profile.class_code}
                     </span>
                   )}
+                  <span className="text-[10px] text-[#ffd014] underline decoration-dotted font-bold">Open Dashboard ↗</span>
                 </div>
               </div>
-            </div>
+            </Link>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0 ml-2"
               title="Close Drawer"
             >
               <X className="w-5 h-5" />
@@ -114,6 +123,28 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
 
           {/* Drawer Body */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-xs no-scrollbar scroll-touch">
+            {/* TOP PRIMARY CTA: OPEN 360° STUDENT DASHBOARD */}
+            <Link
+              to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
+              onClick={onClose}
+              className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-[#02167f]/30 border-2 border-[#ffd014] shadow-lg group hover:bg-[#ffd014]/20 transition-all text-white"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#ffd014] text-[#02167f] flex items-center justify-center font-black shadow shrink-0 group-hover:scale-105 transition-transform">
+                  <Sparkles className="w-5 h-5 text-[#02167f]" />
+                </div>
+                <div>
+                  <div className="font-black text-sm text-white group-hover:text-[#ffd014] transition-colors flex items-center gap-1.5">
+                    <span>Open My 360° Dashboard</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-[#ffd014]" />
+                  </div>
+                  <span className="text-[11px] text-amber-200/90 font-medium">
+                    Personal portfolio, honors, medals & verified skills
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#ffd014] group-hover:translate-x-1 transition-transform shrink-0" />
+            </Link>
             {/* 1. LEADERSHIP & PRIVILEGE PORTALS (High-priority action tiles) */}
             {(isAdmin || hasSubWingRole || assignedClassUnion) && (
               <div className="space-y-2.5">
