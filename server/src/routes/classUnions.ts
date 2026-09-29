@@ -341,16 +341,9 @@ router.post('/:class_code/items', requireAuth, async (req: RequestWithUser, res)
       return res.status(404).json({ success: false, error: 'Class union not found.' });
     }
 
-    const union = unionCheck.rows[0];
-    const isAdmin = userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN;
-    const isLeader = union.chairman_id === userId || union.convener_id === userId;
+    // Verified logged-in user can submit under their class union (or any class union)
+    // Non-logged-in visitors are strictly rejected by requireAuth
 
-    if (!isAdmin && !isLeader) {
-      return res.status(403).json({
-        success: false,
-        error: 'Forbidden. Only the designated Class Chairman or Convener may publish releases for this Class Union.',
-      });
-    }
 
     const parsed = createItemSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -399,8 +392,9 @@ router.delete('/items/:itemId', requireAuth, async (req: RequestWithUser, res) =
     const union = unionCheck.rows[0];
     const isAdmin = userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN;
     const isLeader = union && (union.chairman_id === userId || union.convener_id === userId);
+    const isAuthor = item.created_by === userId;
 
-    if (!isAdmin && !isLeader) {
+    if (!isAdmin && !isLeader && !isAuthor) {
       return res.status(403).json({ success: false, error: 'Forbidden. Not authorized to delete this release.' });
     }
 

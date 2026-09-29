@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api';
-import { MessageSquare, ThumbsUp, Lightbulb, Heart, Plus, Send, ChevronDown } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { MessageSquare, ThumbsUp, Lightbulb, Heart, Plus, Send, ChevronDown, Lock, LogIn, Sparkles } from 'lucide-react';
 
 const CATEGORIES = ['Academic & Research', 'Creative & Arts', 'Campus & Organisation', 'Technology & Skills'];
 const REACTION_ICONS: Record<string, any> = {
@@ -10,6 +12,7 @@ const REACTION_ICONS: Record<string, any> = {
 };
 
 export const CommunityFeed: React.FC = () => {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('');
@@ -19,6 +22,7 @@ export const CommunityFeed: React.FC = () => {
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, any[]>>({});
   const [commentText, setCommentText] = useState<Record<string, string>>({});
+  const [authPrompt, setAuthPrompt] = useState<string | null>(null);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -32,6 +36,10 @@ export const CommunityFeed: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setAuthPrompt('Login required to submit a post. Visitors can read all posts freely.');
+      return;
+    }
     setSubmitting(true);
     const res = await apiRequest('/community/posts', { method: 'POST', body: JSON.stringify(form) });
     setSubmitting(false);
@@ -43,6 +51,10 @@ export const CommunityFeed: React.FC = () => {
   };
 
   const handleReact = async (postId: string, reactionType: string) => {
+    if (!user) {
+      setAuthPrompt('Please sign in to react or appreciate community posts.');
+      return;
+    }
     await apiRequest(`/community/posts/${postId}/react`, { method: 'POST', body: JSON.stringify({ reactionType }) });
     loadPosts();
   };
@@ -62,6 +74,10 @@ export const CommunityFeed: React.FC = () => {
   };
 
   const handleComment = async (postId: string) => {
+    if (!user) {
+      setAuthPrompt('Please sign in to post comments or join conversations.');
+      return;
+    }
     const body = commentText[postId]?.trim();
     if (!body) return;
     await apiRequest(`/community/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ body }) });
@@ -76,16 +92,69 @@ export const CommunityFeed: React.FC = () => {
           <h1 className="font-cinzel text-2xl font-bold text-navy-900 flex items-center gap-2">
             <MessageSquare className="w-6 h-6 text-navy-700" /> Community Discourse
           </h1>
-          <p className="text-sm text-slate-500 mt-1">A focused student knowledge and discussion space.</p>
+          <p className="text-sm text-slate-500 mt-1">A focused student knowledge and discussion space. Anyone can read, logged-in members can contribute.</p>
         </div>
-        <button onClick={() => setShowCreate(!showCreate)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-900 text-gold-300 text-xs font-bold hover:bg-navy-800 transition-colors">
+        <button onClick={() => {
+          if (!user) {
+            setAuthPrompt('Please sign in to create a new community discussion. Guests can freely read all posts.');
+            setShowCreate(true);
+          } else {
+            setShowCreate(!showCreate);
+          }
+        }}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-900 text-gold-300 text-xs font-bold hover:bg-navy-800 transition-colors shadow">
           <Plus className="w-4 h-4" /> New Post
         </button>
       </div>
 
-      {/* Create Post Form */}
-      {showCreate && (
+      {authPrompt && (
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-amber-900 shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-2.5 text-xs font-semibold">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{authPrompt}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-navy-800 transition-colors shadow"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Log In</span>
+            </Link>
+            <button
+              onClick={() => setAuthPrompt(null)}
+              className="text-xs text-amber-700 hover:text-amber-900 font-semibold px-2"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Login Card when clicking Create Post */}
+      {showCreate && !user && (
+        <div className="bg-white rounded-2xl p-6 border border-amber-200 shadow-sm text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6" />
+          </div>
+          <h3 className="font-bold text-slate-900 text-base">Account Login Required to Post</h3>
+          <p className="text-xs text-slate-600 max-w-md mx-auto">
+            Visitors outside the college can freely read all posts and discussions. To submit new discussions, questions, or articles, please log in with your verified account.
+          </p>
+          <div className="pt-2">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-navy-800 transition-all shadow"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Log In with Student / Staff Account</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Create Post Form (Authenticated only) */}
+      {showCreate && user && (
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
           <h3 className="font-bold text-slate-900 text-sm">Create Community Post</h3>
           <div>
@@ -209,19 +278,28 @@ export const CommunityFeed: React.FC = () => {
                       </div>
                     </div>
                   ))}
-                  <div className="flex gap-2 mt-2">
-                    <input
-                      value={commentText[post.id] || ''}
-                      onChange={e => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
-                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleComment(post.id)}
-                      placeholder="Add a comment..."
-                      className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-navy-900 bg-white"
-                    />
-                    <button onClick={() => handleComment(post.id)}
-                      className="px-3 py-2 rounded-xl bg-navy-900 text-gold-300 hover:bg-navy-800 transition-colors">
-                      <Send className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {user ? (
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        value={commentText[post.id] || ''}
+                        onChange={e => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
+                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleComment(post.id)}
+                        placeholder="Add a comment..."
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-navy-900 bg-white"
+                      />
+                      <button onClick={() => handleComment(post.id)}
+                        className="px-3 py-2 rounded-xl bg-navy-900 text-gold-300 hover:bg-navy-800 transition-colors">
+                        <Send className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl p-3 border border-slate-200 text-center text-xs text-slate-600 flex items-center justify-between gap-3 mt-2">
+                      <span className="text-[11px]">Sign in with your SADQ account to join this conversation.</span>
+                      <Link to="/login" className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#02167f] text-[#ffd014] text-xs font-bold shrink-0 shadow-sm">
+                        <LogIn className="w-3 h-3" /> Log In
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

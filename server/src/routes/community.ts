@@ -25,14 +25,10 @@ router.get('/posts', async (req: RequestWithUser, res) => {
       }
     }
 
-    let filterQuery = `WHERE p.status = 'PUBLISHED'`;
+    // Outside visitors can read all published posts (PUBLIC and COMMUNITY)
+    // Only explicitly PRIVATE posts are restricted
+    let filterQuery = `WHERE p.status = 'PUBLISHED' AND (p.visibility IS NULL OR p.visibility != 'PRIVATE')`;
     const params: any[] = [];
-
-    if (!isAuthenticated) {
-      filterQuery += ` AND p.visibility = 'PUBLIC'`;
-    } else {
-      filterQuery += ` AND p.visibility IN ('PUBLIC', 'COMMUNITY')`;
-    }
 
     if (category) {
       params.push(category);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api';
-import { BookMarked, Search, ExternalLink, Download, Sparkles, Filter, FileText } from 'lucide-react';
+import { BookMarked, Search, ExternalLink, Download, Sparkles, Filter, FileText, Upload, Plus } from 'lucide-react';
 
 const CATEGORIES = [
   'All Subjects',
@@ -71,11 +72,11 @@ export const Library: React.FC = () => {
     ...unionItems.map((u) => ({
       id: u.id,
       title: u.title,
-      author: u.union_name || `Class ${u.class_code} Union`,
-      category: 'Class Union Releases',
+      author: u.creator_name ? `${u.creator_name} (Class ${u.class_code})` : (u.union_name || `Class ${u.class_code} Union`),
+      category: u.category ? `Class Union (${u.category})` : 'Class Union Releases',
       externalUrl: u.item_url,
       downloadable: true,
-      description: u.description || `Published by Class ${u.class_code} Union (${u.category})`,
+      description: u.description || `Published under Class ${u.class_code} Union`,
       type: 'class_union',
       classCode: u.class_code,
     })),
@@ -101,14 +102,27 @@ export const Library: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10">
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <h1 className="font-cinzel text-3xl sm:text-5xl font-extrabold text-navy-900">
-          Digital Library & Repository
-        </h1>
-        <p className="text-sm sm:text-base text-slate-600">
-          Curated reference materials, classical texts, study notes, and research archives
-          verified by the Library Board (LIB).
-        </p>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-gradient-to-r from-navy-950 via-[#02167f] to-navy-900 rounded-3xl p-8 text-white shadow-xl">
+        <div className="space-y-2 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#ffd014] text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+            <BookMarked className="w-3.5 h-3.5 text-[#ffd014]" />
+            <span>Digital Archive & Knowledge Center</span>
+          </div>
+          <h1 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-white">
+            Digital Library & Repository
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-200 max-w-xl">
+            Curated reference materials, classical texts, student projects, study notes, and research archives
+            verified by the Library Board (LIB) and Class Unions. Open to all readers worldwide.
+          </p>
+        </div>
+        <Link
+          to="/student/create"
+          className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-[#ffd014] text-[#02167f] text-xs font-extrabold hover:bg-yellow-400 transition-all shadow-lg shrink-0 transform hover:-translate-y-0.5"
+        >
+          <Upload className="w-4 h-4" />
+          <span>Submit Project / Notes</span>
+        </Link>
       </div>
 
       {/* Filter and Search Container */}
