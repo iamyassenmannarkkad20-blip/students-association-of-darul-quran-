@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiRequest } from '../../services/api';
 import {
@@ -15,6 +16,7 @@ import {
   MessageCircle,
   Share2,
   ExternalLink,
+  Layers,
 } from 'lucide-react';
 import { InstagramIcon } from '../../components/icons/InstagramIcon';
 import { SADQ_BADGE_AVATARS } from '../../constants/avatars';
@@ -195,24 +197,127 @@ export const ProfileEdit: React.FC = () => {
     </div>
   );
 
+  // Calculate profile completeness score
+  const completionItems = [
+    { label: 'Full Name', done: Boolean(form.displayName?.trim()), weight: 20 },
+    { label: 'Bio / Summary', done: Boolean(form.bio?.trim()), weight: 20 },
+    { label: 'Profile Photo', done: Boolean(form.profilePhotoUrl), weight: 20 },
+    { label: 'WhatsApp / Phone', done: Boolean(form.whatsapp_number?.trim() || form.phone_number?.trim()), weight: 20 },
+    { label: 'Instagram / Email', done: Boolean(form.instagram_handle?.trim() || form.email_contact?.trim()), weight: 20 },
+  ];
+  const completionScore = completionItems.reduce((acc, item) => acc + (item.done ? item.weight : 0), 0);
+
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-      {/* Header */}
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+      {/* Header with Live Preview CTA */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="font-cinzel text-2xl font-bold text-navy-900 flex items-center gap-2">
-            <User className="w-6 h-6 text-navy-700" /> Profile & Identity Settings
+            <User className="w-6 h-6 text-navy-700" /> Student Profile Builder
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Customize your avatar, social channels, and public student portfolio privacy.
+            Build your digital identity, optional social links, and public 360° student portfolio.
           </p>
         </div>
-        {user?.username && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-navy-50 border border-navy-200 text-navy-900 text-xs font-bold self-start">
-            <span className="text-gold-600">@</span>
-            <span>{user.username}</span>
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          {user?.username && (
+            <Link
+              to={`/portfolio/${user.username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#ffd014] to-amber-400 text-[#02167f] font-black text-xs shadow-md hover:from-amber-300 hover:to-[#ffd014] transition-all hover:scale-105 shrink-0"
+              title="Open your public 360° student portfolio"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>View My Live 360°</span>
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Profile Completion Meter Card */}
+      <div className="bg-gradient-to-br from-[#02167f] to-[#01092e] rounded-3xl p-5 sm:p-6 text-white shadow-xl border-2 border-gold-400/40 relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-gold-400" />
+              <h2 className="font-cinzel text-base sm:text-lg font-bold text-white">Profile Completion Meter</h2>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Fill in your contact channels and bio to maximize your visibility.
+            </p>
           </div>
-        )}
+          <div className="flex items-center gap-2 self-start sm:self-center">
+            <span className="text-3xl font-black text-gold-400 font-cinzel">{completionScore}%</span>
+            <span className="text-[10px] uppercase font-bold text-slate-200 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">
+              {completionScore === 100 ? '⭐ Complete' : 'In Progress'}
+            </span>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/20">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-gold-400 via-amber-300 to-emerald-400 transition-all duration-500 shadow-sm"
+            style={{ width: `${completionScore}%` }}
+          />
+        </div>
+
+        {/* Checklist Chips */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4 text-[11px]">
+          {completionItems.map((item, idx) => (
+            <div
+              key={idx}
+              className={`p-2 rounded-xl border flex items-center gap-1.5 transition-all ${
+                item.done
+                  ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-200'
+                  : 'bg-white/5 border-white/10 text-slate-400'
+              }`}
+            >
+              <span>{item.done ? '✓' : '○'}</span>
+              <span className="truncate font-semibold">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Jump Links to Talents & Skills */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Link
+          to="/student/talents"
+          className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-gold-400 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center font-bold">
+              <Sparkles className="w-4 h-4 text-gold-600" />
+            </div>
+            <div>
+              <strong className="text-slate-900 text-xs font-bold block group-hover:text-navy-900">
+                Creative Talents
+              </strong>
+              <span className="text-[10px] text-slate-500">Recitation, Calligraphy, Oration</span>
+            </div>
+          </div>
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-gold-600 transition-colors" />
+        </Link>
+
+        <Link
+          to="/student/skills"
+          className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-gold-400 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-800 flex items-center justify-center font-bold">
+              <Layers className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <strong className="text-slate-900 text-xs font-bold block group-hover:text-navy-900">
+                Skills & Proficiencies
+              </strong>
+              <span className="text-[10px] text-slate-500">Tajweed, Languages, Public Speaking</span>
+            </div>
+          </div>
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors" />
+        </Link>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

@@ -292,7 +292,7 @@ router.get(['/students', '/leaderboard/students'], async (req, res) => {
         FROM users u
         JOIN student_profiles sp ON sp.user_id = u.id
         LEFT JOIN program_results pr ON pr.student_id = u.id AND pr.status = 'PUBLISHED'
-        WHERE u.is_active = TRUE ${filterClause}
+        WHERE u.is_active = TRUE AND u.username != 'sadq_admin' AND u.email != 'admin@sadq.org' ${filterClause}
         GROUP BY u.id, u.username, sp.full_name, sp.profile_slug, sp.class_code, sp.profile_photo_url
       ),
       ranked AS (
@@ -300,6 +300,7 @@ router.get(['/students', '/leaderboard/students'], async (req, res) => {
           *,
           DENSE_RANK() OVER (ORDER BY total_points DESC, first_places DESC, second_places DESC, full_name ASC) as rank
         FROM student_scores
+        WHERE total_points > 0 OR events_count > 0 OR certificates_count > 0
       )
       SELECT * FROM ranked
       ORDER BY rank ASC, total_points DESC, full_name ASC

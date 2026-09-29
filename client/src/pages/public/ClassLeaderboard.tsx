@@ -508,7 +508,7 @@ export const ClassLeaderboard: React.FC = () => {
                     </div>
 
                     <Link
-                      to={`/portfolio/${top3Students[1].profile_slug}`}
+                      to={`/portfolio/${top3Students[1].profile_slug || top3Students[1].username}`}
                       className="mt-3 w-full py-2.5 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1"
                     >
                       <span>View Student Portfolio</span>
@@ -559,7 +559,7 @@ export const ClassLeaderboard: React.FC = () => {
                     </div>
 
                     <Link
-                      to={`/portfolio/${top3Students[0].profile_slug}`}
+                      to={`/portfolio/${top3Students[0].profile_slug || top3Students[0].username}`}
                       className="mt-3 w-full py-3 rounded-xl bg-[#ffd014] hover:bg-amber-300 text-[#02167f] font-black text-xs transition-colors shadow-lg flex items-center justify-center gap-1.5"
                     >
                       <span>View Star Portfolio</span>
@@ -603,7 +603,7 @@ export const ClassLeaderboard: React.FC = () => {
                     </div>
 
                     <Link
-                      to={`/portfolio/${top3Students[2].profile_slug}`}
+                      to={`/portfolio/${top3Students[2].profile_slug || top3Students[2].username}`}
                       className="mt-3 w-full py-2.5 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1"
                     >
                       <span>View Student Portfolio</span>
@@ -693,7 +693,7 @@ export const ClassLeaderboard: React.FC = () => {
                     </div>
 
                     <Link
-                      to={`/portfolio/${s.profile_slug}`}
+                      to={`/portfolio/${s.profile_slug || s.username}`}
                       className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 text-xs font-bold transition-all shadow-sm"
                     >
                       <span>View Student Portfolio</span>
@@ -785,7 +785,7 @@ export const ClassLeaderboard: React.FC = () => {
                         </td>
                         <td className="py-4 px-6 text-right">
                           <Link
-                            to={`/portfolio/${s.profile_slug}`}
+                            to={`/portfolio/${s.profile_slug || s.username}`}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#02167f] hover:text-[#ffd014] text-slate-800 text-xs font-bold transition-all shadow-sm"
                           >
                             <span>Profile</span>

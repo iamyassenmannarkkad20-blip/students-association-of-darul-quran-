@@ -18,6 +18,7 @@ import {
   Globe,
   Share2,
   Trophy,
+  Edit2,
 } from 'lucide-react';
 import { InstagramIcon } from '../../components/icons/InstagramIcon';
 import { ShareModal } from '../../components/ShareModal';
@@ -80,7 +81,33 @@ export const PortfolioView: React.FC = () => {
   const { profile, talents, skills, achievements, projects, organisation, score, honors, certificates, growth_timeline } = data;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-8">
+      {/* Owner View Notice & Quick Edit Banner */}
+      {data.is_owner_view && (
+        <div className="bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-[#02167f]/10 border-2 border-amber-400/60 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-fade-in">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-[#ffd014] text-[#02167f] flex items-center justify-center font-black shadow shrink-0">
+              <Sparkles className="w-5 h-5 text-[#02167f]" />
+            </div>
+            <div>
+              <strong className="text-slate-900 block font-bold text-sm">
+                You are viewing your own 360° Student Dossier
+              </strong>
+              <span className="text-xs text-slate-600 font-medium">
+                Want to update your WhatsApp, Instagram, Bio, or privacy toggles?
+              </span>
+            </div>
+          </div>
+          <Link
+            to="/student/profile"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#02167f] text-[#ffd014] font-black text-xs hover:bg-navy-800 transition-all shadow-md shrink-0 border border-[#ffd014]/40"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+            <span>Complete / Edit Profile</span>
+          </Link>
+        </div>
+      )}
+
       {/* Header Profile Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-md relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
@@ -145,22 +172,22 @@ export const PortfolioView: React.FC = () => {
             {/* Direct Contact Buttons if enabled */}
             <div className="pt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
               {/* Instagram */}
-              {profile.show_instagram && profile.instagram_handle && (
+              {(profile.instagramHandle || profile.instagram_handle) && (
                 <a
-                  href={`https://instagram.com/${profile.instagram_handle.replace('@', '')}`}
+                  href={`https://instagram.com/${(profile.instagramHandle || profile.instagram_handle).replace('@', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600 via-rose-500 to-amber-500 hover:opacity-95 text-white text-xs font-semibold shadow-sm transition-all hover:scale-105"
                 >
                   <InstagramIcon className="w-3.5 h-3.5" />
-                  <span>@{profile.instagram_handle.replace('@', '')}</span>
+                  <span>@{(profile.instagramHandle || profile.instagram_handle).replace('@', '')}</span>
                 </a>
               )}
 
               {/* WhatsApp */}
-              {profile.show_whatsapp && (profile.whatsapp_number || profile.phone_number) && (
+              {(profile.whatsappNumber || profile.whatsapp_number || profile.phoneNumber || profile.phone_number) && (
                 <a
-                  href={`https://wa.me/${(profile.whatsapp_number || profile.phone_number).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                  href={`https://wa.me/${(profile.whatsappNumber || profile.whatsapp_number || profile.phoneNumber || profile.phone_number).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                     `Assalamu Alaikum ${profile.fullName}, I saw your student portfolio on the SADQ Platform and would like to connect with you.`
                   )}`}
                   target="_blank"
@@ -173,7 +200,7 @@ export const PortfolioView: React.FC = () => {
               )}
 
               {/* Email */}
-              {profile.show_email && profile.email_contact && (
+              {(profile.emailContact || profile.email_contact) && (
                 <a
                   href={`mailto:${profile.emailContact || profile.email_contact}?subject=${encodeURIComponent(
                     `Connecting via SADQ Platform — ${profile.fullName}`
@@ -188,9 +215,9 @@ export const PortfolioView: React.FC = () => {
               )}
 
               {/* Website */}
-              {profile.website_url && (
+              {(profile.websiteUrl || profile.website_url) && (
                 <a
-                  href={profile.website_url.startsWith('http') ? profile.website_url : `https://${profile.website_url}`}
+                  href={(profile.websiteUrl || profile.website_url).startsWith('http') ? (profile.websiteUrl || profile.website_url) : `https://${profile.websiteUrl || profile.website_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold shadow-sm transition-all"
@@ -219,6 +246,18 @@ export const PortfolioView: React.FC = () => {
                 <Share2 className="w-3.5 h-3.5 text-gold-400" />
                 <span>Share & QR</span>
               </button>
+
+              {/* Owner Quick Edit Action */}
+              {data.is_owner_view && (
+                <Link
+                  to="/student/profile"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#02167f] text-xs font-black shadow-sm transition-all hover:scale-105 border border-amber-500/30"
+                  title="Update Bio, WhatsApp, Instagram, or Privacy"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-[#02167f]" />
+                  <span>Edit Profile</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

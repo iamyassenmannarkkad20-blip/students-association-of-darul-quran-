@@ -117,6 +117,19 @@ export const StudentDashboard: React.FC = () => {
             <span>Digital ID & QR</span>
           </button>
 
+          {user?.username && (
+            <Link
+              to={`/portfolio/${user.username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#ffd014] to-amber-300 text-[#02167f] font-black text-xs shadow-md hover:from-amber-200 hover:to-[#ffd014] transition-all hover:scale-105"
+              title="Open your public 360° portfolio"
+            >
+              <ExternalLink className="w-4 h-4 text-[#02167f] shrink-0" />
+              <span>My 360° Dashboard</span>
+            </Link>
+          )}
+
           <Link
             to="/student/create"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-xs shadow-md transition-colors"
@@ -124,6 +137,49 @@ export const StudentDashboard: React.FC = () => {
             <PlusCircle className="w-4 h-4 text-gold-400 shrink-0" />
             <span>Create Content</span>
           </Link>
+        </div>
+      </div>
+
+      {/* Profile Builder & Completion Prompt Banner */}
+      <div className="rounded-3xl bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-[#02167f]/15 border-2 border-gold-400/50 p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#ffd014] to-amber-400 text-[#02167f] flex items-center justify-center font-black shadow shrink-0">
+            <Sparkles className="w-6 h-6 text-[#02167f]" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <strong className="text-slate-900 font-bold text-sm">
+                Student Profile Builder — Complete Your Digital Identity
+              </strong>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-gold-100 text-gold-900 px-2 py-0.5 rounded-full border border-gold-300">
+                {completion}% Complete
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 max-w-xl">
+              Add your WhatsApp number, Instagram handle, bio, and creative talents to build a verified 360° portfolio that peers and faculty can explore.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            to="/student/profile"
+            className="px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-300 font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+          >
+            <Edit3 className="w-3.5 h-3.5 text-gold-400" />
+            <span>Complete Profile</span>
+          </Link>
+          {user?.username && (
+            <Link
+              to={`/portfolio/${user.username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-navy-900 hover:bg-slate-50 transition-colors shadow-sm"
+              title="Preview My 360° Dashboard"
+            >
+              <Eye className="w-4 h-4 text-gold-600" />
+            </Link>
+          )}
         </div>
       </div>
 
