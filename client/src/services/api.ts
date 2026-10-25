@@ -1,4 +1,4 @@
-const configuredApiBase = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\\/$/, '');
+const configuredApiBase = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
 export const API_BASE = configuredApiBase ? `${configuredApiBase}/api/v1` : '/api/v1';
 
 export async function apiRequest<T = any>(
