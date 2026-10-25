@@ -144,7 +144,6 @@ export const Home: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-[#D6A64F]" />
               <span>Beyond The Curriculum</span>
             </div>
-          </div>
 
           {/* Main Heading: Full Official Name */}
           <div className="space-y-4">
