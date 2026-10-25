@@ -107,44 +107,41 @@ export const Home: React.FC = () => {
   return (
     <div className="space-y-24 pb-20">
       {/* Modern Luxury Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#01092e] via-[#02167f] to-[#01092e] text-white pt-20 pb-32 px-4 sm:px-6 lg:px-8 border-b border-[#ffd014]/25 shadow-2xl">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#4B1718] via-[#7A211F] to-[#4B1718] text-white pt-20 pb-32 px-4 sm:px-6 lg:px-8 border-b border-[#D6A64F]/25 shadow-2xl">
         {/* Ambient Radial Golden Light */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#ffd014]/15 via-[#02167f]/30 to-transparent blur-3xl pointer-events-none rounded-full" />
-        <div className="absolute -top-24 right-10 w-96 h-96 bg-[#ffd014]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 left-10 w-96 h-96 bg-[#02167f]/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#D6A64F]/15 via-[#7A211F]/30 to-transparent blur-3xl pointer-events-none rounded-full" />
+        <div className="absolute -top-24 right-10 w-96 h-96 bg-[#D6A64F]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 left-10 w-96 h-96 bg-[#7A211F]/40 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-5xl mx-auto text-center relative z-10 space-y-8">
           {/* Live Official Announcement Banner (Rendered ONLY if admin posts a real message) */}
           {Boolean(announcement && announcement.trim().length > 0) && (
-            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-[#ffd014]/15 border border-[#ffd014]/60 text-amber-200 text-xs sm:text-sm font-bold shadow-xl shadow-black/40 animate-fade-in max-w-3xl mx-auto backdrop-blur-md">
-              <Megaphone className="w-4 h-4 text-[#ffd014] shrink-0 animate-bounce" />
+            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-[#D6A64F]/15 border border-[#D6A64F]/60 text-amber-200 text-xs sm:text-sm font-bold shadow-xl shadow-black/40 animate-fade-in max-w-3xl mx-auto backdrop-blur-md">
+              <Megaphone className="w-4 h-4 text-[#D6A64F] shrink-0 animate-bounce" />
               <span>{announcement}</span>
             </div>
           )}
 
-          {/* Official Royal Seal / Insignia */}
+          {/* Official SADQ logo asset */}
           <div className="flex flex-col items-center justify-center animate-fade-in">
             <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#ffd014]/40 via-amber-400/20 to-[#ffd014]/40 rounded-full blur-2xl opacity-75 group-hover:opacity-100 transition duration-700" />
-
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] p-[3px] shadow-2xl shadow-[#02167f]/60 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                <div className="w-full h-full rounded-full bg-gradient-to-b from-[#02167f] via-[#010e52] to-[#01092e] flex flex-col items-center justify-center border-2 border-[#ffd014]/40 p-2">
-                  <div className="w-8 h-8 rounded-full bg-[#ffd014]/15 border border-[#ffd014]/60 flex items-center justify-center mb-1 shadow-inner">
-                    <BookOpen className="w-4 h-4 text-[#ffd014]" />
-                  </div>
-                  <span className="font-cinzel font-black text-xl sm:text-2xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-[#ffd014] to-amber-300">
-                    SADQ
-                  </span>
-                  <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-amber-200 font-black">
-                    OFFICIAL
-                  </span>
-                </div>
+              <div className="absolute -inset-5 rounded-full bg-[#D6A64F]/20 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="relative rounded-full bg-white/95 p-3 sm:p-4 shadow-2xl ring-1 ring-[#D6A64F]/50">
+                <img
+                  src="/sadq_logo.png"
+                  alt="SADQ official logo"
+                  className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-contain"
+                  width="160"
+                  height="160"
+                  fetchPriority="high"
+                />
               </div>
             </div>
+          </div>
 
-            {/* Sub-badge: Beyond The Curriculum */}
-            <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ffd014]/15 border border-[#ffd014]/40 text-[#ffd014] text-xs font-black tracking-widest uppercase shadow-md backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-[#ffd014]" />
+          {/* Sub-badge: Beyond The Curriculum */}
+            <div className="mt-5 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D6A64F]/15 border border-[#D6A64F]/40 text-[#D6A64F] text-xs font-black tracking-widest uppercase shadow-md backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-[#D6A64F]" />
               <span>Beyond The Curriculum</span>
             </div>
           </div>
@@ -153,7 +150,7 @@ export const Home: React.FC = () => {
           <div className="space-y-4">
             <h1 className="font-cinzel text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
               STUDENTS ASSOCIATION OF <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#ffd014] to-amber-300 drop-shadow-md">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#D6A64F] to-amber-300 drop-shadow-md">
                 DARUL QURAN ISLAMIC ACADEMY
               </span>
             </h1>
@@ -173,14 +170,14 @@ export const Home: React.FC = () => {
           <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
             <Link
               to="/register"
-              className="px-8 py-4 rounded-2xl font-black text-[#02167f] bg-gradient-to-r from-[#ffd014] via-amber-300 to-[#ffd014] hover:from-amber-200 hover:to-[#ffd014] shadow-xl shadow-[#ffd014]/30 hover:scale-105 active:scale-95 transition-all text-sm sm:text-base flex items-center gap-2 group"
+              className="px-8 py-4 rounded-2xl font-black text-[#7A211F] bg-gradient-to-r from-[#D6A64F] via-amber-300 to-[#D6A64F] hover:from-amber-200 hover:to-[#D6A64F] shadow-xl shadow-[#D6A64F]/30 hover:scale-105 active:scale-95 transition-all text-sm sm:text-base flex items-center gap-2 group"
             >
               <span>Build Student Portfolio</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
             </Link>
             <Link
               to="/organisation"
-              className="px-7 py-4 rounded-2xl font-bold text-white bg-white/10 hover:bg-white/15 border-2 border-white/20 hover:border-[#ffd014]/50 backdrop-blur-md transition-all text-sm sm:text-base"
+              className="px-7 py-4 rounded-2xl font-bold text-white bg-white/10 hover:bg-white/15 border-2 border-white/20 hover:border-[#D6A64F]/50 backdrop-blur-md transition-all text-sm sm:text-base"
             >
               Explore 10 Official Units
             </Link>
@@ -190,25 +187,25 @@ export const Home: React.FC = () => {
           <div className="pt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs">
             <Link
               to="/organisation"
-              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-[#4B1718]/80 border border-[#D6A64F]/30 text-amber-200 hover:bg-[#D6A64F]/20 hover:border-[#D6A64F] transition-all shadow-md font-semibold flex items-center gap-1.5"
             >
               <span>🏛️ 10 Wings</span>
             </Link>
             <Link
               to="/library"
-              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-[#4B1718]/80 border border-[#D6A64F]/30 text-amber-200 hover:bg-[#D6A64F]/20 hover:border-[#D6A64F] transition-all shadow-md font-semibold flex items-center gap-1.5"
             >
               <span>📖 Digital Library</span>
             </Link>
             <Link
               to="/explore"
-              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-[#4B1718]/80 border border-[#D6A64F]/30 text-amber-200 hover:bg-[#D6A64F]/20 hover:border-[#D6A64F] transition-all shadow-md font-semibold flex items-center gap-1.5"
             >
               <span>🏆 Portfolios & Talents</span>
             </Link>
             <Link
               to="/media"
-              className="px-4 py-2 rounded-xl bg-[#01092e]/80 border border-[#ffd014]/30 text-amber-200 hover:bg-[#ffd014]/20 hover:border-[#ffd014] transition-all shadow-md font-semibold flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-[#4B1718]/80 border border-[#D6A64F]/30 text-amber-200 hover:bg-[#D6A64F]/20 hover:border-[#D6A64F] transition-all shadow-md font-semibold flex items-center gap-1.5"
             >
               <span>🎥 Live Broadcasts</span>
             </Link>
@@ -221,12 +218,12 @@ export const Home: React.FC = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 mb-6 relative z-20 space-y-4">
           {/* Active Cycle Bar */}
           {homePulse.active_cycle && (
-            <div className="bg-gradient-to-r from-[#02167f] via-[#0320a6] to-[#010e52] rounded-2xl p-4 sm:p-5 text-white shadow-xl border border-[#ffd014]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-gradient-to-r from-[#7A211F] via-[#8E2D27] to-[#641B1C] rounded-2xl p-4 sm:p-5 text-white shadow-xl border border-[#D6A64F]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-black uppercase text-[#ffd014] bg-[#ffd014]/20 border border-[#ffd014]/40 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-black uppercase text-[#D6A64F] bg-[#D6A64F]/20 border border-[#D6A64F]/40 px-2 py-0.5 rounded">
                       Active Leave Cycle
                     </span>
                     <span className="text-xs text-blue-200">
@@ -242,7 +239,7 @@ export const Home: React.FC = () => {
               <div className="flex items-center gap-2 shrink-0">
                 <Link
                   to="/class-leaderboard"
-                  className="px-4 py-2 rounded-xl bg-[#ffd014] hover:bg-amber-300 text-[#02167f] text-xs font-black transition-all shadow-md active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-[#D6A64F] hover:bg-amber-300 text-[#7A211F] text-xs font-black transition-all shadow-md active:scale-95"
                 >
                   View Live Cycle Standings →
                 </Link>
@@ -279,7 +276,7 @@ export const Home: React.FC = () => {
             ) : (
               <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase text-[#02167f] bg-navy-50 px-2 py-0.5 rounded border border-navy-200">
+                  <span className="text-[10px] font-black uppercase text-[#7A211F] bg-navy-50 px-2 py-0.5 rounded border border-navy-200">
                     Cycle Standings
                   </span>
                   <Trophy className="w-4 h-4 text-gold-500" />
@@ -292,7 +289,7 @@ export const Home: React.FC = () => {
                     Best Class Trophy will be awarded at next campus leave.
                   </p>
                 </div>
-                <Link to="/class-leaderboard" className="text-xs font-bold text-[#02167f] hover:underline pt-1">
+                <Link to="/class-leaderboard" className="text-xs font-bold text-[#7A211F] hover:underline pt-1">
                   View Live Ranks →
                 </Link>
               </div>
@@ -319,7 +316,7 @@ export const Home: React.FC = () => {
                   <span className="text-xs font-black text-emerald-700">
                     +{homePulse.latest_results[0].class_points} PTS for Class {homePulse.latest_results[0].class_code}
                   </span>
-                  <Link to="/results" className="text-xs font-bold text-[#02167f] hover:underline">
+                  <Link to="/results" className="text-xs font-bold text-[#7A211F] hover:underline">
                     All Results →
                   </Link>
                 </div>
@@ -335,7 +332,7 @@ export const Home: React.FC = () => {
                 <p className="text-xs text-slate-500">
                   Official published competition results and verified certificates.
                 </p>
-                <Link to="/results" className="text-xs font-bold text-[#02167f] hover:underline">
+                <Link to="/results" className="text-xs font-bold text-[#7A211F] hover:underline">
                   Browse Results Portal →
                 </Link>
               </div>
@@ -345,7 +342,7 @@ export const Home: React.FC = () => {
             {homePulse.featured_star ? (
               <div className="bg-gradient-to-br from-navy-50/60 to-white border border-navy-100 rounded-2xl p-4 shadow-sm space-y-2 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase text-[#02167f] bg-white px-2 py-0.5 rounded border border-navy-200">
+                  <span className="text-[10px] font-black uppercase text-[#7A211F] bg-white px-2 py-0.5 rounded border border-navy-200">
                     Top Star Contributor
                   </span>
                   <Crown className="w-4 h-4 text-gold-500" />
@@ -360,7 +357,7 @@ export const Home: React.FC = () => {
                 </div>
                 <Link
                   to={`/portfolio/${homePulse.featured_star.profile_slug}`}
-                  className="text-xs font-bold text-[#02167f] hover:underline pt-1"
+                  className="text-xs font-bold text-[#7A211F] hover:underline pt-1"
                 >
                   View 360° Profile →
                 </Link>
@@ -376,7 +373,7 @@ export const Home: React.FC = () => {
                 <p className="text-xs text-slate-500">
                   Discover peer talents and skills across Classes 01 through 08.
                 </p>
-                <Link to="/explore" className="text-xs font-bold text-[#02167f] hover:underline">
+                <Link to="/explore" className="text-xs font-bold text-[#7A211F] hover:underline">
                   Explore Peer Directory →
                 </Link>
               </div>
@@ -388,14 +385,14 @@ export const Home: React.FC = () => {
       {/* Live Class Championship Podium Spotlight */}
       {leaderboard.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-200/90 shadow-2xl shadow-[#02167f]/10 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-200/90 shadow-2xl shadow-[#7A211F]/10 backdrop-blur-md">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shadow-sm animate-float">
                   <Trophy className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-cinzel text-lg sm:text-xl font-black text-[#02167f]">
+                  <h3 className="font-cinzel text-lg sm:text-xl font-black text-[#7A211F]">
                     Live Class Championship Standing
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -406,7 +403,7 @@ export const Home: React.FC = () => {
 
               <Link
                 to="/class-leaderboard"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#02167f] text-[#ffd014] text-xs font-bold hover:bg-[#010e52] shadow-md transition-all self-start sm:self-auto shrink-0"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#7A211F] text-[#D6A64F] text-xs font-bold hover:bg-[#641B1C] shadow-md transition-all self-start sm:self-auto shrink-0"
               >
                 <span>Full Leaderboard (All 8 Classes)</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -450,7 +447,7 @@ export const Home: React.FC = () => {
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xl font-black text-[#02167f]">
+                    <span className="text-xl font-black text-[#7A211F]">
                       {item.total_points}
                     </span>
                     <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">
@@ -467,17 +464,17 @@ export const Home: React.FC = () => {
       {/* SADQ Apex Executive Committee Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#02167f] text-[#ffd014] text-xs font-bold tracking-widest uppercase mb-3 shadow-lg shadow-[#02167f]/15 border border-[#ffd014]/40">
-            <Crown className="w-4 h-4 text-[#ffd014]" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#7A211F] text-[#D6A64F] text-xs font-bold tracking-widest uppercase mb-3 shadow-lg shadow-[#7A211F]/15 border border-[#D6A64F]/40">
+            <Crown className="w-4 h-4 text-[#D6A64F]" />
             <span>SADQ Executive Committee</span>
           </div>
-          <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-[#02167f] tracking-tight">
+          <h2 className="font-cinzel text-3xl sm:text-4xl font-extrabold text-[#7A211F] tracking-tight">
             Central Executive Committee
           </h2>
           <p className="mt-2.5 text-sm sm:text-base text-slate-600 font-medium">
             Students Association of Darul Quran (SADQ) apex leadership driving academic excellence, spiritual vitality, and student empowerment.
           </p>
-          <div className="mt-3 w-16 h-1 bg-gradient-to-r from-transparent via-[#ffd014] to-transparent mx-auto rounded-full" />
+          <div className="mt-3 w-16 h-1 bg-gradient-to-r from-transparent via-[#D6A64F] to-transparent mx-auto rounded-full" />
         </div>
 
         {/* Top 3 Apex Officers: President, Secretary, Treasurer */}
@@ -485,18 +482,18 @@ export const Home: React.FC = () => {
           {committee.slice(0, 3).map((leader) => (
             <div
               key={leader.id}
-              className="relative rounded-3xl bg-gradient-to-br from-[#02167f] via-[#031d96] to-[#010e52] text-white p-6 sm:p-8 border-2 border-[#ffd014] shadow-2xl shadow-[#02167f]/25 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group"
+              className="relative rounded-3xl bg-gradient-to-br from-[#7A211F] via-[#031d96] to-[#641B1C] text-white p-6 sm:p-8 border-2 border-[#D6A64F] shadow-2xl shadow-[#7A211F]/25 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group"
             >
               {/* Golden Crown badge on top card */}
-              <div className="absolute -top-3.5 px-3.5 py-0.5 rounded-full bg-[#ffd014] text-[#02167f] text-[10px] font-black tracking-widest uppercase shadow-md flex items-center gap-1 border border-white/40">
+              <div className="absolute -top-3.5 px-3.5 py-0.5 rounded-full bg-[#D6A64F] text-[#7A211F] text-[10px] font-black tracking-widest uppercase shadow-md flex items-center gap-1 border border-white/40">
                 <Award className="w-3 h-3" />
                 <span>Apex Officer</span>
               </div>
 
               {/* Photo Frame: Blank minimal frame when no photo uploaded */}
               <div className="relative mt-2 mb-5">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#ffd014] via-amber-200 to-[#ffd014] shadow-xl group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-[#01092e] border-2 border-[#02167f] flex items-center justify-center">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#D6A64F] via-amber-200 to-[#D6A64F] shadow-xl group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-[#4B1718] border-2 border-[#7A211F] flex items-center justify-center">
                     {leader.photo_url ? (
                       <img
                         src={leader.photo_url}
@@ -508,14 +505,14 @@ export const Home: React.FC = () => {
                       />
                     ) : (
                       /* Clean blank minimalist frame until admin adds photo */
-                      <div className="w-full h-full bg-[#010a38] flex items-center justify-center" />
+                      <div className="w-full h-full bg-[#4B1718] flex items-center justify-center" />
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Designation Badge */}
-              <span className="inline-block px-4 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-[#ffd014] text-[#02167f] shadow-sm mb-2">
+              <span className="inline-block px-4 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-[#D6A64F] text-[#7A211F] shadow-sm mb-2">
                 {leader.designation}
               </span>
 
@@ -539,11 +536,11 @@ export const Home: React.FC = () => {
           {committee.slice(3).map((leader) => (
             <div
               key={leader.id}
-              className="rounded-2xl bg-white p-5 border-2 border-slate-200/80 hover:border-[#ffd014] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center group"
+              className="rounded-2xl bg-white p-5 border-2 border-slate-200/80 hover:border-[#D6A64F] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center group"
             >
               {/* Photo Frame: Blank minimal frame when no photo uploaded */}
               <div className="relative mb-4">
-                <div className="w-20 h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#02167f] to-[#ffd014] shadow-md group-hover:scale-105 transition-transform duration-300">
+                <div className="w-20 h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#7A211F] to-[#D6A64F] shadow-md group-hover:scale-105 transition-transform duration-300">
                   <div className="w-full h-full rounded-full overflow-hidden bg-slate-900 border-2 border-white flex items-center justify-center">
                     {leader.photo_url ? (
                       <img
@@ -556,14 +553,14 @@ export const Home: React.FC = () => {
                       />
                     ) : (
                       /* Clean blank minimalist frame until admin adds photo */
-                      <div className="w-full h-full bg-[#02167f] flex items-center justify-center" />
+                      <div className="w-full h-full bg-[#7A211F] flex items-center justify-center" />
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Designation Badge */}
-              <span className="inline-block px-3 py-0.5 rounded-md text-[11px] font-bold tracking-wide uppercase bg-[#02167f]/10 text-[#02167f] border border-[#02167f]/20 mb-1.5">
+              <span className="inline-block px-3 py-0.5 rounded-md text-[11px] font-bold tracking-wide uppercase bg-[#7A211F]/10 text-[#7A211F] border border-[#7A211F]/20 mb-1.5">
                 {leader.designation}
               </span>
 
@@ -643,7 +640,7 @@ export const Home: React.FC = () => {
                         <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.description}</p>
                       )}
                     </div>
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#02167f]">
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#7A211F]">
                       <span className="flex items-center gap-1 group-hover:text-red-600">
                         <Play className="w-3.5 h-3.5 fill-current" /> Watch Video
                       </span>
@@ -693,17 +690,17 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#02167f]/10 text-[#02167f] text-xs font-bold uppercase tracking-wider mb-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#02167f]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7A211F]/10 text-[#7A211F] text-xs font-bold uppercase tracking-wider mb-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#7A211F]" />
               <span>10 Official Wings</span>
             </div>
-            <h2 className="font-cinzel text-2xl sm:text-4xl font-extrabold text-[#02167f]">
+            <h2 className="font-cinzel text-2xl sm:text-4xl font-extrabold text-[#7A211F]">
               10 Official Units of SADQ
             </h2>
           </div>
           <Link
             to="/organisation"
-            className="text-xs font-bold uppercase tracking-wider text-[#02167f] hover:text-[#ffd014] flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 hover:bg-[#02167f] hover:text-white px-4 py-2.5 rounded-xl transition-all shadow-sm"
+            className="text-xs font-bold uppercase tracking-wider text-[#7A211F] hover:text-[#D6A64F] flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 hover:bg-[#7A211F] hover:text-white px-4 py-2.5 rounded-xl transition-all shadow-sm"
           >
             <span>Explore All 10 Units</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -714,18 +711,18 @@ export const Home: React.FC = () => {
           {units.map((unit) => (
             <div
               key={unit.code}
-              className="p-5 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-[#ffd014] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
+              className="p-5 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-[#D6A64F] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-cinzel font-black text-sm text-[#02167f] px-2.5 py-1 bg-gradient-to-r from-[#ffd014]/20 to-amber-100 rounded-lg border border-[#ffd014]/40">
+                  <span className="font-cinzel font-black text-sm text-[#7A211F] px-2.5 py-1 bg-gradient-to-r from-[#D6A64F]/20 to-amber-100 rounded-lg border border-[#D6A64F]/40">
                     {unit.code}
                   </span>
-                  <span className="text-[9px] uppercase font-black tracking-widest text-[#02167f] bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-[9px] uppercase font-black tracking-widest text-[#7A211F] bg-slate-100 px-2 py-0.5 rounded">
                     Official
                   </span>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm mb-1.5 group-hover:text-[#02167f] transition-colors">
+                <h3 className="font-bold text-slate-900 text-sm mb-1.5 group-hover:text-[#7A211F] transition-colors">
                   {unit.name}
                 </h3>
                 <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
