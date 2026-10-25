@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
+// GitHub Pages serves this project from /students-association-of-darul-quran-/.
 export default defineConfig({
+  base: '/students-association-of-darul-quran-/',
   plugins: [react()],
   server: {
     port: 5173,

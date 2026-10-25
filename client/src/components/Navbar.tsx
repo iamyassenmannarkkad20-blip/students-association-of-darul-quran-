@@ -158,13 +158,13 @@ export const Navbar: React.FC = () => {
   const isAdmin = user && (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN');
 
   return (
-    <header className="sticky top-0 z-50 bg-[#02167f]/95 backdrop-blur-xl border-b border-[#ffd014]/25 text-white shadow-xl transition-all">
+    <header className="sticky top-0 z-50 bg-[#7A211F]/95 backdrop-blur-xl border-b border-[#D6A64F]/25 text-white shadow-xl transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20" ref={dropdownRef}>
           {/* Logo & Brand Identity */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#02167f] via-blue-900 to-[#010a38] border-2 border-[#ffd014]/60 flex items-center justify-center shadow-lg shadow-[#02167f]/40 group-hover:border-[#ffd014] group-hover:scale-105 transition-all shrink-0">
-              <span className="font-cinzel font-black text-[#ffd014] text-lg sm:text-xl tracking-wider">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#7A211F] via-blue-900 to-[#4B1718] border-2 border-[#D6A64F]/60 flex items-center justify-center shadow-lg shadow-[#7A211F]/40 group-hover:border-[#D6A64F] group-hover:scale-105 transition-all shrink-0">
+              <span className="font-cinzel font-black text-[#D6A64F] text-lg sm:text-xl tracking-wider">
                 S
               </span>
             </div>
@@ -173,7 +173,7 @@ export const Navbar: React.FC = () => {
                 <span className="font-cinzel font-black text-lg sm:text-2xl text-white tracking-wider">
                   SADQ
                 </span>
-                <span className="hidden sm:inline-block px-2.5 py-0.5 text-[9px] uppercase font-black tracking-widest text-[#02167f] bg-[#ffd014] rounded-full shadow-sm">
+                <span className="hidden sm:inline-block px-2.5 py-0.5 text-[9px] uppercase font-black tracking-widest text-[#7A211F] bg-[#D6A64F] rounded-full shadow-sm">
                   Official
                 </span>
               </div>
@@ -190,8 +190,8 @@ export const Navbar: React.FC = () => {
               to="/"
               className={`px-3 py-2 rounded-xl transition-all ${
                 location.pathname === '/'
-                  ? 'text-[#ffd014] bg-white/10'
-                  : 'hover:text-[#ffd014] hover:bg-white/5'
+                  ? 'text-[#D6A64F] bg-white/10'
+                  : 'hover:text-[#D6A64F] hover:bg-white/5'
               }`}
             >
               HOME
@@ -202,11 +202,11 @@ export const Navbar: React.FC = () => {
               to="/class-leaderboard"
               className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
                 location.pathname === '/class-leaderboard'
-                  ? 'text-[#ffd014] bg-white/10'
-                  : 'hover:text-[#ffd014] hover:bg-white/5'
+                  ? 'text-[#D6A64F] bg-white/10'
+                  : 'hover:text-[#D6A64F] hover:bg-white/5'
               }`}
             >
-              <Trophy className="w-3.5 h-3.5 text-[#ffd014]" />
+              <Trophy className="w-3.5 h-3.5 text-[#D6A64F]" />
               <span>CHAMPIONSHIP</span>
             </Link>
 
@@ -215,11 +215,11 @@ export const Navbar: React.FC = () => {
               to="/students"
               className={`px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
                 location.pathname === '/students'
-                  ? 'text-[#ffd014] bg-white/10'
-                  : 'hover:text-[#ffd014] hover:bg-white/5'
+                  ? 'text-[#D6A64F] bg-white/10'
+                  : 'hover:text-[#D6A64F] hover:bg-white/5'
               }`}
             >
-              <Users className="w-3.5 h-3.5 text-[#ffd014]" />
+              <Users className="w-3.5 h-3.5 text-[#D6A64F]" />
               <span>STUDENTS</span>
             </Link>
 
@@ -228,8 +228,8 @@ export const Navbar: React.FC = () => {
               to="/results"
               className={`px-3 py-2 rounded-xl transition-all ${
                 location.pathname === '/results'
-                  ? 'text-[#ffd014] bg-white/10'
-                  : 'hover:text-[#ffd014] hover:bg-white/5'
+                  ? 'text-[#D6A64F] bg-white/10'
+                  : 'hover:text-[#D6A64F] hover:bg-white/5'
               }`}
             >
               RESULTS
@@ -240,8 +240,8 @@ export const Navbar: React.FC = () => {
               to="/community"
               className={`px-3 py-2 rounded-xl transition-all ${
                 location.pathname.startsWith('/community')
-                  ? 'text-[#ffd014] bg-white/10'
-                  : 'hover:text-[#ffd014] hover:bg-white/5'
+                  ? 'text-[#D6A64F] bg-white/10'
+                  : 'hover:text-[#D6A64F] hover:bg-white/5'
               }`}
             >
               COMMUNITY
@@ -250,12 +250,12 @@ export const Navbar: React.FC = () => {
             {/* 5. SIDE NAVIGATION HUB TRIGGER (All Wings, Library, Talents, Resources) */}
             <button
               onClick={() => setSideNavHubOpen(true)}
-              className="px-3.5 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-white/10 to-[#ffd014]/15 hover:from-[#ffd014]/25 hover:to-white/20 text-[#ffd014] border border-[#ffd014]/30 hover:border-[#ffd014]/60 transition-all shadow-sm group"
+              className="px-3.5 py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-white/10 to-[#D6A64F]/15 hover:from-[#D6A64F]/25 hover:to-white/20 text-[#D6A64F] border border-[#D6A64F]/30 hover:border-[#D6A64F]/60 transition-all shadow-sm group"
               title="Open Campus Navigation Hub (All 10 Wings, Classes, Library, Talents)"
             >
-              <LayoutGrid className="w-3.5 h-3.5 text-[#ffd014] group-hover:rotate-12 transition-transform" />
+              <LayoutGrid className="w-3.5 h-3.5 text-[#D6A64F] group-hover:rotate-12 transition-transform" />
               <span className="font-extrabold tracking-wide uppercase text-[11px]">Campus Hub</span>
-              <span className="px-1.5 py-0.2 text-[9px] bg-[#ffd014] text-[#02167f] font-black rounded-full">
+              <span className="px-1.5 py-0.2 text-[9px] bg-[#D6A64F] text-[#7A211F] font-black rounded-full">
                 10 Wings
               </span>
             </button>
@@ -286,8 +286,8 @@ export const Navbar: React.FC = () => {
                   to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
                   className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm border ${
                     isAdmin
-                      ? 'bg-[#010a38] text-white border-[#ffd014]/60 hover:bg-[#02167f]'
-                      : 'bg-[#010a38] text-white border-slate-700/60 hover:border-[#ffd014] hover:bg-[#02167f]'
+                      ? 'bg-[#4B1718] text-white border-[#D6A64F]/60 hover:bg-[#7A211F]'
+                      : 'bg-[#4B1718] text-white border-slate-700/60 hover:border-[#D6A64F] hover:bg-[#7A211F]'
                   }`}
                   title="Open My 360° Student Dashboard"
                 >
@@ -295,20 +295,20 @@ export const Navbar: React.FC = () => {
                     <img
                       src={profile.profile_photo_url}
                       alt={user.fullName}
-                      className="w-5 h-5 rounded-full object-cover ring-1 ring-[#ffd014]/50"
+                      className="w-5 h-5 rounded-full object-cover ring-1 ring-[#D6A64F]/50"
                     />
                   ) : (
-                    <User className="w-3.5 h-3.5 text-[#ffd014]" />
+                    <User className="w-3.5 h-3.5 text-[#D6A64F]" />
                   )}
-                  <span className="max-w-[90px] truncate text-[#ffd014]">
+                  <span className="max-w-[90px] truncate text-[#D6A64F]">
                     {user.username ? `@${user.username}` : user.fullName.split(' ')[0]}
                   </span>
                   {isAdmin ? (
-                    <span className="px-1.5 py-0.5 text-[9px] bg-[#ffd014] text-[#02167f] font-black rounded-md">
+                    <span className="px-1.5 py-0.5 text-[9px] bg-[#D6A64F] text-[#7A211F] font-black rounded-md">
                       Admin
                     </span>
                   ) : (
-                    <span className="px-1.5 py-0.5 text-[9px] bg-gold-400/20 text-[#ffd014] font-black rounded-md border border-[#ffd014]/40">
+                    <span className="px-1.5 py-0.5 text-[9px] bg-gold-400/20 text-[#D6A64F] font-black rounded-md border border-[#D6A64F]/40">
                       Dashboard ↗
                     </span>
                   )}
@@ -327,13 +327,13 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-3.5 py-2 text-xs font-bold text-slate-200 hover:text-[#ffd014] hover:bg-white/10 rounded-xl transition-all"
+                  className="px-3.5 py-2 text-xs font-bold text-slate-200 hover:text-[#D6A64F] hover:bg-white/10 rounded-xl transition-all"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-xs font-black uppercase tracking-wider text-[#02167f] bg-gradient-to-r from-[#ffd014] to-amber-300 rounded-xl hover:from-amber-200 hover:to-[#ffd014] shadow-md shadow-[#ffd014]/25 hover:scale-105 active:scale-95 transition-all ml-1"
+                  className="px-4 py-2 text-xs font-black uppercase tracking-wider text-[#7A211F] bg-gradient-to-r from-[#D6A64F] to-amber-300 rounded-xl hover:from-amber-200 hover:to-[#D6A64F] shadow-md shadow-[#D6A64F]/25 hover:scale-105 active:scale-95 transition-all ml-1"
                 >
                   Register
                 </Link>
@@ -346,7 +346,7 @@ export const Navbar: React.FC = () => {
             {/* Campus Hub Button */}
             <button
               onClick={() => setSideNavHubOpen(true)}
-              className="p-2 rounded-xl bg-white/10 text-[#ffd014] hover:bg-white/20 transition-colors"
+              className="p-2 rounded-xl bg-white/10 text-[#D6A64F] hover:bg-white/20 transition-colors"
               title="Campus Hub (10 Wings & Sections)"
             >
               <LayoutGrid className="w-4 h-4" />
@@ -367,7 +367,7 @@ export const Navbar: React.FC = () => {
             {user && (
               <Link
                 to="/student"
-                className="hidden sm:inline-block px-2.5 py-1.5 rounded-xl bg-white/10 text-[#ffd014] text-xs font-bold truncate max-w-[90px]"
+                className="hidden sm:inline-block px-2.5 py-1.5 rounded-xl bg-white/10 text-[#D6A64F] text-xs font-bold truncate max-w-[90px]"
                 title="My Profile"
               >
                 {user.fullName.split(' ')[0]}
@@ -378,7 +378,7 @@ export const Navbar: React.FC = () => {
               className="p-2 sm:p-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 focus:outline-none transition-colors"
               aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6 text-[#ffd014]" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6 text-[#D6A64F]" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
@@ -394,11 +394,11 @@ export const Navbar: React.FC = () => {
           />
 
           {/* Drawer Content */}
-          <div className="relative ml-auto w-full max-w-[85vw] sm:max-w-sm bg-[#01092e] text-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-[#ffd014]/30 z-10 p-4 sm:p-5 space-y-5">
+          <div className="relative ml-auto w-full max-w-[85vw] sm:max-w-sm bg-[#4B1718] text-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto border-l border-[#D6A64F]/30 z-10 p-4 sm:p-5 space-y-5">
             {/* Drawer Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#02167f] border border-[#ffd014] flex items-center justify-center font-cinzel font-black text-[#ffd014]">
+                <div className="w-8 h-8 rounded-xl bg-[#7A211F] border border-[#D6A64F] flex items-center justify-center font-cinzel font-black text-[#D6A64F]">
                   S
                 </div>
                 <span className="font-cinzel font-black text-lg text-white">SADQ Navigation</span>
@@ -428,12 +428,12 @@ export const Navbar: React.FC = () => {
                   className="w-full py-3 px-4 flex items-center justify-between font-bold text-sm text-slate-200"
                 >
                   <span className="flex items-center gap-2">
-                    <Compass className="w-4 h-4 text-[#ffd014]" />
+                    <Compass className="w-4 h-4 text-[#D6A64F]" />
                     <span>Explore SADQ</span>
                   </span>
                   <ChevronDown
                     className={`w-4 h-4 transition-transform ${
-                      mobileAccordion.explore ? 'rotate-180 text-[#ffd014]' : ''
+                      mobileAccordion.explore ? 'rotate-180 text-[#D6A64F]' : ''
                     }`}
                   />
                 </button>
@@ -520,7 +520,7 @@ export const Navbar: React.FC = () => {
                     <Link
                       to="/class-leaderboard"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-white/10 font-semibold text-[#ffd014]"
+                      className="block p-2 rounded-lg hover:bg-white/10 font-semibold text-[#D6A64F]"
                     >
                       🥇 Class Championship Leaderboard
                     </Link>
@@ -596,18 +596,18 @@ export const Navbar: React.FC = () => {
 
               {/* SECTION: MY SADQ (If Logged In) */}
               {user && (
-                <div className="rounded-2xl bg-[#02167f]/50 overflow-hidden border border-[#ffd014]/30">
+                <div className="rounded-2xl bg-[#7A211F]/50 overflow-hidden border border-[#D6A64F]/30">
                   <button
                     onClick={() => toggleMobileSection('mysadq')}
-                    className="w-full py-3 px-4 flex items-center justify-between font-bold text-sm text-[#ffd014]"
+                    className="w-full py-3 px-4 flex items-center justify-between font-bold text-sm text-[#D6A64F]"
                   >
                     <span className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#ffd014]" />
+                      <Sparkles className="w-4 h-4 text-[#D6A64F]" />
                       <span>My SADQ Workspace</span>
                     </span>
                     <ChevronDown
                       className={`w-4 h-4 transition-transform ${
-                        mobileAccordion.mysadq ? 'rotate-180 text-[#ffd014]' : ''
+                        mobileAccordion.mysadq ? 'rotate-180 text-[#D6A64F]' : ''
                       }`}
                     />
                   </button>
@@ -645,7 +645,7 @@ export const Navbar: React.FC = () => {
                         <Link
                           to="/subwing"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block p-2 rounded-lg bg-amber-400/20 text-[#ffd014] font-bold"
+                          className="block p-2 rounded-lg bg-amber-400/20 text-[#D6A64F] font-bold"
                         >
                           🎯 My Sub-Wing Operations Portal
                         </Link>
@@ -696,7 +696,7 @@ export const Navbar: React.FC = () => {
                     <Link
                       to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="text-[#ffd014] font-bold hover:underline"
+                      className="text-[#D6A64F] font-bold hover:underline"
                     >
                       {user.username ? `@${user.username}` : user.fullName} ↗
                     </Link>
@@ -704,7 +704,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     to={`/portfolio/${user.username || profile?.profile_slug || 'yasin'}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-2.5 px-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#ffd014] to-amber-400 text-[#02167f] font-black text-xs shadow-md"
+                    className="w-full py-2.5 px-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#D6A64F] to-amber-400 text-[#7A211F] font-black text-xs shadow-md"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>Open My 360° Dashboard</span>
@@ -715,7 +715,7 @@ export const Navbar: React.FC = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       className={`py-2 text-center text-xs font-bold rounded-xl transition-all ${
                         location.pathname.startsWith('/student')
-                          ? 'bg-white/20 text-[#ffd014] font-black'
+                          ? 'bg-white/20 text-[#D6A64F] font-black'
                           : 'bg-white/10 text-white hover:bg-white/20'
                       }`}
                     >
@@ -727,8 +727,8 @@ export const Navbar: React.FC = () => {
                         onClick={() => setMobileMenuOpen(false)}
                         className={`py-2 text-center text-xs font-bold rounded-xl border border-amber-400/40 transition-all ${
                           location.pathname.startsWith('/subwing')
-                            ? 'bg-[#ffd014] text-[#02167f] font-black'
-                            : 'bg-amber-400/20 text-[#ffd014] hover:bg-amber-400/30'
+                            ? 'bg-[#D6A64F] text-[#7A211F] font-black'
+                            : 'bg-amber-400/20 text-[#D6A64F] hover:bg-amber-400/30'
                         }`}
                       >
                         🏛️ Wing Portal
@@ -738,7 +738,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/admin"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="py-2 text-center text-xs font-bold bg-amber-400/20 text-[#ffd014] rounded-xl border border-amber-400/30 col-span-2"
+                        className="py-2 text-center text-xs font-bold bg-amber-400/20 text-[#D6A64F] rounded-xl border border-amber-400/30 col-span-2"
                       >
                         ⚡ Admin Suite Portal
                       </Link>
@@ -767,7 +767,7 @@ export const Navbar: React.FC = () => {
                     <Link
                       to="/register"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="py-2.5 text-center text-xs font-black uppercase tracking-wider text-[#02167f] bg-[#ffd014] rounded-xl shadow-md"
+                      className="py-2.5 text-center text-xs font-black uppercase tracking-wider text-[#7A211F] bg-[#D6A64F] rounded-xl shadow-md"
                     >
                       Register
                     </Link>

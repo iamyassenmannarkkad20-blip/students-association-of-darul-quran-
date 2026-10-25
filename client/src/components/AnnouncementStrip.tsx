@@ -77,13 +77,13 @@ export const AnnouncementStrip: React.FC = () => {
     <div
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="bg-gradient-to-r from-[#01092e] via-[#02167f] to-[#01092e] text-white border-b border-[#ffd014]/25 text-xs py-1.5 sm:py-2 px-3 sm:px-4 shadow-sm relative w-full select-none"
+      className="bg-gradient-to-r from-[#4B1718] via-[#7A211F] to-[#4B1718] text-white border-b border-[#D6A64F]/25 text-xs py-1.5 sm:py-2 px-3 sm:px-4 shadow-sm relative w-full select-none"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 min-w-0">
         {/* Left: Updates Tag */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ffd014] text-[#02167f] font-black text-[9px] sm:text-[10px] uppercase tracking-wider shadow">
-            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#02167f]" />
+          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#D6A64F] text-[#7A211F] font-black text-[9px] sm:text-[10px] uppercase tracking-wider shadow">
+            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#7A211F]" />
             <span>UPDATES</span>
           </span>
           <span className="hidden md:inline-flex text-[10px] font-bold text-amber-300/80 bg-white/10 px-2 py-0.5 rounded-md">
@@ -96,13 +96,13 @@ export const AnnouncementStrip: React.FC = () => {
           <Link
             to={current.link}
             key={current.id}
-            className="group flex items-center gap-2 text-slate-100 hover:text-[#ffd014] transition-all duration-300 min-w-0 truncate"
+            className="group flex items-center gap-2 text-slate-100 hover:text-[#D6A64F] transition-all duration-300 min-w-0 truncate"
           >
             <span className="text-sm shrink-0">{current.icon}</span>
             <span className="text-[11px] sm:text-xs font-semibold truncate">
               {current.text}
             </span>
-            <span className="hidden lg:inline-flex items-center gap-1 text-[10px] font-bold text-[#ffd014] bg-white/10 px-2 py-0.5 rounded-full group-hover:bg-[#ffd014] group-hover:text-[#02167f] transition-colors shrink-0">
+            <span className="hidden lg:inline-flex items-center gap-1 text-[10px] font-bold text-[#D6A64F] bg-white/10 px-2 py-0.5 rounded-full group-hover:bg-[#D6A64F] group-hover:text-[#7A211F] transition-colors shrink-0">
               <span>{current.linkText}</span>
               <ChevronRight className="w-3 h-3" />
             </span>
