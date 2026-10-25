@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <rect width="100" height="100" rx="24" fill="#0B1B3D"/>
-  <path d="M50 14L80 28V52C80 69 67 83 50 88C33 83 20 69 20 52V28L50 14Z" stroke="#D4AF37" stroke-width="4" fill="#102A43"/>
-  <text x="50" y="58" font-family="'Cinzel', 'Georgia', serif" font-weight="bold" font-size="22" fill="#D4AF37" text-anchor="middle" letter-spacing="1">SADQ</text>
+  <rect width="100" height="100" rx="24" fill="#7A211F"/>
+  <circle cx="50" cy="50" r="39" stroke="#D6A64F" stroke-width="2"/>
+  <path d="M23 38h54M23 62h54" stroke="#D6A64F" stroke-width="2" opacity=".75"/>
+  <text x="50" y="56" font-family="Arial, sans-serif" font-weight="800" font-size="23" fill="#F8F5F0" text-anchor="middle" letter-spacing="1">SADQ</text>
 </svg>
