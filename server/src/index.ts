@@ -24,7 +24,10 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 // Ensure uploads/avatars directory exists
 const uploadsDir = path.join(__dirname, '../uploads/avatars');
@@ -43,11 +46,11 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow localhost and any frontend origins during dev
-      if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+      // Permit non-browser requests and only explicitly configured browser origins.
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error('Origin is not allowed by CORS'));
       }
     },
     credentials: true,
@@ -127,8 +130,12 @@ async function ensureSuperAdmin() {
 
     if (adminCheck.rows.length === 0) {
       console.log('--- Initializing default Super Admin account ---');
-      const defaultEmail = 'admin@sadq.org';
-      const defaultPassword = 'SadqAdmin@2026';
+      const defaultEmail = process.env.INITIAL_SUPER_ADMIN_EMAIL;
+      const defaultPassword = process.env.INITIAL_SUPER_ADMIN_PASSWORD;
+      if (!defaultEmail || !defaultPassword) {
+        console.warn('No Super Admin exists. Set INITIAL_SUPER_ADMIN_EMAIL and INITIAL_SUPER_ADMIN_PASSWORD in the hosting environment to create one securely.');
+        return;
+      }
       const passwordHash = await argon2.hash(defaultPassword, { type: argon2.argon2id });
 
       await query(
@@ -136,8 +143,7 @@ async function ensureSuperAdmin() {
          VALUES ($1, $2, $3)`,
         [defaultEmail, passwordHash, ROLES.SUPER_ADMIN]
       );
-      console.log(`[INFO] Super Admin account created: ${defaultEmail} (Password: ${defaultPassword})`);
-      console.log('[IMPORTANT] Please change the default admin password upon first login.');
+      console.log(`[INFO] Initial Super Admin account created for ${defaultEmail}. Set a unique strong password and remove the initial admin environment variables after deployment.`);
     }
   } catch (error) {
     console.error('Super admin setup check error:', error);
@@ -148,7 +154,7 @@ app.listen(Number(PORT), '0.0.0.0', async () => {
   console.log(`=================================================`);
   console.log(` SADQ API Server running on port ${PORT}`);
   console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(` Client Origin: ${CLIENT_ORIGIN}`);
+  console.log(` Allowed client origins: ${allowedOrigins.join(', ')}`);
   console.log(`=================================================`);
   await ensureSuperAdmin();
 });
