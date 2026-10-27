@@ -186,7 +186,7 @@ export const Library: React.FC = () => {
             No matching resources found
           </h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Resources and study notes will appear here once verified by the library board.
+            Resources and study notes will be published after verification by the library board.
           </p>
         </div>
       ) : (

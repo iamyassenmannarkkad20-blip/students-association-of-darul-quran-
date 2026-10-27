@@ -89,8 +89,13 @@ router.post('/register', async (req, res) => {
       return;
     }
 
-    // Profile slug matches username
-    const profileSlug = username;
+    // Profile slug derived from fullName (kebab-case alphanumeric)
+    const nameSlugBase = fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'student';
+    let profileSlug = `${nameSlugBase}-${Math.floor(100 + Math.random() * 900)}`;
+    const existingSlug = await query('SELECT id FROM student_profiles WHERE profile_slug = $1', [profileSlug]);
+    if (existingSlug.rows.length > 0) {
+      profileSlug = `${nameSlugBase}-${Date.now().toString(36)}-${Math.floor(100 + Math.random() * 900)}`;
+    }
 
     // Hash password with Argon2id
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });

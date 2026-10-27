@@ -73,7 +73,7 @@ const FallbackModule: React.FC<{ title: string; subtitle: string }> = ({ title, 
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-[#F8F5F0] text-[#24201E]">
           <Navbar />
