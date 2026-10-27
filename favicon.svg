@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="24" fill="#7A211F"/>
+  <circle cx="50" cy="50" r="39" stroke="#D6A64F" stroke-width="2"/>
+  <path d="M23 38h54M23 62h54" stroke="#D6A64F" stroke-width="2" opacity=".75"/>
+  <text x="50" y="56" font-family="Arial, sans-serif" font-weight="800" font-size="23" fill="#F8F5F0" text-anchor="middle" letter-spacing="1">SADQ</text>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "name": "SADQ Student Organisation",
+  "short_name": "SADQ",
+  "description": "Official student organisation platform of Darul Quran Islamic Academy.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F5F0",
+  "theme_color": "#7A211F",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
